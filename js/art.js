@@ -4,7 +4,8 @@
    Szyje, nogi i ogony to grube kreski z okrągłymi końcami, więc zawsze
    łączą się z korpusem. Układ: viewBox 0 0 200 140, zwierzę patrzy w prawo. */
 
-function hx2(h){h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function hx2(h){h=h.replace('#','');if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
 function mix(a,b,t){const A=hx2(a),B=hx2(b);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*t).toString(16).padStart(2,'0')).join('');}
 function hash(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
 
@@ -19,12 +20,20 @@ const TRI=(a,b,c,f,m=0)=>F(`M${a[0]},${a[1]} L${b[0]},${b[1]} L${c[0]},${c[1]} Z
 const LINE=(d,sw)=>({d,f:'none',m:2,sw:sw||2.4});
 const SHADE=(d,f,op)=>({d,f,m:3,op:op===undefined?.5:op});
 function TAP(pts,ws,f){const o=[];for(let i=0;i<pts.length-1;i++)o.push(K(PL([pts[i],pts[i+1]]),ws[i],f));return o;}
+/* punkt na krzywej sześciennej – żeby żebra żagli nie wychodziły poza obrys */
+function CB(P,t){const u=1-t,a=u*u*u,b=3*u*u*t,c=3*u*t*t,d=t*t*t;
+  return [a*P[0][0]+b*P[1][0]+c*P[2][0]+d*P[3][0], a*P[0][1]+b*P[1][1]+c*P[2][1]+d*P[3][1]];}
+/* żebra rozpięte między krawędzią górną (TOP) a dolną (BOT, rysowaną wstecz) */
+function RIBS(TOP,BOT,n,inTop,inBot,sw){const o=[];
+  for(let i=1;i<n;i++){const t=i/n,a=CB(TOP,t),b=CB(BOT,1-t);
+    o.push(LINE(`M${b[0].toFixed(1)},${(b[1]-(inBot||2)).toFixed(1)} L${a[0].toFixed(1)},${(a[1]+(inTop||8)).toFixed(1)}`,sw||2.4));}
+  return o;}
 function EYE(x,y,r,ink){return [F(EP(x,y,r,r),'#fff',2),{d:EP(x+r*.18,y,r*.44,r*.48),f:ink,m:3,op:1},
   {d:EP(x-r*.32,y-r*.34,r*.22,r*.22),f:'#fff',m:3,op:.95}];}
 function TEETH(x1,x2,y,n){const o=[];for(let i=0;i<n;i++){const x=x1+(x2-x1)*(i+.5)/n;
   o.push({d:`M${x-2.3},${y} L${x},${y+5.4} L${x+2.3},${y} Z`,f:'#fff',m:2,sw:1.5});}return o;}
-function FOOT(x,y,n,f){let d='';for(let i=0;i<n;i++){const o=i*8;
-  d+=`M${x+o-4.5},${y-9} L${x+o+4.5},${y-9} L${x+o+5.5},${y} L${x+o-5.5},${y} Z `;}return F(d,f);}
+function FOOT(x,y,n,f){let d='';for(let i=0;i<n;i++){const o=i*7;
+  d+=`M${x+o-3.8},${y-9} L${x+o+3.8},${y-9} L${x+o+4.6},${y} L${x+o-4.6},${y} Z `;}return F(d,f);}
 
 /* ---------- teropod: dwunożny (T-rex, raptory, strusiaki) ---------- */
 function A_thero(c,o){
@@ -32,11 +41,11 @@ function A_thero(c,o){
   const hx=o.rap?148:144, hy=o.rap?34:26;
   p.push(...TAP([[88,80],[96,102],[88,118]],[20,13],mid),FOOT(80,128,3,mid));
   p.push(...TAP(o.rap?[[74,68],[48,64],[24,60],[6,58]]:[[74,72],[50,74],[26,80],[6,90]],[26,17,9],c[0]));
-  p.push(BL(100,76,34,o.belly?26:23,c[0]));
+  p.push(BL(100,76,o.rap?31:34,o.rap?19:(o.belly?26:23),c[0]));
   if(o.hump) p.push(F('M78,62 C88,34 122,32 134,62 Z',c[0]));
   if(o.rdg) p.push(F('M78,56 C96,44 126,44 140,58 C124,52 94,52 78,56 Z',c[0],1));
   if(o.sail){p.push(F('M74,64 C82,8 132,4 144,62 C124,42 96,42 74,64 Z',c[1],1));
-    for(let i=1;i<7;i++){const t=i/7;p.push(LINE(`M${77+t*64},${60-t*2} L${81+t*58},${26-Math.sin(t*3.14)*14}`,2.4));}}
+    p.push(...RIBS([[74,64],[82,8],[132,4],[144,62]],[[144,62],[124,42],[96,42],[74,64]],7,10,3,2.4));}
   p.push(...TAP(o.rap?[[118,66],[134,52],[148,44]]:[[116,64],[130,48],[144,40]],[26,21],c[0]));
   p.push(F(`M${hx-6},${hy} C${hx+sn*.45},${hy-9} ${hx+sn},${hy-4} ${hx+sn+2},${hy+D*.45} `
     +`C${hx+sn},${hy+D+4} ${hx+sn*.4},${hy+D+7} ${hx-9},${hy+D+1} Z`,c[0]));
@@ -51,7 +60,9 @@ function A_thero(c,o){
   const aL=o.arm||10;
   p.push(K(PL([[126,78],[126+aL*.6,86+aL*.3],[126+aL,92+aL*.55]]),9,c[0]));
   if(o.clw)for(let i=0;i<(o.clw>1?3:2);i++)p.push(K(PL([[126+aL,92+aL*.55],[128+aL+i*4,100+aL*.7]]),4,c[1]));
-  p.push(...TAP([[106,80],[116,102],[108,118]],[23,15],c[0]),FOOT(102,128,3,c[0]));
+  p.push(...TAP([[106,80],[116,102],[108,118]],[23,15],c[0]));
+  if(o.rap){p.push(FOOT(104,128,2,c[0]),K('M112,122 C120,120 126,114 127,105',5,c[1]));}
+  else p.push(FOOT(102,128,3,c[0]));
   return {p,sc:o.sc||1};
 }
 
@@ -98,20 +109,21 @@ function A_cerat(c,o){
   p.push(...TAP([[54,82],[32,86],[14,94]],[22,12],c[0]));
   p.push(BL(86,84,36,24,c[0]));
   p.push(SHADE('M56,92 C78,106 116,106 130,92 C122,106 66,110 56,92 Z',c[1],.45));
-  p.push(K(PL([[116,74],[134,66]]),32,c[0]));
+  p.push(K(PL([[112,76],[128,66]]),32,c[0]));
+  const FX=128,FY=52;
   if(FR[0]){
     const nS=o.fr==='spiky'?7:(o.fr==='curly'?9:(o.fr==='hook'?5:0));
-    for(let i=0;i<nS;i++){const a=-1.85+i*(3.2/Math.max(1,nS-1));
-      const x=144+Math.cos(a)*(FR[0]-4),y=58+Math.sin(a)*(FR[1]-4),len=o.fr==='spiky'?17:11;
-      p.push(TRI([x-4,y-3],[x+Math.cos(a)*len,y+Math.sin(a)*len*(o.fr==='curly'?.3:1)+(o.fr==='curly'?10:0)],[x+4,y+3],c[1]));}
-    p.push(BL(144,58,FR[0],FR[1],c[1]));
-    p.push(SHADE(EP(144,58,FR[0]-9,FR[1]-10),mix(c[1],c[2],.18),.35));
+    for(let i=0;i<nS;i++){const a=-2.2+i*(3.0/Math.max(1,nS-1));
+      const x=FX+Math.cos(a)*(FR[0]-3),y=FY+Math.sin(a)*(FR[1]-3),len=o.fr==='spiky'?18:12;
+      p.push(TRI([x-4,y-3],[x+Math.cos(a)*len,y+Math.sin(a)*len*(o.fr==='curly'?.3:1)+(o.fr==='curly'?11:0)],[x+4,y+3],c[1]));}
+    p.push(BL(FX,FY,FR[0]+2,FR[1]+2,c[1]));
+    p.push(SHADE(EP(FX,FY,FR[0]-7,FR[1]-8),mix(c[1],c[2],.18),.35));
   }
-  p.push(F('M132,52 C152,44 174,52 186,66 C190,74 182,80 170,78 C152,76 136,70 130,64 Z',c[0]));
-  if(o.hrn>=1) p.push(TRI([166,60],[180,34],[176,62],c[1]));
-  if(o.hrn>=3){p.push(TRI([146,46],[148,16],[158,48],c[1]),TRI([134,46],[130,20],[144,48],c[1]));}
-  p.push(F('M174,62 C188,62 190,72 180,79 C174,80 170,74 170,70 Z',mix(c[1],c[2],.4),2));
-  p.push(...EYE(154,60,4.4,c[2]));
+  p.push(F('M126,50 C150,42 176,52 188,68 C192,77 182,83 168,81 C148,78 130,70 124,62 Z',c[0]));
+  if(o.hrn>=1) p.push(TRI([168,64],[182,38],[178,66],c[1]));
+  if(o.hrn>=3){p.push(TRI([158,52],[166,18],[174,56],c[1]),TRI([144,48],[146,18],[158,52],c[1]));}
+  p.push(F('M176,66 C190,66 192,76 182,83 C176,84 172,78 172,74 Z',mix(c[1],c[2],.4),2));
+  p.push(...EYE(160,62,4.4,c[2]));
   p.push(...TAP([[76,86],[80,108],[78,124]],[22,19],c[0]),...TAP([[118,86],[122,108],[120,124]],[22,19],c[0]));
   p.push(F('M66,124 L92,124 L92,130 L66,130 Z',c[0]),F('M110,124 L136,124 L136,130 L110,130 Z',c[0]));
   return {p,sc:o.sc||1};
@@ -171,7 +183,7 @@ function A_hadro(c,o){
   p.push(...TAP([[74,74],[48,78],[24,86],[4,98]],[26,16,8],c[0]));
   p.push(BL(100,78,34,24,c[0]));
   if(o.sail){p.push(F('M74,64 C86,12 128,10 142,64 C122,44 94,44 74,64 Z',c[1],1));
-    for(let i=1;i<6;i++){const t=i/6;p.push(LINE(`M${79+t*58},${60} L${83+t*54},${26-Math.sin(t*3.14)*8}`,2.4));}}
+    p.push(...RIBS([[74,64],[86,12],[128,10],[142,64]],[[142,64],[122,44],[94,44],[74,64]],6,10,3,2.4));}
   p.push(SHADE('M78,90 C94,104 122,104 136,90 C130,104 86,108 78,90 Z',c[1],.45));
   p.push(...TAP([[118,64],[136,48],[150,38]],[25,20],c[0]));
   p.push(F('M146,26 C162,20 178,28 184,40 C188,50 178,56 166,52 C154,48 146,40 146,32 Z',c[0]));
@@ -210,12 +222,13 @@ function A_dome(c,o){
 /* ---------- pterozaur (w locie) ---------- */
 function A_ptero(c,o){
   const mid=mix(c[0],c[2],.42),p=[],bh=o.bh?6:0;
-  p.push(F('M94,74 C74,52 44,32 10,30 C22,52 44,76 66,90 C78,96 90,88 94,74 Z',mid));
-  p.push(F('M104,68 C122,42 152,20 190,20 C178,48 152,74 128,88 C114,96 100,84 104,68 Z',c[1]));
-  for(let i=0;i<3;i++)p.push(LINE(`M110,70 C${130+i*13},${50+i*7} ${152+i*9},${36+i*13} ${174-i*13},${24+i*17}`,2.1));
-  p.push(BL(100,76,19,13,c[0]));
-  p.push(...TAP([[108,68],[124,56],[136,50]]),[18,14],c[0]);
-  p.push(...TAP([[108,68],[124,56],[136,50]],[18,14],c[0]));
+  /* oba skrzydła odchylone w tył (w lewo) – głowa po prawej zostaje odsłonięta */
+  p.push(F('M96,82 C72,74 40,66 6,70 C24,88 54,102 80,104 C92,104 98,94 96,82 Z',mid));
+  for(let i=0;i<3;i++)p.push(LINE(`M92,86 C${70-i*10},${84-i*2} ${44-i*12},${84+i*2} ${18-i*4},${76+i*10}`,2));
+  p.push(F('M100,72 C86,44 60,18 22,8 C26,42 46,76 72,92 C86,100 100,90 100,72 Z',c[1]));
+  for(let i=0;i<3;i++)p.push(LINE(`M96,80 C${80-i*6},${62-i*8} ${64-i*10},${44-i*10} ${46-i*14},${26-i*8}`,2.1));
+  p.push(BL(102,80,19,13,c[0]));
+  p.push(...TAP([[110,72],[126,58],[136,50]],[18,14],c[0]));
   p.push(F(`M132,${44-bh} C${148+bh},${36-bh*1.5} ${164+bh},${46-bh*.4} ${o.big?194:184},${56} `
     +`C${o.big?188:178},${62+bh*.5} 152,${62} 134,${58} Z`,c[0]));
   if(o.cr==='back') p.push(F('M132,44 C118,30 104,22 96,24 C102,34 116,46 130,54 Z',c[1],1));
@@ -224,8 +237,8 @@ function A_ptero(c,o){
   if(o.cr==='keel') p.push(F('M160,56 C164,42 178,42 180,56 Z',c[1],1));
   p.push(...EYE(142,49-bh*.4,4.4,c[2]),LINE(`M144,59 L${o.big?186:176},57`,2.2));
   if(!o.bk) p.push(...TEETH(148,172,58,4));
-  p.push(K(PL([[94,86],[88,102],[78,112]]),8,c[0]),K(PL([[104,86],[100,104],[92,114]]),8,c[0]));
-  if(o.tl){p.push(K(PL([[86,76],[58,92],[28,110]]),5,c[0]),TRI([34,104],[18,120],[26,102],c[1]));}
+  p.push(K(PL([[98,90],[94,104],[84,114]]),8,c[0]),K(PL([[108,90],[106,106],[98,116]]),8,c[0]));
+  if(o.tl){p.push(K(PL([[92,90],[64,106],[38,118]]),5,c[0]),TRI([44,112],[26,126],[38,108],c[1]));}
   return {p,sc:o.big?1.04:1,fly:1};
 }
 
@@ -321,10 +334,11 @@ function A_sail(c,o){
   const mid=mix(c[0],c[2],.4),top=o.short?32:14,p=[];
   p.push(...TAP([[66,100],[58,112],[50,120]],[15,12],mid),...TAP([[120,100],[128,112],[136,120]],[15,12],mid));
   p.push(...TAP([[48,96],[28,98],[8,104]],[19,10],c[0]));
+  const TOP=[[56,86],[64,top],[130,top],[140,86]],BOT=[[140,86],[116,70],[80,70],[56,86]];
   p.push(F(`M56,86 C64,${top} 130,${top} 140,86 C116,70 80,70 56,86 Z`,c[1],1));
-  for(let i=1;i<9;i++){const t=i/9,x=59+t*78;
-    p.push(LINE(`M${x},${82-Math.sin(t*3.14)*5} L${x},${top+7+Math.abs(t-.5)*20}`,2.6));}
-  if(o.short)for(let i=1;i<4;i++)p.push(LINE(`M66,${top+16+i*12} L132,${top+16+i*12}`,2));
+  p.push(...RIBS(TOP,BOT,9,9,2,2.6));
+  if(o.short)for(let i=1;i<9;i++){const t=i/9,a=CB(TOP,t),b=CB(BOT,1-t);
+    for(const u of [.42,.78]) p.push(SHADE(EP(b[0]+(a[0]-b[0])*u,b[1]-2+(a[1]+9-(b[1]-2))*u,3.8,3.4),mix(c[1],c[2],.6),1));}
   p.push(F('M44,96 C46,80 74,72 102,74 C128,76 144,82 148,92 C150,102 118,106 92,104 C62,102 42,104 44,96 Z',c[0]));
   p.push(F('M144,82 C162,76 180,82 188,92 C190,99 180,104 168,102 C154,100 145,92 144,88 Z',c[0]));
   p.push(LINE('M148,90 C162,97 180,97 188,92',2.4));
@@ -488,13 +502,13 @@ function A_turtle(c,o){
 /* ---------- pierzasty / ptak ---------- */
 function A_bird(c,o){
   const p=[],ink=c[2],mid=mix(c[0],c[2],.4);
-  p.push(F('M78,78 C56,84 28,96 6,114 C30,108 58,100 82,92 Z',c[1],1));
-  for(let i=0;i<5;i++)p.push(LINE(`M${74-i*14},${82+i*6} L${66-i*14},${100+i*5}`,2.4));
-  p.push(F('M92,68 C70,50 40,44 16,48 C40,64 66,76 90,82 Z',mid));
-  p.push(BL(100,82,25,16,c[0]));
-  p.push(F('M104,72 C126,50 158,44 184,50 C158,68 130,82 108,86 Z',c[1],1));
-  for(let i=0;i<4;i++)p.push(LINE(`M110,76 C${132+i*12},${62+i*5} ${150+i*8},${54+i*7} ${170-i*10},${50+i*9}`,2.2));
-  p.push(...TAP([[116,74],[130,60],[142,52]],[16,13],c[0]));
+  p.push(F('M84,90 C62,98 34,110 12,126 C38,124 68,116 90,104 Z',c[1],1));   // ogon z piórami
+  for(let i=0;i<5;i++)p.push(LINE(`M${80-i*14},${96+i*6} L${72-i*14},${114+i*5}`,2.4));
+  p.push(F('M94,74 C76,54 48,36 16,30 C14,60 44,88 84,96 Z',mid));            // dalsze skrzydło
+  p.push(BL(102,84,25,16,c[0]));
+  p.push(F('M100,70 C90,42 66,16 34,4 C22,36 40,74 74,92 C88,100 100,86 100,70 Z',c[1],1)); // bliższe skrzydło
+  for(let i=0;i<4;i++)p.push(LINE(`M96,78 C${80-i*5},${58-i*7} ${64-i*9},${38-i*8} ${48-i*12},${22-i*6}`,2.2));
+  p.push(...TAP([[116,76],[130,62],[142,54]],[16,13],c[0]));
   p.push(F('M140,44 C154,38 170,46 174,58 C176,65 168,69 160,66 C150,63 142,56 140,50 Z',c[0]));
   p.push(...EYE(150,52,4.2,ink),LINE('M154,62 L172,60',2),...TEETH(154,170,62,4));
   p.push(K(PL([[96,96],[98,108],[90,118]]),6,c[0]),K(PL([[108,96],[110,108],[104,120]]),6,c[0]));
@@ -544,4 +558,39 @@ function drawSpecies(sp,mode,palOverride){
       ? '<g fill="none" stroke="#8FC3D6" stroke-width="3" stroke-linecap="round" opacity=".5"><path d="M14,124 C36,118 56,128 78,122"/><path d="M104,134 C126,128 146,138 168,132"/></g>'
       : '<ellipse cx="100" cy="133" rx="56" ry="5" fill="rgba(60,40,20,.15)"/>';
   return `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" class="dsvg">${shadow}${inner}</svg>`;
+}
+
+/* jajo — kolor i grubość skorupy rosną z rzadkością */
+const EGG_STYLE = [
+  { sh: '#F3E7CE', sp: '#C9B48F', ink: '#6B5B3E', sw: 4, name: 'zwykłe' },
+  { sh: '#BFE0C8', sp: '#6FA98A', ink: '#2E5741', sw: 5.5, name: 'mszyste' },
+  { sh: '#F6C97A', sp: '#D08A2E', ink: '#5C3B0A', sw: 7, name: 'bursztynowe' },
+  { sh: '#E98B7C', sp: '#B23A2E', ink: '#4A150F', sw: 9, name: 'ogniste' },
+];
+function drawEgg(r, seed) {
+  const st = EGG_STYLE[Math.max(0, Math.min(3, (r || 1) - 1))];
+  const h = hash(String(seed || 'egg'));
+  let dots = '';
+  for (let i = 0; i < 9; i++) {
+    const a = ((h >> (i * 3)) % 360) * Math.PI / 180;
+    const rad = 10 + ((h >> (i * 2)) % 16);
+    const x = 50 + Math.cos(a) * rad, y = 60 + Math.sin(a) * rad * 1.25;
+    const rr = 2.4 + ((h >> i) % 4);
+    dots += `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="${rr}" ry="${(rr * .85).toFixed(1)}" fill="${st.sp}" opacity=".75"/>`;
+  }
+  return `<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" class="egg-svg">
+    <path d="M50,8 C74,8 88,42 88,68 C88,96 71,112 50,112 C29,112 12,96 12,68 C12,42 26,8 50,8 Z"
+      fill="${st.sh}" stroke="${st.ink}" stroke-width="${st.sw}" stroke-linejoin="round"/>
+    ${dots}
+    <path d="M32,32 C28,44 27,56 30,66" stroke="#fff" stroke-width="6" stroke-linecap="round" fill="none" opacity=".55"/>
+  </svg>`;
+}
+function drawEggCracked(r, seed) {
+  const st = EGG_STYLE[Math.max(0, Math.min(3, (r || 1) - 1))];
+  return `<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" class="egg-svg">
+    <g class="egg-top"><path d="M50,8 C74,8 88,42 88,64 L70,54 L56,66 L40,52 L26,64 L12,62 C12,40 26,8 50,8 Z"
+      fill="${st.sh}" stroke="${st.ink}" stroke-width="${st.sw}" stroke-linejoin="round"/></g>
+    <g class="egg-bot"><path d="M12,62 L26,64 L40,52 L56,66 L70,54 L88,64 C88,96 71,112 50,112 C29,112 12,96 12,68 Z"
+      fill="${st.sh}" stroke="${st.ink}" stroke-width="${st.sw}" stroke-linejoin="round"/></g>
+  </svg>`;
 }
