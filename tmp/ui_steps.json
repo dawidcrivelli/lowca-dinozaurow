@@ -1,0 +1,17 @@
+[
+  { "name": "start", "shot": "ui1_start.png", "h": 1300 },
+  { "name": "wpisz", "js": "document.querySelector('#q').value='tyranosaur';document.querySelector('#q').dispatchEvent(new Event('input'))", "wait": 300, "shot": "ui2_sugg.png", "h": 700 },
+  { "name": "szukaj", "js": "document.querySelector('#huntForm').dispatchEvent(new Event('submit',{cancelable:true}))", "wait": 900, "shot": "ui3_egg.png", "h": 800 },
+  { "name": "odsłona", "wait": 1500, "shot": "ui5_reveal.png", "h": 800 },
+  { "name": "modal", "wait": 1700, "shot": "ui6_modal.png", "h": 900 },
+  { "name": "zamknij", "js": "document.querySelector('#modalClose').click()", "wait": 300 },
+  { "name": "hint", "js": "document.querySelectorAll('.tile.ghost')[6].click()", "wait": 400, "shot": "ui7_hint.png", "h": 900 },
+  { "name": "zamknij2", "js": "document.querySelector('#modalClose').click()", "wait": 200 },
+  { "name": "wiele złapanych", "js": "(function(){var d=JSON.parse(localStorage.getItem('dinoTracker.v1')||'{}');d.caught=d.caught||{};['trex','tri','stego','anky','para','pterano','mosa','velo','spino','brachio','dimetro','megalodon','archaeo','diplo','allo','carno','quetzal','elasmo','mammoth','smilodon','iguano','pachy','styra','ichthyo','sarco','meganeura','deino','galli','kentro','edmonto'].forEach(function(i){d.caught[i]={t:Date.now()}});d.added=d.added||[];d.removed=d.removed||[];d.wins=d.wins||{};localStorage.setItem('dinoTracker.v1',JSON.stringify(d));location.reload();})()", "wait": 1800, "shot": "ui9_full.png", "h": 1500 },
+  { "name": "arena", "js": "document.querySelector('#btnArena').click()", "wait": 400, "shot": "ui10_arena0.png", "h": 1000 },
+  { "name": "wybór", "js": "var b=document.querySelectorAll('[data-pick2]');b[0].click();", "wait": 250 },
+  { "name": "wybór2", "js": "var b=document.querySelectorAll('[data-pick2]');b[3].click();", "wait": 250, "shot": "ui11_arena1.png", "h": 1000 },
+  { "name": "walka", "js": "document.querySelector('#arFight').click()", "wait": 500, "shot": "ui12_fight.png", "h": 1000 },
+  { "name": "zamknij3", "js": "document.querySelector('#modalClose').click()", "wait": 200 },
+  { "name": "rodzic", "js": "document.querySelector('#btnEdit').click()", "wait": 300, "shot": "ui8_edit.png", "h": 1100 }
+]
