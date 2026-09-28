@@ -31,7 +31,7 @@ function get(p) {
   const ws = new WS(target.webSocketDebuggerUrl);
   await ws.open();
 
-  const steps = JSON.parse(fs.readFileSync(path.join(__dirname, 'ui_steps.json'), 'utf8'));
+  const steps = JSON.parse(fs.readFileSync(process.argv[2] || path.join(__dirname, 'ui_steps.json'), 'utf8'));
   await ws.send('Page.enable');
   await ws.send('Runtime.enable');
   await ws.send('Emulation.setDeviceMetricsOverride', { width: 430, height: 2600, deviceScaleFactor: 1, mobile: true });
@@ -40,6 +40,7 @@ function get(p) {
 
   for (const s of steps) {
     if (s.js) { const r = await ws.send('Runtime.evaluate', { expression: s.js, awaitPromise: true }); if (r.exceptionDetails) console.log('JS ERR', s.name, JSON.stringify(r.exceptionDetails.exception && r.exceptionDetails.exception.description || r.exceptionDetails)); }
+    if (s.print) console.log(s.name, (await ws.send('Runtime.evaluate', { expression: s.js, awaitPromise: true })).result.value);
     if (s.wait) await sleep(s.wait);
     if (s.shot) {
       if (s.h) await ws.send('Emulation.setDeviceMetricsOverride', { width: s.w || 430, height: s.h, deviceScaleFactor: 1, mobile: true });
