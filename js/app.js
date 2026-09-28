@@ -1,681 +1,528 @@
-/* ================= ŁOWCA DINOZAURÓW – logika ================= */
+/* ================= ŁOWCA DINOZAURÓW – logika aplikacji =================
+   Dane: js/species.js · rysunki: js/art.js · walka: js/battle.js */
 (function () {
 'use strict';
 
-/* ---------------- pamięć ----------------
-   localStorage, a jeśli niedostępny (np. artefakt) – window.storage lub pamięć w RAM. */
-const Store = (function () {
-  const KEY = 'dinoTracker.v1';
-  let mem = null;
-  function backend() {
-    try { localStorage.setItem('__t', '1'); localStorage.removeItem('__t'); return localStorage; }
-    catch (e) { return (typeof window !== 'undefined' && window.storage) || null; }
+/* ---------------- zapis ----------------
+   caught: id → {t}   rec: id → {w, l}   added: własne gatunki   removed: ukryte id
+   Stare zapisy (Opus v1, ChatGPT) są przepisywane na nowe id przez legacy. */
+const KEY = 'dinoTracker.v2', KEY_OPUS = 'dinoTracker.v1', KEY_GPT = 'prehistoric_catcher_v1';
+const blank = () => ({ caught: {}, rec: {}, added: [], removed: [], settings: { sound: true, mode: 'auto' } });
+const read = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
+function save() { try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch (e) {} }
+
+const LEGACY = {};
+for (const s of SPECIES) for (const v of Object.values(s.legacy || {})) if (v) LEGACY[v] = s.id;
+const mapId = id => SPECIES.some(s => s.id === id) ? id : LEGACY[id];
+/* przyjmuje zapis dowolnej wersji: nowy, Opus ({caught, wins, added, removed}) lub ChatGPT ({state:{caught, battles}}) */
+function migrate(j) {
+  const src = (j && j.state) || j || {}, db = blank();
+  for (const [id, v] of Object.entries(src.caught || {})) { const n = mapId(id); if (n) db.caught[n] = { t: v.t || Date.parse(v.caughtAt) || Date.now() }; }
+  for (const [id, w] of Object.entries(src.wins || {})) { const n = mapId(id); if (n) db.rec[n] = { w, l: 0 }; }
+  for (const [id, r] of Object.entries((src.battles && src.battles.records) || src.rec || {})) {
+    const n = mapId(id); if (n) db.rec[n] = { w: r.wins ?? r.w ?? 0, l: r.losses ?? r.l ?? 0 };
   }
-  const be = backend();
-  return {
-    load() {
-      if (mem) return mem;
-      let raw = null;
-      try { raw = be && be.getItem(KEY); } catch (e) {}
-      try { mem = raw ? JSON.parse(raw) : null; } catch (e) { mem = null; }
-      if (!mem || typeof mem !== 'object') mem = {};
-      mem.caught = mem.caught || {};   // id -> {t: timestamp, pal:[..]}
-      mem.added = mem.added || [];     // własne gatunki (tryb rodzica)
-      mem.removed = mem.removed || []; // ukryte gatunki
-      mem.wins = mem.wins || {};       // id -> liczba zwycięstw w arenie
-      return mem;
-    },
-    save() {
-      try { be && be.setItem(KEY, JSON.stringify(mem)); } catch (e) {}
-    },
-    reset() { mem = null; try { be && be.removeItem(KEY); } catch (e) {} }
-  };
-})();
-
-const DB = Store.load();
-
-/* ---------------- normalizacja i wyszukiwanie ---------------- */
-const PL_MAP = { 'ą':'a','ć':'c','ę':'e','ł':'l','ń':'n','ó':'o','ś':'s','ź':'z','ż':'z' };
-function norm(s) {
-  return String(s || '').toLowerCase()
-    .replace(/[ąćęłńóśźż]/g, c => PL_MAP[c])
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '');
+  db.removed = (src.removed || src.hidden || []).map(mapId).filter(Boolean);
+  db.added = (src.added || []).filter(c => c.kg);
+  Object.assign(db.settings, src.settings);
+  return db;
 }
+let DB = read(KEY) ? migrate(read(KEY)) : migrate(read(KEY_OPUS) || read(KEY_GPT));
+save();
+
+/* ---------------- wyszukiwanie: polskie znaki, aliasy, literówki ---------------- */
+const norm = s => String(s || '').toLowerCase().replace(/ł/g, 'l').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '');
 function lev(a, b) {
-  if (a === b) return 0;
   if (Math.abs(a.length - b.length) > 3) return 9;
-  const m = a.length, n = b.length;
-  let prev = Array.from({ length: n + 1 }, (_, i) => i), cur = new Array(n + 1);
-  for (let i = 1; i <= m; i++) {
-    cur[0] = i;
-    for (let j = 1; j <= n; j++) {
-      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
-    }
-    const t = prev; prev = cur; cur = t;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] !== b[j - 1]));
+    prev = cur;
   }
-  return prev[n];
+  return prev[b.length];
 }
-function keysOf(sp) {
-  if (!sp._k) sp._k = [sp.pl, sp.lat, ...(sp.alias || [])].map(norm).filter(Boolean);
-  return sp._k;
-}
-/* zwraca posortowaną listę trafień: 0 = dokładne, 1 = początek, 2 = zawiera, 3+ = literówka */
-function search(qRaw, pool) {
-  const q = norm(qRaw);
-  if (q.length < 2) return [];
-  const out = [];
-  for (const sp of pool) {
-    let best = 99;
-    for (const k of keysOf(sp)) {
-      if (k === q) { best = 0; break; }
-      if (k.startsWith(q) && q.length >= 3) best = Math.min(best, 1);
-      else if (k.includes(q) && q.length >= 4) best = Math.min(best, 2);
-      else {
-        const d = lev(q, k);
-        const tol = q.length <= 5 ? 1 : (q.length <= 9 ? 2 : 3);
-        if (d <= tol) best = Math.min(best, 2 + d);
-      }
-    }
+const keysOf = sp => sp._k || (sp._k = [sp.name, sp.latin, ...(sp.aliases || [])].map(norm).filter(Boolean));
+/* 0 = dokładnie, 1 = początek (min. połowa nazwy – „zaur” nic nie złapie), 2+ = literówka */
+function search(q) {
+  q = norm(q);
+  if (q.length < 3) return [];
+  const tol = q.length <= 5 ? 1 : q.length <= 9 ? 2 : 3, out = [];
+  for (const sp of LIST) {
+    const best = Math.min(...keysOf(sp).map(k => k === q ? 0 : k.startsWith(q) && q.length >= Math.max(4, k.length / 2) ? 1
+      : (d => d <= tol ? 2 + d : 99)(lev(q, k))));
     if (best < 99) out.push({ sp, score: best });
   }
-  out.sort((a, b) => a.score - b.score || a.sp.pl.localeCompare(b.sp.pl, 'pl'));
-  return out;
+  return out.sort((a, b) => a.score - b.score || a.sp.name.localeCompare(b.sp.name, 'pl'));
 }
 
-/* ---------------- lista gatunków (z uwzględnieniem edycji rodzica) ---------------- */
-function customToSpecies(c) {
-  return {
-    id: c.id, pl: c.pl, lat: c.lat || '', a: c.a, o: c.o || {},
-    h: c.h || 'Zwierzak dodany przez rodzica', f: c.f || 'Ten gatunek dodaliście sami — opowiedzcie o nim własną historię!',
-    r: c.r || 2, t: c.t || 'zwinny', g: c.g || 'dino', d: c.d || 'R', sz: c.sz || 5,
-    pw: c.pw || 6, alias: c.alias || [], custom: true
-  };
-}
-function activeSpecies() {
-  const removed = new Set(DB.removed);
-  const base = SPECIES.filter(s => !removed.has(s.id));
-  const extra = DB.added.filter(c => !removed.has(c.id)).map(customToSpecies);
-  return base.concat(extra);
-}
-let LIST = activeSpecies();
-function refreshList() { LIST = activeSpecies(); }
-function byId(id) { return LIST.find(s => s.id === id); }
+/* ---------------- lista gatunków ---------------- */
+let LIST = [];
+const refreshList = () => { const rm = new Set(DB.removed); LIST = SPECIES.concat(DB.added).filter(s => !rm.has(s.id)); };
+refreshList();
+const byId = id => LIST.find(s => s.id === id);
+const isCaught = id => !!DB.caught[id];
+const art = (sp, mode = 'color') => sp.custom ? drawCustom(sp.arch, {}, mode) : drawSpecies(sp.id, mode);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const DIETS = { M: 'Mięsożerca', R: 'Roślinożerca', W: 'Wszystkożerca', Ry: 'Rybożerca', P: 'Planktonożerca', O: 'Owadożerca' };
+const EPOCHS = [[0.0117, 'Holocen'], [2.58, 'Plejstocen'], [5.33, 'Pliocen'], [23.03, 'Miocen'], [33.9, 'Oligocen'], [56, 'Eocen'], [66, 'Paleocen'],
+  [100.5, 'Kreda późna'], [145, 'Kreda wczesna'], [161.5, 'Jura późna'], [174.7, 'Jura środkowa'], [201.4, 'Jura wczesna'], [237, 'Trias późny'],
+  [247.2, 'Trias środkowy'], [251.9, 'Trias wczesny'], [298.9, 'Perm'], [358.9, 'Karbon'], [419.2, 'Dewon'], [443.8, 'Sylur'], [485.4, 'Ordowik'], [538.8, 'Kambr']];
+const epoch = ma => (EPOCHS.find(([lo]) => ma < lo) || EPOCHS[EPOCHS.length - 1])[1];
+const period = sp => sp.ma ? (epoch(sp.ma[0]) === epoch(sp.ma[1]) ? epoch(sp.ma[0]) : `${epoch(sp.ma[0])} – ${epoch(sp.ma[1])}`) : '';
+const groupLabel = sp => (GROUPS[sp.group] || ['Własny zwierzak'])[0];
+const mass = kg => kg >= 1000 ? `${+(kg / 1000).toFixed(kg < 10000 ? 1 : 0)} t` : kg >= 1 ? `${Math.round(kg)} kg` : `${Math.round(kg * 1000)} g`;
 
-/* ---------------- stan złapania ---------------- */
-function isCaught(id) { return !!DB.caught[id]; }
-function palOf(sp) {
-  const rec = DB.caught[sp.id];
-  if (rec && Array.isArray(rec.pal) && rec.pal.length === 3) return rec.pal;
-  return PAL[(sp.o && sp.o.p) || 0] || PAL[0];
-}
-function markCaught(sp) {
-  DB.caught[sp.id] = { t: Date.now(), pal: palOf(sp) };
-  Store.save();
-}
-function release(id) { delete DB.caught[id]; Store.save(); }
-
-/* ---------------- dźwięk ---------------- */
+/* ---------------- dźwięk (WebAudio, bez plików) ---------------- */
 let AC = null;
 function audio() {
+  if (!DB.settings.sound) return null;
   if (AC === null) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = false; } }
   if (AC && AC.state === 'suspended') AC.resume();
   return AC || null;
 }
-function roar(rarity) {
+function tone(type, f0, f1, dur, vol, filter) {
   const ac = audio(); if (!ac) return;
-  const t0 = ac.currentTime, dur = 0.85;
-  const o = ac.createOscillator(), o2 = ac.createOscillator(), g = ac.createGain(), f = ac.createBiquadFilter();
-  o.type = 'sawtooth'; o2.type = 'square';
-  const base = 150 - rarity * 18;
-  o.frequency.setValueAtTime(base * 1.7, t0);
-  o.frequency.exponentialRampToValueAtTime(base * .55, t0 + dur);
-  o2.frequency.setValueAtTime(base * .85, t0);
-  o2.frequency.exponentialRampToValueAtTime(base * .34, t0 + dur);
-  f.type = 'lowpass'; f.frequency.setValueAtTime(1500, t0);
-  f.frequency.exponentialRampToValueAtTime(320, t0 + dur);
-  g.gain.setValueAtTime(0.0001, t0);
-  g.gain.exponentialRampToValueAtTime(0.28, t0 + 0.06);
-  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-  o.connect(f); o2.connect(f); f.connect(g); g.connect(ac.destination);
-  o.start(t0); o2.start(t0); o.stop(t0 + dur); o2.stop(t0 + dur);
+  const t0 = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+  o.type = type; o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+  g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  let n = o; if (filter) { const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(filter, t0); o.connect(f); n = f; }
+  n.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + dur + 0.02);
 }
-function blip(freq, dur, type) {
-  const ac = audio(); if (!ac) return;
-  const t0 = ac.currentTime;
-  const o = ac.createOscillator(), g = ac.createGain();
-  o.type = type || 'triangle'; o.frequency.setValueAtTime(freq, t0);
-  g.gain.setValueAtTime(0.0001, t0);
-  g.gain.exponentialRampToValueAtTime(0.13, t0 + 0.01);
-  g.gain.exponentialRampToValueAtTime(0.0001, t0 + (dur || 0.12));
-  o.connect(g); g.connect(ac.destination);
-  o.start(t0); o.stop(t0 + (dur || 0.12) + 0.02);
-}
+const blip = (f, d = .1) => tone('triangle', f, f, d, .13);
+const roar = r => { const b = 150 - r * 18; tone('sawtooth', b * 1.7, b * .55, .85, .28, 1200); tone('square', b * .85, b * .34, .85, .12, 900); };
+const thud = () => tone('sine', 140, 50, .18, .3);
 function crack() {
   const ac = audio(); if (!ac) return;
-  const t0 = ac.currentTime, len = 0.22;
-  const buf = ac.createBuffer(1, ac.sampleRate * len, ac.sampleRate);
-  const d = buf.getChannelData(0);
+  const len = 0.22, buf = ac.createBuffer(1, ac.sampleRate * len, ac.sampleRate), d = buf.getChannelData(0);
   for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
-  const src = ac.createBufferSource(); src.buffer = buf;
-  const g = ac.createGain(); g.gain.value = 0.35;
-  const f = ac.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 900;
-  src.connect(f); f.connect(g); g.connect(ac.destination); src.start(t0);
+  const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+  src.buffer = buf; f.type = 'highpass'; f.frequency.value = 900; g.gain.value = .35;
+  src.connect(f); f.connect(g); g.connect(ac.destination); src.start();
 }
 
 /* ---------------- elementy ---------------- */
 const $ = s => document.querySelector(s);
-const el = {
-  q: $('#q'), form: $('#huntForm'), sugg: $('#sugg'), msg: $('#huntMsg'),
-  pill: document.querySelector('.search-pill'),
-  grid: $('#grid'), empty: $('#emptyMsg'), chips: $('#chips'), onlyMissing: $('#onlyMissing'),
-  pcCount: $('#pcCount'), pcRank: $('#pcRank'), pcEgg: $('#pcEgg'),
-  rockFill: $('#rockFill'), rockMarks: $('#rockMarks'), brandEgg: $('#brandEgg'),
-  scene: $('#scene'), sceneTarget: $('#sceneTarget'), sceneEgg: $('#sceneEgg'),
-  sceneFlash: $('#sceneFlash'), sceneName: $('#sceneName'), confetti: $('#confetti'),
-  modal: $('#modal'), modalBody: $('#modalBody'), modalClose: $('#modalClose'),
-  btnEdit: $('#btnEdit'), btnArena: $('#btnArena'), main: document.querySelector('main.wrap')
-};
+const el = Object.fromEntries(['q', 'huntForm', 'sugg', 'huntMsg', 'grid', 'emptyMsg', 'chips', 'onlyMissing', 'pcCount', 'pcRank', 'pcEgg',
+  'rockFill', 'rockMarks', 'brandEgg', 'scene', 'sceneTarget', 'sceneEgg', 'sceneFlash', 'sceneName', 'confetti', 'modal', 'modalBody',
+  'modalClose', 'btnArena', 'btnEdit'].map(id => [id, document.getElementById(id)]));
+el.pill = $('.search-pill'); el.main = $('main.wrap');
+let filter = 'all', editing = false;
 
-let filter = 'all';
-let editing = false;
+const RANKS = [[0, 'Praktykant'], [5, 'Poszukiwacz'], [15, 'Tropiciel'], [30, 'Paleontolog'], [60, 'Łowca kości'], [100, 'Mistrz wykopalisk'], [150, 'Legenda prehistorii']];
+const rankFor = n => RANKS.filter(([k]) => n >= k).pop()[1];
 
-/* ---------------- rangi ---------------- */
-const RANKS = [
-  [0, 'Praktykant'], [5, 'Poszukiwacz'], [15, 'Tropiciel'], [30, 'Paleontolog'],
-  [50, 'Łowca kości'], [75, 'Mistrz wykopalisk'], [100, 'Legenda mezozoiku']
-];
-function rankFor(n) { let r = RANKS[0][1]; for (const [k, v] of RANKS) if (n >= k) r = v; return r; }
-
-/* ================= RENDER ================= */
-function eggIcon(r, id) { return drawEgg(r, id); }
-
-function tileHTML(sp, idx) {
+/* ================= SIATKA ================= */
+function tileHTML(sp) {
   const got = isCaught(sp.id);
-  const art = got ? drawSpecies(sp, 'full', palOf(sp)) : drawSpecies(sp, 'ghost');
-  const dots = Array.from({ length: sp.r }, () => '<i></i>').join('');
   return `<button class="tile ${got ? '' : 'ghost'}" data-id="${sp.id}">
-      <span class="no">${String(idx + 1).padStart(3, '0')}</span>
-      <span class="rar">${dots}</span>
-      <span class="art">${art}</span>
-      <span class="nm">${got ? esc(sp.pl) : '???'}</span>
-      <span class="grp" style="background:${GROUPS[sp.g].color}"></span>
-      <span class="del" data-del="${sp.id}" title="Usuń z listy">✕</span>
-    </button>`;
-}
-function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
-
-function visible() {
-  let out = LIST;
-  if (filter !== 'all') out = out.filter(s => s.g === filter);
-  if (el.onlyMissing.checked) out = out.filter(s => !isCaught(s.id));
-  return out;
+    <span class="no">${String(LIST.indexOf(sp) + 1).padStart(3, '0')}</span>
+    <span class="rar">${'<i></i>'.repeat(sp.rarity)}</span>
+    <span class="art">${art(sp, got ? 'color' : 'ghost')}</span>
+    <span class="nm">${got ? esc(sp.name) : '???'}</span>
+    <span class="grp cat-${sp.cat}"></span>
+    <span class="del" data-del="${sp.id}" title="Usuń z listy">✕</span></button>`;
 }
 function renderGrid(freshId) {
-  const list = visible();
-  el.grid.innerHTML = list.map((s, i) => tileHTML(s, LIST.indexOf(s))).join('');
-  el.empty.hidden = list.length > 0;
-  if (freshId) {
-    const t = el.grid.querySelector(`.tile[data-id="${CSS.escape(freshId)}"]`);
-    if (t) { t.classList.add('fresh'); t.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-  }
+  const list = LIST.filter(s => (filter === 'all' || s.cat === filter) && !(el.onlyMissing.checked && isCaught(s.id)));
+  el.grid.innerHTML = list.map(tileHTML).join('');
+  el.emptyMsg.hidden = list.length > 0;
+  const t = freshId && el.grid.querySelector(`[data-id="${CSS.escape(freshId)}"]`);
+  if (t) { t.classList.add('fresh'); t.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
 }
 function renderChips() {
-  const counts = { all: LIST.length };
-  for (const k of Object.keys(GROUPS)) counts[k] = LIST.filter(s => s.g === k).length;
-  const got = k => LIST.filter(s => (k === 'all' || s.g === k) && isCaught(s.id)).length;
-  const mk = (k, label) => `<button class="chip ${filter === k ? 'on' : ''}" data-f="${k}">${label}<b>${got(k)}/${counts[k]}</b></button>`;
-  el.chips.innerHTML = mk('all', 'Wszystkie') + Object.entries(GROUPS).map(([k, g]) => mk(k, g.label)).join('');
+  const n = (k, got) => LIST.filter(s => (k === 'all' || s.cat === k) && (!got || isCaught(s.id))).length;
+  const chip = (k, emo, label) => `<button class="chip ${filter === k ? 'on' : ''}" data-f="${k}"><span class="emo">${emo}</span> ${label}<b>${n(k, 1)}/${n(k)}</b></button>`;
+  el.chips.innerHTML = chip('all', '⭐', 'Wszystkie') + Object.entries(CATS).filter(([k]) => n(k)).map(([k, c]) => chip(k, c.emo, c.label)).join('');
 }
 function renderProgress() {
-  const total = LIST.length;
-  const n = LIST.filter(s => isCaught(s.id)).length;
+  const total = LIST.length, n = LIST.filter(s => isCaught(s.id)).length, pct = total ? n / total : 0;
   el.pcCount.textContent = `${n}/${total}`;
   el.pcRank.textContent = rankFor(n);
-  const pct = total ? n / total : 0;
   el.rockFill.style.width = `calc(${(pct * 100).toFixed(1)}% - 4px)`;
   el.pcEgg.innerHTML = drawEgg(Math.min(4, Math.floor(pct * 4) + 1), 'progress');
-  const marks = [.25, .5, .75, 1];
-  el.rockMarks.innerHTML = marks.map((m, i) =>
+  el.rockMarks.innerHTML = [.25, .5, .75, 1].map((m, i) =>
     `<i class="${pct >= m - 0.001 ? 'hit' : ''}" style="left:${m * 100}%">${drawEgg(i + 1, 'mark' + i)}</i>`).join('');
 }
 function renderAll(freshId) { renderChips(); renderProgress(); renderGrid(freshId); }
 
-/* ================= WYSZUKIWANIE ================= */
-let suggTimer = null;
-el.q.addEventListener('input', () => {
-  clearTimeout(suggTimer);
-  suggTimer = setTimeout(showSugg, 90);
+el.grid.addEventListener('click', e => {
+  const del = e.target.closest('[data-del]');
+  if (del && editing) { e.stopPropagation(); return removeSpecies(del.dataset.del); }
+  const sp = byId(e.target.closest('.tile')?.dataset.id); if (!sp) return;
+  blip(isCaught(sp.id) ? 620 : 380, .07);
+  openCard(sp);
 });
-el.q.addEventListener('blur', () => setTimeout(() => { el.sugg.hidden = true; }, 160));
-el.q.addEventListener('focus', showSugg);
+el.chips.addEventListener('click', e => { const c = e.target.closest('[data-f]'); if (c) { filter = c.dataset.f; renderChips(); renderGrid(); } });
+el.onlyMissing.addEventListener('change', () => renderGrid());
 
+/* ================= ŁOWY ================= */
 function showSugg() {
-  const hits = search(el.q.value, LIST).slice(0, 6);
-  if (!hits.length) { el.sugg.hidden = true; return; }
-  el.sugg.innerHTML = hits.map(({ sp }) => `
-    <button type="button" data-pick="${sp.id}">
-      <span>${esc(sp.pl)} <span class="s-lat">${esc(sp.lat)}</span></span>
-      ${isCaught(sp.id) ? '<span class="s-got">✓ masz</span>' : ''}
-    </button>`).join('');
-  el.sugg.hidden = false;
+  const hits = search(el.q.value).slice(0, 6);
+  el.sugg.hidden = !hits.length;
+  el.sugg.innerHTML = hits.map(({ sp }) => `<button type="button" data-pick="${sp.id}">
+    <span class="s-art">${art(sp, isCaught(sp.id) ? 'color' : 'ghost')}</span>
+    <span>${esc(sp.name)} <span class="s-lat">${esc(sp.latin)}</span></span>
+    ${isCaught(sp.id) ? '<span class="s-got">✓ masz</span>' : ''}</button>`).join('');
 }
+let suggTimer;
+el.q.addEventListener('input', () => { clearTimeout(suggTimer); suggTimer = setTimeout(showSugg, 90); });
+el.q.addEventListener('focus', showSugg);
+el.q.addEventListener('blur', () => setTimeout(() => { el.sugg.hidden = true; }, 160));
 el.sugg.addEventListener('mousedown', e => {
   const b = e.target.closest('[data-pick]'); if (!b) return;
-  e.preventDefault();
-  el.sugg.hidden = true;
-  el.q.value = '';
+  e.preventDefault(); el.sugg.hidden = true; el.q.value = '';
   attempt(byId(b.dataset.pick));
 });
-
-el.form.addEventListener('submit', e => {
-  e.preventDefault();
-  el.sugg.hidden = true;
-  const hits = search(el.q.value, LIST);
-  if (!hits.length) {
-    fail(`Nie znam nikogo takiego jak „${el.q.value.trim()}”. Spróbuj jeszcze raz!`);
-    return;
-  }
+el.huntForm.addEventListener('submit', e => {
+  e.preventDefault(); el.sugg.hidden = true;
+  const hit = search(el.q.value)[0];
+  if (!hit) return fail(`Nie znam nikogo takiego jak „${el.q.value.trim()}”. Spróbuj jeszcze raz!`);
   el.q.value = '';
-  attempt(hits[0].sp);
+  attempt(hit.sp);
 });
-
+function say(html, cls = '') { el.huntMsg.innerHTML = html; el.huntMsg.className = 'hunt-msg ' + cls; }
 function fail(text) {
-  el.msg.textContent = text;
-  el.msg.className = 'hunt-msg bad';
+  say(esc(text), 'bad');
   el.pill.classList.remove('shake'); void el.pill.offsetWidth; el.pill.classList.add('shake');
-  blip(160, .18, 'sawtooth');
+  tone('sawtooth', 160, 120, .18, .1);
 }
-
 function attempt(sp) {
   if (!sp) return;
   audio();
-  if (isCaught(sp.id)) {
-    el.msg.textContent = `${sp.pl} jest już w Twojej kolekcji!`;
-    el.msg.className = 'hunt-msg good';
-    openModal(sp);
-    return;
-  }
-  el.msg.textContent = '';
+  if (isCaught(sp.id)) { say(`${esc(sp.name)} jest już w Twojej kolekcji!`, 'good'); return openCard(sp); }
+  say('');
   runCatch(sp);
 }
 
-/* ================= ANIMACJA ŁAPANIA ================= */
+/* ================= ANIMACJA ŁAPANIA: rzut jajem, kołysanie, pęknięcie, ryk ================= */
 let busy = false;
 function runCatch(sp) {
   if (busy) return; busy = true;
-  const pal = PAL[(sp.o && sp.o.p) || 0] || PAL[0];
-  const S = el.scene;
-  S.hidden = false;
-  el.sceneTarget.className = 'scene-target idle';
-  el.sceneTarget.innerHTML = drawSpecies(sp, 'ghost');
-  el.sceneName.className = 'scene-name';
-  el.sceneName.textContent = '';
-  el.sceneFlash.className = 'scene-flash';
-  el.confetti.innerHTML = '';
-  el.sceneEgg.className = 'scene-egg';
-  el.sceneEgg.innerHTML = drawEgg(sp.r, sp.id);
-
-  const step = (fn, ms) => setTimeout(fn, ms);
-
-  step(() => { el.sceneEgg.className = 'scene-egg throw'; blip(520, .1); }, 120);
-  step(() => { blip(300, .08); }, 640);
-  step(() => { el.sceneEgg.className = 'scene-egg wobble'; }, 760);
-  step(() => blip(400, .07), 900);
-  step(() => blip(430, .07), 1320);
-  step(() => blip(460, .07), 1740);
-  step(() => {
-    crack();
-    el.sceneEgg.innerHTML = drawEggCracked(sp.r, sp.id);
-    el.sceneEgg.className = 'scene-egg gone';
-    el.sceneFlash.className = 'scene-flash on';
-  }, 2060);
-  step(() => {
-    el.sceneTarget.innerHTML = drawSpecies(sp, 'full', pal);
-    el.sceneTarget.className = 'scene-target show';
-    el.sceneName.textContent = sp.pl;
-    el.sceneName.className = 'scene-name show';
-    roar(sp.r);
-    confettiBurst(pal);
-    markCaught(sp);
-  }, 2320);
-  step(() => {
-    S.hidden = true; busy = false;
-    renderAll(sp.id);
-    el.msg.innerHTML = `Złapany! <b>${esc(sp.pl)}</b> dołącza do kolekcji.`;
-    el.msg.className = 'hunt-msg good';
-    openModal(sp);
-  }, 3900);
+  Object.assign(el.scene, { hidden: false });
+  el.sceneTarget.className = 'scene-target idle'; el.sceneTarget.innerHTML = art(sp, 'ghost');
+  el.sceneName.className = 'scene-name'; el.sceneName.textContent = '';
+  el.sceneFlash.className = 'scene-flash'; el.confetti.innerHTML = '';
+  el.sceneEgg.className = 'scene-egg'; el.sceneEgg.innerHTML = drawEgg(sp.rarity, sp.id);
+  const steps = [
+    [120, () => { el.sceneEgg.className = 'scene-egg throw'; blip(520); }], [640, () => blip(300, .08)],
+    [760, () => { el.sceneEgg.className = 'scene-egg wobble'; }], [900, () => blip(400, .07)], [1320, () => blip(430, .07)], [1740, () => blip(460, .07)],
+    [2060, () => { crack(); el.sceneEgg.innerHTML = drawEggCracked(sp.rarity, sp.id); el.sceneEgg.className = 'scene-egg gone'; el.sceneFlash.className = 'scene-flash on'; }],
+    [2320, () => {
+      el.sceneTarget.innerHTML = art(sp); el.sceneTarget.className = 'scene-target show';
+      el.sceneName.textContent = sp.name; el.sceneName.className = 'scene-name show';
+      roar(sp.rarity); confettiBurst();
+      DB.caught[sp.id] = { t: Date.now() }; save();
+    }],
+    [3900, () => { el.scene.hidden = true; busy = false; renderAll(sp.id); say(`Złapany! <b>${esc(sp.name)}</b> dołącza do kolekcji.`, 'good'); openCard(sp); }],
+  ];
+  steps.forEach(([ms, fn]) => setTimeout(fn, ms));
 }
-function confettiBurst(pal) {
-  const colors = [pal[0], pal[1], '#F5A524', '#FFF3D0', '#7FA86B'];
-  let html = '';
-  for (let i = 0; i < 46; i++) {
-    const a = (i / 46) * Math.PI * 2 + Math.random();
-    const d = 120 + Math.random() * 260;
-    html += `<i style="left:50%;top:48%;background:${colors[i % colors.length]};
-      --dx:${(Math.cos(a) * d).toFixed(0)}px;--dy:${(Math.sin(a) * d + 140).toFixed(0)}px;
-      --rot:${(Math.random() * 900 - 450).toFixed(0)}deg;
-      animation-delay:${(Math.random() * .12).toFixed(2)}s"></i>`;
-  }
-  el.confetti.innerHTML = html;
+function confettiBurst() {
+  const colors = ['#F5A524', '#FFF3D0', '#7FA86B', '#4E9C93', '#D2764A'];
+  el.confetti.innerHTML = Array.from({ length: 46 }, (_, i) => {
+    const a = i / 46 * Math.PI * 2 + Math.random(), d = 120 + Math.random() * 260;
+    return `<i style="left:50%;top:48%;background:${colors[i % 5]};--dx:${(Math.cos(a) * d) | 0}px;--dy:${(Math.sin(a) * d + 140) | 0}px;--rot:${(Math.random() * 900 - 450) | 0}deg;animation-delay:${(Math.random() * .12).toFixed(2)}s"></i>`;
+  }).join('');
   requestAnimationFrame(() => el.confetti.querySelectorAll('i').forEach(n => n.classList.add('go')));
 }
-el.scene.addEventListener('click', () => { /* nie przerywamy – animacja jest krótka */ });
 
-/* ================= MODAL ================= */
-function openModal(sp) {
-  const got = isCaught(sp.id);
-  el.modalBody.innerHTML = got ? caughtCard(sp) : hintCard(sp);
-  el.modal.hidden = false;
-}
-function closeModal() { el.modal.hidden = true; }
+/* ================= KARTY ================= */
+function openModal(html, cls = '') { el.modalBody.innerHTML = html; el.modal.className = 'modal ' + cls; el.modal.hidden = false; }
+function closeModal() { el.modal.hidden = true; stopBattle(); }
 el.modalClose.addEventListener('click', closeModal);
 el.modal.addEventListener('click', e => { if (e.target === el.modal) closeModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeOverlays(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+const openCard = sp => openModal(isCaught(sp.id) ? caughtCard(sp) : hintCard(sp));
+
+/* paski statystyk z ikonami – czytelne bez umiejętności czytania */
+const STAT_ICONS = [['hp', '❤️', 'Życie', 220], ['attack', '🦷', 'Atak', 99], ['defense', '🛡️', 'Obrona', 99], ['speed', '💨', 'Szybkość', 99]];
+const statBars = st => `<div class="sbars">${STAT_ICONS.map(([k, ico, lbl, max]) =>
+  `<div class="sbar" title="${lbl}"><span>${ico}</span><i><b style="width:${Math.round(100 * st[k] / max)}%"></b></i><em>${st[k]}</em></div>`).join('')}</div>`;
+const record = id => DB.rec[id] || { w: 0, l: 0 };
 
 function caughtCard(sp) {
-  const g = GROUPS[sp.g], t = TYPES[sp.t];
-  const wins = DB.wins[sp.id] || 0;
+  const st = statsOf(sp), r = record(sp.id), dino = (GROUPS[sp.group] || [])[1];
+  const size = [sp.len && `${sp.len} m długości`, sp.wing && `${sp.wing} m rozpiętości skrzydeł`, sp.h && `${sp.h} m wysokości`].filter(Boolean).join(' · ');
   return `
-  <div class="m-hero"><div class="art">${drawSpecies(sp, 'full', palOf(sp))}</div></div>
+  <div class="m-hero"><div class="art">${art(sp)}</div></div>
   <div class="m-body">
-    <h2>${esc(sp.pl)}</h2>
-    <p class="m-lat">${esc(sp.lat)}</p>
+    <h2>${esc(sp.name)}</h2><p class="m-lat">${esc(sp.latin || '')}</p>
     <div class="m-tags">
-      <span class="tag" style="background:${g.color}">${esc(g.short)}</span>
-      <span class="tag" style="background:${t.color}">${t.emo} ${t.label}</span>
-      <span class="tag light">${DIETS[sp.d]}</span>
-      <span class="tag light">rzadkość ${'★'.repeat(sp.r)}${'☆'.repeat(4 - sp.r)}</span>
+      <span class="tag cat-${sp.cat}">${esc(groupLabel(sp))}</span>
+      ${dino === false ? '<span class="tag light">NIE dinozaur</span>' : ''}
+      <span class="tag light">${DIETS[sp.diet] || ''}</span>
+      ${period(sp) ? `<span class="tag light">${period(sp)}</span>` : ''}
+      <span class="tag light">${'★'.repeat(sp.rarity)}${'☆'.repeat(4 - sp.rarity)}</span>
     </div>
-    <div class="m-fact"><b>CZY WIESZ, ŻE…</b>${esc(sp.f)}</div>
+    <div class="m-fact"><b>CZY WIESZ, ŻE…</b>${esc(sp.fact)}</div>
     <div class="m-stats">
-      <div class="stat"><span>DŁUGOŚĆ</span><b>${sp.sz} m</b></div>
-      <div class="stat"><span>SIŁA</span><b>${sp.pw}/12</b></div>
-      <div class="stat"><span>WYGRANE W ARENIE</span><b>${wins}</b></div>
-      <div class="stat"><span>PODPOWIEDŹ</span><b style="font-size:13px;font-family:var(--font-b)">${esc(sp.h)}</b></div>
+      <div class="stat"><span>WAGA</span><b>${mass(sp.kg)}</b></div>
+      <div class="stat"><span>WIELKOŚĆ</span><b class="small">${size || '?'}</b></div>
+      ${sp.weaponsTxt ? `<div class="stat wide"><span>BROŃ</span><b class="small">${esc(sp.weaponsTxt)}</b></div>` : ''}
     </div>
+    ${statBars(st)}
+    <p class="traits">${traitsOf(st, sp).join(' · ')} <span class="record">⚔️ ${r.w} wygranych · ${r.l} przegranych</span></p>
     <div class="m-actions">
-      <button class="btn amber" data-arena="${sp.id}">⚔️ Do areny</button>
+      <button class="btn amber big" data-arena="${sp.id}">⚔️ Do areny</button>
       <button class="btn ghost" data-close="1">Zamknij</button>
       ${editing ? `<button class="btn danger" data-release="${sp.id}">Uwolnij</button>` : ''}
     </div>
   </div>`;
 }
 function hintCard(sp) {
-  const g = GROUPS[sp.g];
-  const era = sp.sz >= 15 ? 'olbrzym' : (sp.sz >= 6 ? 'duży' : (sp.sz >= 2 ? 'średni' : 'mały'));
+  const size = sp.kg >= 10000 ? 'olbrzym' : sp.kg >= 1000 ? 'duży' : sp.kg >= 30 ? 'średni' : 'mały';
   return `
-  <div class="m-hero"><div class="art">${drawSpecies(sp, 'ghost')}</div></div>
+  <div class="m-hero"><div class="art">${art(sp, 'ghost')}</div></div>
   <div class="m-body">
     <div class="m-hint">
-      <p class="q">? ? ?</p>
-      <div class="lbl">PODPOWIEDŹ</div>
-      <p>${esc(sp.h)}</p>
-      <div class="hint-fields">
-        <span>${esc(g.short)}</span>
-        <span>${DIETS[sp.d]}</span>
-        <span>${era} (${sp.sz} m)</span>
-        <span>${'★'.repeat(sp.r)}</span>
-      </div>
+      <p class="q">? ? ?</p><div class="lbl">PODPOWIEDŹ</div><p>${esc(sp.hint)}</p>
+      <div class="hint-fields"><span>${CATS[sp.cat]?.emo || ''} ${esc(groupLabel(sp))}</span><span>${DIETS[sp.diet] || ''}</span>
+        <span>${size}${sp.len ? ` (${sp.len} m)` : ''}</span><span>${'★'.repeat(sp.rarity)}</span></div>
       <p class="more">Wpisz jego nazwę w wyszukiwarce, żeby go złapać!</p>
     </div>
     <div class="m-actions">
-      <button class="btn" data-firstletter="${sp.id}">Pokaż pierwszą literę</button>
+      <button class="btn" data-letter="${sp.id}">Pokaż pierwszą literę</button>
       <button class="btn ghost" data-close="1">Zamknij</button>
-      ${editing ? `<button class="btn danger" data-del2="${sp.id}">Usuń z listy</button>` : ''}
+      ${editing ? `<button class="btn danger" data-del="${sp.id}">Usuń z listy</button>` : ''}
     </div>
   </div>`;
 }
-
 el.modalBody.addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
-  if (b.dataset.close) return closeModal();
-  if (b.dataset.release) { release(b.dataset.release); closeModal(); renderAll(); }
-  if (b.dataset.del2) { removeSpecies(b.dataset.del2); closeModal(); }
-  if (b.dataset.arena) { closeModal(); openArena(b.dataset.arena); }
-  if (b.dataset.firstletter) {
-    const sp = byId(b.dataset.firstletter);
-    const n = sp.pl.length;
-    b.outerHTML = `<span class="tag light" style="padding:11px 16px">Zaczyna się na <b>${esc(sp.pl[0].toUpperCase())}</b>, ma ${n} liter</span>`;
-    el.q.value = sp.pl[0];
-    blip(660, .1);
+  const d = b.dataset;
+  if (d.close) closeModal();
+  if (d.release) { delete DB.caught[d.release]; save(); closeModal(); renderAll(); }
+  if (d.del) { closeModal(); removeSpecies(d.del); }
+  if (d.arena) openArena(d.arena);
+  if (d.letter) {
+    const sp = byId(d.letter);
+    b.outerHTML = `<span class="tag light letter">Zaczyna się na <b>${esc(sp.name[0])}</b>, ma ${sp.name.length} liter</span>`;
+    el.q.value = sp.name[0]; blip(660);
   }
 });
 
-/* ================= SIATKA – klikanie ================= */
-el.grid.addEventListener('click', e => {
-  const del = e.target.closest('[data-del]');
-  if (del && editing) { e.stopPropagation(); removeSpecies(del.dataset.del); return; }
-  const tile = e.target.closest('.tile'); if (!tile) return;
-  const sp = byId(tile.dataset.id); if (!sp) return;
-  blip(isCaught(sp.id) ? 620 : 380, .07);
-  openModal(sp);
-});
-el.chips.addEventListener('click', e => {
-  const c = e.target.closest('[data-f]'); if (!c) return;
-  filter = c.dataset.f; renderChips(); renderGrid();
-});
-el.onlyMissing.addEventListener('change', renderGrid);
+/* ================= ARENA =================
+   Wybór zawodników obrazkami (młodszy nie musi czytać), tryb ▶️ oglądam / 👆 walczę. */
+const A = { a: null, b: null, slot: 'a', B: null, timers: [], token: 0 };
+function stopBattle() { A.timers.forEach(clearTimeout); A.timers = []; A.token++; }
+const later = (ms, fn) => { const t = A.token; A.timers.push(setTimeout(() => t === A.token && fn(), ms)); };
+const roster = () => LIST.filter(s => isCaught(s.id));
+const randomOther = id => { const p = roster().filter(s => s.id !== id); return p[Math.floor(Math.random() * p.length)]; };
 
-/* ================= TRYB RODZICA ================= */
+function openArena(preId) {
+  stopBattle();
+  if (roster().length < 2) return openModal(`<div class="m-body"><h2>⚔️ Arena</h2>
+    <p class="m-lat">Najpierw złap co najmniej dwa zwierzaki.</p>
+    <div class="m-actions"><button class="btn ghost" data-close="1">Rozumiem</button></div></div>`);
+  if (preId) { A.a = byId(preId); A.b = randomOther(preId); A.slot = 'b'; }
+  if (!A.a || !isCaught(A.a.id)) { A.a = roster()[0]; A.slot = 'a'; }
+  if (!A.b || !isCaught(A.b.id) || A.b === A.a) A.b = randomOther(A.a.id);
+  renderSetup();
+}
+function slotHTML(k) {
+  const sp = A[k];
+  return `<button class="ar-slot ${A.slot === k ? 'active' : ''} side-${k}" data-slot="${k}">
+    <span class="who">${k === 'a' ? '🙂 Ty' : '🎯 Rywal'}</span>
+    <span class="art">${art(sp)}</span><span class="nm">${esc(sp.name)}</span>${statBars(statsOf(sp))}</button>`;
+}
+function renderSetup() {
+  const mode = DB.settings.mode;
+  openModal(`<div class="m-body arena">
+    <div class="ar-slots">${slotHTML('a')}<div class="ar-vs">VS</div>${slotHTML('b')}</div>
+    <div class="ar-bar">
+      <div class="seg" role="group" aria-label="Tryb walki">
+        <button class="${mode === 'auto' ? 'on' : ''}" data-mode="auto" title="Oglądam walkę">▶️<small>Oglądam</small></button>
+        <button class="${mode === 'play' ? 'on' : ''}" data-mode="play" title="Sam wybieram ruchy">👆<small>Walczę</small></button>
+      </div>
+      <button class="btn ghost icon" data-random="1" title="Losuj rywala">🎲</button>
+      <button class="btn amber big" data-fight="1">⚔️ Walka!</button>
+    </div>
+    <div class="ar-pick">${roster().map(s => `<button data-pick="${s.id}" class="${s === A.a ? 'is-a' : s === A.b ? 'is-b' : ''}">
+      <span class="art">${art(s)}</span><span class="nm">${esc(s.name)}</span></button>`).join('')}</div>
+  </div>`, 'wide');
+}
+function onArenaClick(e) {
+  const b = e.target.closest('button'); if (!b || !el.modalBody.querySelector('.arena')) return;
+  const d = b.dataset;
+  if (d.slot) { A.slot = d.slot; blip(500, .05); renderSetup(); }
+  if (d.pick) {
+    const sp = byId(d.pick), other = A.slot === 'a' ? 'b' : 'a';
+    if (A[other] === sp) A[other] = A[A.slot];
+    A[A.slot] = sp; A.slot = other; blip(560, .06); renderSetup();
+  }
+  if (d.random) { A.b = randomOther(A.a.id); blip(700, .06); renderSetup(); }
+  if (d.mode) { DB.settings.mode = d.mode; save(); renderSetup(); }
+  if (d.fight || d.rematch) startFight();
+  if (d.newfoe) { A.b = randomOther(A.a.id); startFight(); }
+  if (d.change) renderSetup();
+  if (d.move) playerMove(d.move);
+}
+el.modalBody.addEventListener('click', onArenaClick);
+
+function fighterHTML(p, side) {
+  return `<div class="fighter side-${side}" id="f-${side}">
+    <div class="art">${art(p.s)}</div><div class="nm">${esc(p.name)}</div>
+    <div class="hp"><i id="hp-${side}"></i></div><div class="hpn" id="hpn-${side}">${p.hp}/${p.hp0}</div>
+    <span class="dmg" id="dmg-${side}"></span></div>`;
+}
+function startFight() {
+  stopBattle(); audio();
+  const B = A.B = newBattle(A.a, A.b), play = DB.settings.mode === 'play';
+  openModal(`<div class="m-body arena">
+    <div class="arena-banner">${B.arena.icon} ${esc(B.arena.name)}<small>${esc(B.arena.desc)}</small></div>
+    <div class="fight-grid">${fighterHTML(B.a, 'a')}<div class="ar-vs">VS</div>${fighterHTML(B.b, 'b')}</div>
+    <div class="moves" id="moves" hidden>${Object.entries(MOVES).map(([k, m]) => `<button class="move" data-move="${k}">${m.icon}<small>${m.label}</small></button>`).join('')}</div>
+    <div class="battle-log" id="log"><div><strong>Runda 1.</strong> Walka się zaczyna!</div></div>
+    <div class="battle-result" id="result" hidden></div>
+  </div>`, 'wide');
+  thud();
+  play ? later(500, askMove) : later(500, autoStep);
+}
+function autoStep() { showEvents(playRound(A.B), () => A.B.winner ? finish() : autoStep()); }
+function askMove() { $('#moves').hidden = false; }
+function playerMove(move) {
+  if (!A.B || A.B.winner) return;
+  $('#moves').hidden = true;
+  showEvents(playRound(A.B, move), () => A.B.winner ? finish() : askMove());
+}
+/* odtwarza zdarzenia rundy z animacją: wypad atakującego, wstrząs trafionego, pasek życia, liczba obrażeń */
+function showEvents(evs, done) {
+  const B = A.B, side = id => id === B.a.id ? 'a' : 'b';
+  evs.forEach((ev, i) => later(i * 560, () => {
+    if (ev.att) {
+      const as = side(ev.att), ds = as === 'a' ? 'b' : 'a', f = $(`#f-${as}`), g = $(`#f-${ds}`);
+      f.classList.remove('attacking'); void f.offsetWidth; f.classList.add('attacking');
+      if (ev.damage) { g.classList.remove('hit'); void g.offsetWidth; g.classList.add('hit'); tone('square', 220, 90, .15, .12); navigator.vibrate?.(18); }
+      else blip(ev.heal ? 880 : 760, .08);
+      const dmg = $(`#dmg-${ev.heal ? as : ds}`);
+      dmg.textContent = ev.damage ? `−${ev.damage}` : ev.heal ? `+${ev.heal}` : ev.dodge ? 'unik!' : 'pudło';
+      dmg.className = 'dmg show ' + (ev.heal ? 'heal' : ''); void dmg.offsetWidth;
+      for (const p of [B.a, B.b]) {
+        const s = side(p.id), pct = 100 * p.hp / p.hp0;
+        Object.assign($(`#hp-${s}`).style, { width: pct + '%', backgroundPosition: `${pct}% 0` });
+        $(`#hpn-${s}`).textContent = `${p.hp}/${p.hp0}`;
+      }
+    }
+    const log = $('#log');
+    log.insertAdjacentHTML('beforeend', `<div><strong>Runda ${ev.round}.</strong> ${esc(ev.text)}</div>`);
+    log.scrollTop = log.scrollHeight;
+  }));
+  later(evs.length * 560 + 150, done);
+}
+function finish() {
+  const { winner: w, a, b } = A.B, l = w === a ? b : a;
+  (DB.rec[w.id] = record(w.id)).w++; (DB.rec[l.id] = record(l.id)).l++; save();
+  $(`#f-${w === a ? 'a' : 'b'}`).classList.add('won');
+  const r = $('#result');
+  r.innerHTML = `<div class="winner">🏆 ${esc(w.name)}!</div>
+    <small>${w === a ? '🙂 Wygrywasz!' : '🎯 Wygrywa rywal'} · zostało ${w.hp}/${w.hp0} ❤️ · bilans ${DB.rec[w.id].w}–${DB.rec[w.id].l}</small>
+    <div class="m-actions center">
+      <button class="btn amber big" data-rematch="1">🔁 Rewanż</button>
+      <button class="btn" data-newfoe="1">🎲 Nowy rywal</button>
+      <button class="btn ghost" data-change="1">🔄 Zmień</button>
+    </div>`;
+  r.hidden = false; r.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  roar(w.s.rarity || 2); navigator.vibrate?.([35, 45, 70]);
+}
+el.btnArena.addEventListener('click', () => openArena());
+
+/* ================= TRYB RODZICA =================
+   Otwiera się przytrzymaniem przycisku przez 1 s – dzieci nie wejdą tam przypadkiem. */
+const HOLD_MS = 1000;
+let holdT;
+el.btnEdit.addEventListener('pointerdown', () => { el.btnEdit.classList.add('holding'); holdT = setTimeout(toggleEdit, HOLD_MS); });
+['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => el.btnEdit.addEventListener(ev, () => { clearTimeout(holdT); el.btnEdit.classList.remove('holding'); }));
+el.btnEdit.addEventListener('click', () => { if (!editing) say('Tryb rodzica: przytrzymaj ⚙️ przez sekundę.'); });
+el.btnEdit.addEventListener('contextmenu', e => e.preventDefault());
+
 function removeSpecies(id) {
   if (!confirm('Usunąć ten gatunek z listy?')) return;
-  if (!DB.removed.includes(id)) DB.removed.push(id);
-  delete DB.caught[id];
-  Store.save(); refreshList(); renderAll();
+  DB.removed.push(id); delete DB.caught[id]; save(); refreshList(); renderAll();
 }
-function addSpecies(name, arch, group, latin) {
-  const id = 'own_' + norm(name) + '_' + Math.random().toString(36).slice(2, 6);
-  const pal = Math.abs(hashStr(name)) % PAL.length;
-  const rec = {
-    id, pl: name.trim(), lat: (latin || '').trim(), a: arch, g: group,
-    o: { p: pal }, r: 2, d: 'R', sz: 6, pw: 7,
-    t: ({ dino: 'olbrzym', ptero: 'zwinny', morskie: 'wodny', inne: 'zwinny' })[group] || 'zwinny',
-    h: 'Ten zwierzak został dodany przez rodzica', f: 'Dopisaliście go sami — wymyślcie o nim własną ciekawostkę!'
-  };
-  DB.added.push(rec); Store.save(); refreshList(); renderAll();
-  return rec;
+/* własny zwierzak: archetyp rysunku → ciało do walki, ruch, dieta, broń */
+const ARCH_BODY = {
+  thero: ['theropod', 'biped', 'M', { bite: 2 }], sauro: ['sauropod', 'quad', 'R', { tail: 1 }], cerat: ['ceratopsian', 'quad', 'R', { horn: 2 }],
+  armor: ['ankylosaur', 'quad', 'R', { tail: 2, armor: 3 }], stego: ['stegosaur', 'quad', 'R', { tail: 2, armor: 1 }], hadro: ['hadrosaur', 'quad', 'R', {}],
+  dome: ['pachy', 'biped', 'R', { ram: 2 }], ptero: ['pterosaur', 'fly', 'Ry', { bite: 1 }], plesio: ['marine-long', 'swim', 'Ry', { bite: 1 }],
+  mosa: ['marine', 'swim', 'M', { bite: 2 }], ichthyo: ['marine', 'swim', 'Ry', { bite: 1 }], croc: ['croc', 'amphib', 'M', { bite: 2, armor: 1 }],
+  mammal: ['mammal', 'quad', 'W', { bite: 1 }], fish: ['fish', 'swim', 'M', { bite: 1 }], bug: ['bug', 'crawl', 'M', { claw: 1 }], turtle: ['turtle', 'swim', 'W', { armor: 3 }],
+};
+const SIZES = [['Mały jak kura', 3], ['Jak człowiek', 80], ['Jak słoń', 5000], ['Olbrzym', 30000]];
+function addSpecies(name, latin, arch, cat, kg) {
+  const [body, loco, diet, weapons] = ARCH_BODY[arch] || ['reptile', 'quad', 'W', {}];
+  const sp = { id: 'own-' + norm(name) + '-' + Date.now().toString(36), name, latin, arch, cat, group: 'own', body, loco, diet, weapons, kg: +kg,
+    kmh: 20, social: 'solo', rarity: 2, custom: true, hint: 'Ten zwierzak został dodany przez rodzica', fact: 'Dopisaliście go sami — wymyślcie o nim własną ciekawostkę!' };
+  DB.added.push(sp); save(); refreshList(); renderAll();
+  return sp;
 }
-function hashStr(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return h; }
-
+function download(obj, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(obj, null, 1)], { type: 'application/json' }));
+  a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+}
 let editBar = null;
 function toggleEdit() {
   editing = !editing;
   document.body.classList.toggle('editing', editing);
   el.btnEdit.classList.toggle('on', editing);
-  if (editing) buildEditBar(); else if (editBar) { editBar.remove(); editBar = null; }
-}
-function buildEditBar() {
+  if (!editing) { editBar?.remove(); editBar = null; return say(''); }
+  blip(880, .15);
   editBar = document.createElement('section');
   editBar.className = 'edit-bar';
-  const hidden = DB.removed.length;
   editBar.innerHTML = `
     <h3>⚙️ Tryb rodzica</h3>
-    <p>Dodaj brakującego ulubieńca albo usuń gatunek z listy (✕ na kafelku). Zmiany zapisują się na stałe.</p>
+    <p>Dodaj brakującego ulubieńca albo usuń gatunek z listy (✕ na kafelku). Zapis z wersji ChatGPT wczytasz przyciskiem „Wczytaj z pliku”.</p>
     <div class="eb-row">
-      <input id="ebName" placeholder="Nazwa po polsku, np. Ultrazaur">
-      <input id="ebLat" placeholder="Nazwa łacińska (opcjonalnie)">
+      <input id="ebName" placeholder="Nazwa po polsku, np. Ultrazaur"><input id="ebLat" placeholder="Nazwa łacińska (opcjonalnie)">
     </div>
-    <div class="eb-row" style="margin-top:7px">
+    <div class="eb-row">
       <select id="ebArch">${ARCH_LIST.map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
-      <select id="ebGroup">${Object.entries(GROUPS).map(([k, g]) => `<option value="${k}">${g.label}</option>`).join('')}</select>
-      <button class="btn amber" id="ebAdd">Dodaj</button>
+      <select id="ebCat">${Object.entries(CATS).map(([k, c]) => `<option value="${k}">${c.emo} ${c.label}</option>`).join('')}</select>
+      <select id="ebKg">${SIZES.map(([l, kg]) => `<option value="${kg}">${l}</option>`).join('')}</select>
+      <button class="btn amber" data-eb="add">Dodaj</button>
     </div>
     <div class="eb-tools">
-      <button class="btn ghost" id="ebRestore">Przywróć usunięte (${hidden})</button>
-      <button class="btn ghost" id="ebExport">Zapisz do pliku</button>
-      <button class="btn ghost" id="ebImport">Wczytaj z pliku</button>
-      <button class="btn ghost" id="ebCatchAll">Złap wszystkie (test)</button>
-      <button class="btn danger" id="ebReset">Wyzeruj postęp</button>
+      <button class="btn ghost" data-eb="restore">Przywróć usunięte (${DB.removed.length})</button>
+      <button class="btn ghost" data-eb="export">Zapisz do pliku</button>
+      <button class="btn ghost" data-eb="import">Wczytaj z pliku</button>
+      <button class="btn ghost" data-eb="sound">Dźwięk: ${DB.settings.sound ? 'wł.' : 'wył.'}</button>
+      <button class="btn ghost" data-eb="all">Złap wszystkie (test)</button>
+      <button class="btn danger" data-eb="reset">Wyzeruj postęp</button>
     </div>`;
-  el.main.insertBefore(editBar, el.main.querySelector('.filters'));
-
-  editBar.querySelector('#ebAdd').addEventListener('click', () => {
-    const n = editBar.querySelector('#ebName').value.trim();
-    if (n.length < 2) return alert('Wpisz nazwę zwierzaka.');
-    const rec = addSpecies(n, editBar.querySelector('#ebArch').value, editBar.querySelector('#ebGroup').value,
-      editBar.querySelector('#ebLat').value);
-    editBar.querySelector('#ebName').value = ''; editBar.querySelector('#ebLat').value = '';
-    blip(700, .12);
-    openModal(byId(rec.id));
-  });
-  editBar.querySelector('#ebRestore').addEventListener('click', () => {
-    DB.removed = []; Store.save(); refreshList(); renderAll();
-    editBar.querySelector('#ebRestore').textContent = 'Przywróć usunięte (0)';
-  });
-  editBar.querySelector('#ebReset').addEventListener('click', () => {
-    if (!confirm('Na pewno wyzerować cały postęp (złapane, dodane i usunięte)?')) return;
-    Store.reset(); location.reload();
-  });
-  editBar.querySelector('#ebCatchAll').addEventListener('click', () => {
-    LIST.forEach(s => { if (!isCaught(s.id)) DB.caught[s.id] = { t: Date.now(), pal: palOf(s) }; });
-    Store.save(); renderAll();
-  });
-  editBar.querySelector('#ebExport').addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify(DB, null, 1)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'lowca-dinozaurow.json';
-    a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
-  });
-  editBar.querySelector('#ebImport').addEventListener('click', () => {
-    const inp = document.createElement('input');
-    inp.type = 'file'; inp.accept = 'application/json';
-    inp.onchange = () => {
-      const f = inp.files[0]; if (!f) return;
-      const rd = new FileReader();
-      rd.onload = () => {
-        try {
-          const j = JSON.parse(rd.result);
-          Object.assign(DB, { caught: j.caught || {}, added: j.added || [], removed: j.removed || [], wins: j.wins || {} });
-          Store.save(); refreshList(); renderAll();
-          alert('Wczytano!');
-        } catch (e) { alert('Nie udało się wczytać tego pliku.'); }
-      };
-      rd.readAsText(f);
-    };
-    inp.click();
+  el.main.insertBefore(editBar, $('.filters'));
+  editBar.addEventListener('click', e => {
+    const b = e.target.closest('[data-eb]'); if (!b) return;
+    const v = id => editBar.querySelector(id).value.trim();
+    ({
+      add() {
+        if (v('#ebName').length < 2) return alert('Wpisz nazwę zwierzaka.');
+        openCard(addSpecies(v('#ebName'), v('#ebLat'), v('#ebArch'), v('#ebCat'), v('#ebKg')));
+        editBar.querySelector('#ebName').value = editBar.querySelector('#ebLat').value = '';
+      },
+      restore() { DB.removed = []; save(); refreshList(); renderAll(); b.textContent = 'Przywróć usunięte (0)'; },
+      export() { download(DB, `lowca-dinozaurow-${new Date().toISOString().slice(0, 10)}.json`); },
+      import() {
+        const inp = Object.assign(document.createElement('input'), { type: 'file', accept: 'application/json,.json' });
+        inp.onchange = async () => {
+          try {
+            const db = migrate(JSON.parse(await inp.files[0].text()));
+            if (!confirm(`Wczytać zapis? ${Object.keys(db.caught).length} złapanych zwierząt. Obecny postęp zostanie zastąpiony.`)) return;
+            DB = db; save(); refreshList(); renderAll();
+          } catch (err) { alert('Nie udało się wczytać tego pliku.'); }
+        };
+        inp.click();
+      },
+      sound() { DB.settings.sound = !DB.settings.sound; save(); b.textContent = `Dźwięk: ${DB.settings.sound ? 'wł.' : 'wył.'}`; },
+      all() { LIST.forEach(s => { DB.caught[s.id] = DB.caught[s.id] || { t: Date.now() }; }); save(); renderAll(); },
+      reset() { if (confirm('Na pewno wyzerować cały postęp (złapane, dodane, usunięte, walki)?')) { DB = blank(); save(); refreshList(); renderAll(); } },
+    })[b.dataset.eb]();
   });
 }
-el.btnEdit.addEventListener('click', toggleEdit);
-
-/* ================= ARENA ================= */
-/* pięciokąt: każdy typ wygrywa z dwoma następnymi w cyklu */
-function typeAdv(a, b) {
-  if (a === b) return 0;
-  const i = TYPE_CYCLE.indexOf(a), j = TYPE_CYCLE.indexOf(b);
-  const d = (j - i + 5) % 5;
-  return (d === 1 || d === 2) ? 1 : -1;
-}
-const ADV_TEXT = {
-  drap: { olbrzym: 'poluje w stadzie na olbrzymy', pancerz: 'znajduje szczelinę w pancerzu' },
-  olbrzym: { pancerz: 'po prostu depcze pancerniki', zwinny: 'jednym ruchem ogona zmiata zwinnych' },
-  pancerz: { zwinny: 'maczugą trafia nawet zwinnych', wodny: 'nie da się go ugryźć w wodzie' },
-  zwinny: { wodny: 'ucieka na brzeg', drap: 'unika kłów i podgryza' },
-  wodny: { drap: 'wciąga drapieżnika pod wodę', olbrzym: 'topi olbrzyma na głębinie' }
-};
-let arenaA = null, arenaB = null, arenaSlot = 'A';
-
-function closeOverlays() { el.modal.hidden = true; }
-
-function openArena(preId) {
-  const got = LIST.filter(s => isCaught(s.id));
-  if (got.length < 2) {
-    el.modalBody.innerHTML = `<div class="m-body"><h2>Arena</h2>
-      <p class="m-lat">Najpierw złap co najmniej dwa zwierzaki.</p>
-      <div class="m-actions"><button class="btn ghost" data-close="1">Rozumiem</button></div></div>`;
-    el.modal.hidden = false; return;
-  }
-  arenaA = preId ? byId(preId) : null;
-  arenaB = null; arenaSlot = arenaA ? 'B' : 'A';
-  drawArena('Wybierz zawodników i naciśnij Walka!');
-  el.modal.hidden = false;
-}
-function slotHTML(sp, label) {
-  if (!sp) return `<div class="ar-slot"><span class="ph">${label}</span></div>`;
-  return `<div class="ar-slot filled" id="slot${label}">
-    <div class="art">${drawSpecies(sp, 'full', palOf(sp))}</div>
-    <div class="nm">${esc(sp.pl)}</div>
-    <div style="font-size:11px;font-weight:800;color:${TYPES[sp.t].color}">${TYPES[sp.t].emo} ${TYPES[sp.t].label} · siła ${sp.pw}</div>
-  </div>`;
-}
-function drawArena(logHTML) {
-  const got = LIST.filter(s => isCaught(s.id));
-  el.modalBody.innerHTML = `
-  <div class="m-body arena">
-    <h2>⚔️ Arena</h2>
-    <p class="m-lat">Kliknij zwierzaka, żeby wstawić go na wolne miejsce</p>
-    <div class="ar-slots">
-      ${slotHTML(arenaA, 'A')}
-      <div class="ar-vs">VS</div>
-      ${slotHTML(arenaB, 'B')}
-    </div>
-    <div class="ar-log" id="arLog">${logHTML}</div>
-    <div class="m-actions">
-      <button class="btn amber" id="arFight" ${arenaA && arenaB ? '' : 'disabled style="opacity:.45"'}>Walka!</button>
-      <button class="btn ghost" id="arClear">Wyczyść</button>
-      <button class="btn ghost" data-close="1">Zamknij</button>
-    </div>
-    <div class="ar-pick">
-      ${got.map(s => `<button data-pick2="${s.id}"><span class="art">${drawSpecies(s, 'full', palOf(s))}</span><span class="nm">${esc(s.pl)}</span></button>`).join('')}
-    </div>
-    <div class="type-legend">
-      ${TYPE_CYCLE.map(t => `<span style="color:${TYPES[t].color}">${TYPES[t].emo} ${TYPES[t].label}</span>`).join('')}
-      <span style="opacity:.7">każdy typ bije dwa następne w kółku</span>
-    </div>
-  </div>`;
-  const f = el.modalBody.querySelector('#arFight');
-  if (f) f.addEventListener('click', fight);
-  const c = el.modalBody.querySelector('#arClear');
-  if (c) c.addEventListener('click', () => { arenaA = arenaB = null; arenaSlot = 'A'; drawArena('Wybierz zawodników.'); });
-  el.modalBody.querySelectorAll('[data-pick2]').forEach(b => b.addEventListener('click', () => {
-    const sp = byId(b.dataset.pick2);
-    if (arenaSlot === 'A') { arenaA = sp; arenaSlot = 'B'; } else { arenaB = sp; arenaSlot = 'A'; }
-    if (arenaA && arenaB && arenaA.id === arenaB.id) { arenaB = null; arenaSlot = 'B'; }
-    blip(560, .06);
-    drawArena(arenaA && arenaB ? 'Gotowi? Naciśnij <b>Walka!</b>' : 'Wybierz drugiego zawodnika.');
-  }));
-}
-function fight() {
-  if (!arenaA || !arenaB) return;
-  const rollA = 1 + Math.floor(Math.random() * 6), rollB = 1 + Math.floor(Math.random() * 6);
-  const advA = typeAdv(arenaA.t, arenaB.t);
-  const bonus = 3;
-  const sA = arenaA.pw + rollA + (advA > 0 ? bonus : 0);
-  const sB = arenaB.pw + rollB + (advA < 0 ? bonus : 0);
-  const win = sA === sB ? (arenaA.pw >= arenaB.pw ? arenaA : arenaB) : (sA > sB ? arenaA : arenaB);
-  const lose = win === arenaA ? arenaB : arenaA;
-
-  let lines = [];
-  if (advA !== 0) {
-    const w = advA > 0 ? arenaA : arenaB, l = advA > 0 ? arenaB : arenaA;
-    const txt = (ADV_TEXT[w.t] || {})[l.t] || 'ma przewagę typu';
-    lines.push(`<span class="li">${TYPES[w.t].emo} <b>${esc(w.pl)}</b> ${txt} — przewaga +${bonus}!</span>`);
-  } else {
-    lines.push(`<span class="li">Oba to typy <b>${TYPES[arenaA.t].label}</b> — decyduje siła i szczęście.</span>`);
-  }
-  lines.push(`<span class="li">🎲 ${esc(arenaA.pl)}: ${arenaA.pw}+${rollA}${advA > 0 ? '+' + bonus : ''} = <b>${sA}</b> · ${esc(arenaB.pl)}: ${arenaB.pw}+${rollB}${advA < 0 ? '+' + bonus : ''} = <b>${sB}</b></span>`);
-  if (sA === sB) lines.push(`<span class="li">Remis punktowy — rozstrzyga większa siła podstawowa.</span>`);
-  lines.push(`<span class="li win">🏆 Wygrywa ${esc(win.pl)}!</span>`);
-
-  DB.wins[win.id] = (DB.wins[win.id] || 0) + 1; Store.save();
-  drawArena(lines.join(''));
-  const slots = el.modalBody.querySelectorAll('.ar-slot.filled');
-  slots.forEach(s => s.classList.add('ar-fight'));
-  roar(win.r);
-  setTimeout(() => blip(880, .18), 700);
-}
-el.btnArena.addEventListener('click', () => openArena(null));
 
 /* ================= START ================= */
 el.brandEgg.innerHTML = drawEgg(3, 'brand');
 renderAll();
-el.q.focus({ preventScroll: true });
-
-/* podpowiedź na starcie */
-if (Object.keys(DB.caught).length === 0) {
-  el.msg.textContent = 'Zacznij od czegoś łatwego — spróbuj wpisać „tyranozaur”.';
-  el.msg.className = 'hunt-msg';
-}
+if (!Object.keys(DB.caught).length) say('Zacznij od czegoś łatwego — spróbuj wpisać „tyranozaur”.');
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
 })();
