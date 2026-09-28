@@ -48,6 +48,11 @@
 
 <main class="wrap">
 
+  <!-- TRYB: Pokémony (obrazki) albo karty — siatka i duży podgląd po dotknięciu -->
+  <div class="mode-seg" id="modeSeg" role="group" aria-label="Widok">
+    <button data-face="art">🎨 Pokémony</button><button data-face="card">🃏 Karty</button>
+  </div>
+
   <!-- ŁOWY -->
   <section class="hunt">
     <form id="huntForm" autocomplete="off">
@@ -84,9 +89,6 @@
     <label class="miss">
       <input type="checkbox" id="onlyMissing"> tylko brakujące
     </label>
-    <label class="miss binder">
-      <input type="checkbox" id="binder"> 🃏 karty
-    </label>
   </section>
 
   <!-- SIATKA -->
@@ -108,6 +110,9 @@
   <p class="scene-name" id="sceneName"></p>
   <div class="confetti" id="confetti"></div>
 </div>
+
+<!-- POWIĘKSZENIE: karta albo obrazek na cały ekran, dotknięcie zamyka -->
+<div class="zoom" id="zoom" hidden></div>
 
 <!-- MODAL -->
 <div class="modal" id="modal" hidden>

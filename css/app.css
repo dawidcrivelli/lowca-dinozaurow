@@ -157,7 +157,6 @@ button{font-family:inherit;cursor:pointer}
 .chip.on{background:var(--ink);border-color:var(--ink);color:#FFF6E4}
 .chip b{opacity:.6;font-weight:800;margin-left:5px;font-size:11px}
 .miss{margin-left:auto;display:flex;align-items:center;gap:7px;font-weight:800;font-size:13px;color:var(--ink-soft);cursor:pointer}
-.miss.binder{margin-left:0}
 .miss input{width:17px;height:17px;accent-color:var(--ink)}
 
 /* ================= SIATKA ================= */
@@ -301,8 +300,13 @@ body.editing .rar{display:none}
 }
 .m-hero .art{width:100%;aspect-ratio:1;max-height:210px}
 /* karta z gry karcianej zamiast obrazka (przełącznik 🃏/🎨) */
-.m-hero{position:relative}.m-hero .tcg{display:none;height:300px;margin:0 auto 6px;border-radius:12px;box-shadow:0 6px 16px rgba(0,0,0,.3)}
-.m-hero.card .art{display:none}.m-hero.card .tcg{display:block}
+.m-hero{position:relative}.m-hero .tcg{display:none;width:100%;max-width:480px;margin:0 auto 6px;border-radius:14px;box-shadow:0 6px 16px rgba(0,0,0,.3);cursor:zoom-in}
+.m-hero.card .art{display:none}.m-hero.card .tcg{display:block}.m-hero .art{cursor:zoom-in}
+.mode-seg{display:flex;gap:6px;margin:14px 0 0;background:#fff;border:3px solid var(--ink);border-radius:999px;padding:5px}
+.mode-seg button{flex:1;border:0;border-radius:999px;padding:11px 8px;font:800 17px var(--font-h);background:none;color:var(--ink-soft)}
+.mode-seg button.on{background:var(--ink);color:#fff}
+.zoom{position:fixed;inset:0;z-index:120;background:rgba(10,14,28,.92);display:grid;place-items:center;padding:12px;cursor:zoom-out}
+.zoom img{max-width:100%;max-height:100%;object-fit:contain;border-radius:18px}
 .flip{position:absolute;left:12px;top:12px;z-index:2}
 .m-body{padding:14px 18px 18px}
 .m-body h2{margin:0;font-size:26px;line-height:1.1}

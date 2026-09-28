@@ -97,7 +97,7 @@ function crack() {
 const $ = s => document.querySelector(s);
 const el = Object.fromEntries(['q', 'huntForm', 'sugg', 'huntMsg', 'grid', 'emptyMsg', 'chips', 'onlyMissing', 'pcCount', 'pcRank', 'pcBall',
   'rockFill', 'rockMarks', 'brandBall', 'scene', 'sceneTarget', 'sceneBall', 'sceneFlash', 'sceneName', 'confetti', 'modal', 'modalBody',
-  'modalClose', 'btnArena', 'btnCards', 'btnEdit', 'binder'].map(id => [id, document.getElementById(id)]));
+  'modalClose', 'btnArena', 'btnCards', 'btnEdit', 'modeSeg', 'zoom'].map(id => [id, document.getElementById(id)]));
 el.pill = $('.search-pill'); el.main = $('main.wrap');
 let filter = 'all', editing = false;
 
@@ -105,7 +105,7 @@ const RANKS = [[0, 'Początkujący'], [5, 'Trener'], [15, 'Tropiciel'], [30, 'Zd
 const rankFor = n => RANKS.filter(([k]) => n >= k).pop()[1];
 
 /* ================= SIATKA ================= */
-const binder = () => DB.settings.binder;   // widok segregatora: karty zamiast obrazków
+const binder = () => DB.settings.face === 'card';   // tryb kart: segregator w siatce, duża karta po dotknięciu
 const cardBack = () => `<span class="cardback">${drawBall(1)}</span>`;
 function tileHTML(sp) {
   const got = isCaught(sp.id);
@@ -150,8 +150,13 @@ el.grid.addEventListener('click', e => {
 });
 el.chips.addEventListener('click', e => { const c = e.target.closest('[data-f]'); if (c) { filter = c.dataset.f; renderChips(); renderGrid(); } });
 el.onlyMissing.addEventListener('change', () => renderGrid());
-el.binder.checked = !!binder();
-el.binder.addEventListener('change', () => { DB.settings.binder = el.binder.checked; save(); renderGrid(); });
+const renderMode = () => el.modeSeg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.face === (binder() ? 'card' : 'art')));
+function setFace(face) { DB.settings.face = face; save(); renderMode(); renderGrid(); }
+el.modeSeg.addEventListener('click', e => { const b = e.target.closest('[data-face]'); if (b) { setFace(b.dataset.face); blip(560, .06); } });
+renderMode();
+/* powiększenie na cały ekran: karta do czytania albo duży obrazek */
+const zoom = src => { el.zoom.innerHTML = `<img src="${src}" alt="">`; el.zoom.hidden = false; };
+el.zoom.addEventListener('click', () => { el.zoom.hidden = true; });
 
 /* ================= ŁOWY ================= */
 function showSugg() {
@@ -229,7 +234,8 @@ function openModal(html, cls = '') { el.modalBody.innerHTML = html; el.modal.cla
 function closeModal() { el.modal.hidden = true; stopBattle(); }
 el.modalClose.addEventListener('click', closeModal);
 el.modal.addEventListener('click', e => { if (e.target === el.modal) closeModal(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') el.zoom.hidden ? closeModal() : (el.zoom.hidden = true); });
+el.modalBody.addEventListener('click', e => { const z = e.target.closest('[data-zoom]'); if (z) zoom(z.dataset.zoom); });
 const openCard = sp => openModal(isCaught(sp.id) ? caughtCard(sp) : hintCard(sp));
 
 /* paski statystyk z ikonami – czytelne bez umiejętności czytania */
@@ -242,8 +248,8 @@ function caughtCard(sp) {
   const st = statsOf(sp), r = record(sp.id), pre = byId(sp.from), next = evolutions(sp);
   const evo = [pre && `z ${esc(pre.name)}`, next.length && `w ${next.map(s => isCaught(s.id) ? esc(s.name) : '???').join(' / ')}`].filter(Boolean).join(' → ');
   return `
-  <div class="m-hero ${DB.settings.face === 'card' ? 'card' : ''}"><button class="btn ghost icon flip" data-flip="1" title="Karta / obrazek">🃏</button>
-    <div class="art">${art(sp)}</div><img class="tcg" src="${CARD_URL(sp.id, 'big')}" alt="Karta ${esc(sp.name)}" loading="lazy"></div>
+  <div class="m-hero ${binder() ? 'card' : ''}"><button class="btn ghost icon flip" data-flip="1" title="Karta / obrazek">${binder() ? '🎨' : '🃏'}</button>
+    <div class="art" data-zoom="${ART_URL(sp.id)}">${art(sp)}</div><img class="tcg" src="${CARD_URL(sp.id, 'big')}" data-zoom="${CARD_URL(sp.id, 'big')}" alt="Karta ${esc(sp.name)}"></div>
   <div class="m-body">
     <h2>${esc(sp.name)}</h2><p class="m-lat">${dexNo(sp)} · ${esc(sp.kind || '')}</p>
     <div class="m-tags">
@@ -292,7 +298,7 @@ el.modalBody.addEventListener('click', e => {
   if (d.del) { closeModal(); removeSpecies(d.del); }
   if (d.arena) openArena(d.arena);
   if (d.duel) openDuel(d.duel);
-  if (d.flip) { const h = b.closest('.m-hero'); DB.settings.face = h.classList.toggle('card') ? 'card' : 'art'; save(); }
+  if (d.flip) { const h = b.closest('.m-hero'); setFace(h.classList.toggle('card') ? 'card' : 'art'); b.textContent = binder() ? '🎨' : '🃏'; }
   if (d.letter) {
     const sp = byId(d.letter);
     b.outerHTML = `<span class="tag light letter">Zaczyna się na <b>${esc(sp.name[0])}</b>, ma ${sp.name.length} liter</span>`;
