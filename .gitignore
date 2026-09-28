@@ -1,5 +1,4 @@
-tmp/venv/
 tmp/*.png
-tmp/sheet.html
-tmp/review/shots/
+tmp/pokeapi/
 dist/
+tmp/chrome-prof/

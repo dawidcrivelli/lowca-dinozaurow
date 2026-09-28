@@ -1,4 +1,0 @@
-[
-  { "name": "wiele", "js": "(function(){var d={caught:{},added:[],removed:[],wins:{}};['trex','tri','stego','anky','para','pterano','mosa','velo','spino','brachio','dimetro','megalodon','archaeo','diplo','allo','carno','quetzal','elasmo','mammoth','smilodon','iguano','pachy','styra','ichthyo','sarco','meganeura','deino','galli','kentro','edmonto','trilobit','compso','proto','koryto','lambeo','plesio','tylo','dunkleo','eryops','micro'].forEach(function(i){d.caught[i]={t:Date.now()}});localStorage.setItem('dinoTracker.v1',JSON.stringify(d));location.reload();})()", "wait": 2000, "shot": "w1_desk.png", "w": 1120, "h": 1500 },
-  { "name": "zła nazwa", "js": "document.querySelector('#q').value='pikaczu';document.querySelector('#huntForm').dispatchEvent(new Event('submit',{cancelable:true}))", "wait": 500, "shot": "w2_fail.png", "w": 1120, "h": 500 }
-]

@@ -9,7 +9,7 @@ const root = path.join(__dirname, '..');
 const PORT = 9333;
 const chrome = spawn('google-chrome', [
   '--headless=new', '--disable-gpu', '--hide-scrollbars', '--no-first-run',
-  `--remote-debugging-port=${PORT}`, '--user-data-dir=/tmp/dino-chrome-prof',
+  `--remote-debugging-port=${PORT}`, `--user-data-dir=${__dirname}/chrome-prof`,
   '--window-size=430,2400', 'about:blank'
 ], { stdio: 'ignore' });
 
@@ -31,15 +31,17 @@ function get(p) {
   const ws = new WS(target.webSocketDebuggerUrl);
   await ws.open();
 
-  const steps = JSON.parse(fs.readFileSync(path.join(__dirname, 'ui_steps.json'), 'utf8'));
+  const steps = JSON.parse(fs.readFileSync(path.join(__dirname, process.argv[2] || 'ui_steps.json'), 'utf8'));   // użycie: node tmp/ui_shot.js [plik kroków]
   await ws.send('Page.enable');
   await ws.send('Runtime.enable');
+  await ws.send('Page.addScriptToEvaluateOnNewDocument', { source: "window.__errs=[];addEventListener('error',e=>__errs.push(e.message||String(e.target?.src)),true)" });
   await ws.send('Emulation.setDeviceMetricsOverride', { width: 430, height: 2600, deviceScaleFactor: 1, mobile: true });
   await ws.send('Page.navigate', { url: 'file://' + path.join(root, 'index.html') });
   await sleep(2200);
 
   for (const s of steps) {
     if (s.js) { const r = await ws.send('Runtime.evaluate', { expression: s.js, awaitPromise: true }); if (r.exceptionDetails) console.log('JS ERR', s.name, JSON.stringify(r.exceptionDetails.exception && r.exceptionDetails.exception.description || r.exceptionDetails)); }
+    if (s.print) console.log(s.name, (await ws.send('Runtime.evaluate', { expression: s.js })).result.value);
     if (s.wait) await sleep(s.wait);
     if (s.shot) {
       if (s.h) await ws.send('Emulation.setDeviceMetricsOverride', { width: s.w || 430, height: s.h, deviceScaleFactor: 1, mobile: true });

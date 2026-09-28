@@ -1,17 +1,16 @@
-/* ================= ŁOWCA DINOZAURÓW – wykopalisko =================
-   Motyw: warstwy skalne (strata), płyty z odciskiem skamieniałości,
-   bursztynowy akcent, tusz w kolorze petrol green. */
+/* ================= ŁOWCA POKÉMONÓW – Pokédex =================
+   Motyw: czerwony Pokédex, żółty akcent, łąka i niebo w tle; niezłapane = czarne sylwetki („Kto to za Pokémon?”). */
 
 :root{
-  --ink:#123C38;
-  --ink-soft:#3E635E;
-  --amber:#F5A524;
-  --amber-dk:#C97C0B;
-  --paper:#F6EFE0;
-  --paper-2:#EFE5D2;
-  --stone:#E2D5BC;
-  --stone-dk:#CBB998;
-  --line:#D6C6A8;
+  --ink:#1F2A44;
+  --ink-soft:#4A5878;
+  --amber:#FFCB05;
+  --amber-dk:#C7A008;
+  --paper:#F3F6FC;
+  --paper-2:#E6ECF6;
+  --stone:#D5DEEC;
+  --stone-dk:#AFBCD2;
+  --line:#C9D3E4;
   --shadow:0 2px 0 rgba(18,60,56,.10), 0 8px 22px rgba(18,60,56,.10);
   --r:18px;
   --font-h:'Baloo 2', 'Trebuchet MS', system-ui, sans-serif;
@@ -33,26 +32,13 @@ button{font-family:inherit;cursor:pointer}
 .wrap{max-width:1080px;margin:0 auto;padding:0 16px}
 
 /* --- tło: warstwy skalne --- */
-.strata{
-  position:fixed;inset:0;z-index:-1;
-  background:
-    linear-gradient(#F8F2E5 0 42%, #F2E9D6 42% 58%, #EADFC7 58% 72%, #E3D5B9 72% 84%, #D9C9A9 84% 100%);
-}
-.strata::after{
-  content:'';position:absolute;inset:0;
-  background-image:
-    radial-gradient(circle at 12% 68%, rgba(160,132,92,.20) 0 6px, transparent 7px),
-    radial-gradient(circle at 78% 76%, rgba(160,132,92,.16) 0 9px, transparent 10px),
-    radial-gradient(circle at 40% 88%, rgba(140,112,72,.16) 0 5px, transparent 6px),
-    radial-gradient(circle at 62% 94%, rgba(140,112,72,.13) 0 11px, transparent 12px),
-    radial-gradient(circle at 22% 92%, rgba(140,112,72,.13) 0 7px, transparent 8px);
-}
+.strata{position:fixed;inset:0;z-index:-1;background:linear-gradient(#DDEBFA 0 60%, #CFE6C4 60% 78%, #B9D9A8 78% 100%)}
 
 /* ================= NAGŁÓWEK ================= */
 .top{
-  background:var(--ink);
-  color:#F6EFE0;
-  border-bottom:5px solid var(--amber);
+  background:#D8262E;
+  color:#fff;
+  border-bottom:5px solid #1F2A44;
   position:sticky;top:0;z-index:40;
   box-shadow:0 6px 18px rgba(18,60,56,.22);
 }
@@ -125,8 +111,8 @@ button{font-family:inherit;cursor:pointer}
   padding:14px 16px 12px;margin:16px 0 18px;box-shadow:var(--shadow);
 }
 .pc-head{display:flex;align-items:center;gap:12px}
-.pc-egg{width:46px;height:46px;flex:0 0 auto}
-.pc-egg svg{width:100%;height:100%;display:block}
+.pc-ball{width:46px;height:46px;flex:0 0 auto}
+.pc-ball svg{width:100%;height:100%;display:block}
 .pc-txt{display:flex;flex-direction:column;line-height:1.15}
 .pc-txt strong{font-family:var(--font-h);font-size:26px}
 .pc-txt span{font-size:13px;color:var(--ink-soft);font-weight:700}
@@ -140,14 +126,13 @@ button{font-family:inherit;cursor:pointer}
 .rockbar{
   position:relative;height:26px;margin-top:12px;border-radius:999px;overflow:visible;
   background:
-    repeating-linear-gradient(90deg, #DCCDB0 0 12px, #D5C4A4 12px 24px),
-    #DCCDB0;
+    #E6ECF6;
   border:2px solid var(--stone-dk);
-  box-shadow:inset 0 3px 6px rgba(90,70,40,.18);
+  box-shadow:inset 0 3px 6px rgba(31,42,68,.15);
 }
 .rock-fill{
   position:absolute;inset:2px auto 2px 2px;width:0;border-radius:999px;
-  background:linear-gradient(180deg,#FFC661,var(--amber) 55%,#DE8E10);
+  background:linear-gradient(180deg,#FFE066,var(--amber) 55%,#E0A800);
   box-shadow:inset 0 -3px 0 rgba(0,0,0,.10);
   transition:width .7s cubic-bezier(.3,1.4,.5,1);
 }
@@ -163,6 +148,7 @@ button{font-family:inherit;cursor:pointer}
 /* ================= FILTRY ================= */
 .filters{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
+@media(max-width:640px){.chips{flex-wrap:nowrap;overflow-x:auto;margin:0 -16px;padding:0 16px 4px;scrollbar-width:none}.chip{flex:0 0 auto}}   /* 19 typów: na telefonie przewijane w bok */
 .chip{
   background:#fff;border:2px solid var(--line);border-radius:999px;
   padding:7px 14px;font:800 13px var(--font-b);color:var(--ink-soft);transition:.12s;
@@ -189,13 +175,11 @@ button{font-family:inherit;cursor:pointer}
 /* płyta z odciskiem skamieniałości dla niezłapanych */
 .tile.ghost{
   background:
-    repeating-linear-gradient(115deg, rgba(203,185,152,.30) 0 8px, rgba(203,185,152,0) 8px 17px),
-    var(--paper-2);
+var(--paper-2);
   border-style:dashed;border-color:var(--stone-dk);
 }
 .tile:hover{transform:translateY(-3px);border-color:var(--ink);box-shadow:0 6px 16px rgba(18,60,56,.16)}
-.tile .art{display:block;width:100%;aspect-ratio:200/140}
-.tile .art svg{width:100%;height:100%;display:block}
+.tile .art{display:block;width:100%;aspect-ratio:1}
 .tile .nm{
   display:block;margin-top:3px;font:800 12.5px/1.15 var(--font-b);color:var(--ink);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
@@ -228,40 +212,42 @@ body.editing .rar{display:none}
   position:fixed;inset:0;z-index:80;overflow:hidden;
   display:flex;align-items:center;justify-content:center;
 }
-.scene-sky{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 42%, #2C6A63, #0E2E2B 72%);opacity:0;animation:fadeIn .3s forwards}
+.scene-sky{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 42%, #BFE3FF, #5FA8E8 72%);opacity:0;animation:fadeIn .3s forwards}
 @keyframes fadeIn{to{opacity:1}}
 .scene-ground{
   position:absolute;left:0;right:0;bottom:0;height:26%;
-  background:linear-gradient(#8A6A44,#5E4527);
+  background:linear-gradient(#8CCB5E,#4E9A3A);
   box-shadow:inset 0 6px 0 rgba(0,0,0,.15);
 }
 .scene-target{
-  position:relative;z-index:2;width:min(74vw,420px);aspect-ratio:200/140;
+  position:relative;z-index:2;width:min(60vw,320px);aspect-ratio:1;
   opacity:0;transform:scale(.4);
 }
-.scene-target svg{width:100%;height:100%;display:block;filter:drop-shadow(0 12px 18px rgba(0,0,0,.4))}
+.scene-target img{width:100%;height:100%;display:block;filter:drop-shadow(0 12px 18px rgba(0,0,0,.4))}
 .scene-target.silhouette{filter:brightness(0) invert(.18) sepia(1) saturate(.2)}
 .scene-target.show{animation:reveal .8s cubic-bezier(.25,1.5,.45,1) forwards}
 @keyframes reveal{0%{opacity:0;transform:scale(.35) rotate(-8deg)}60%{opacity:1;transform:scale(1.12) rotate(3deg)}100%{opacity:1;transform:scale(1)}}
 .scene-target.idle{opacity:.55;transform:scale(.95);animation:sway 1.6s ease-in-out infinite}
 @keyframes sway{0%,100%{transform:scale(.95) translateY(0)}50%{transform:scale(.95) translateY(-10px)}}
 
-.scene-egg{
+.scene-ball{
   position:absolute;z-index:3;width:min(20vw,92px);left:50%;bottom:10%;
   translate:-50% 0;opacity:0;
 }
-.scene-egg svg{width:100%;height:auto;display:block;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
-.scene-egg.throw{animation:throwEgg .62s cubic-bezier(.3,.1,.7,.9) forwards}
-@keyframes throwEgg{
+.scene-ball svg{width:100%;height:auto;display:block;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
+.scene-ball.throw{animation:throwBall .62s cubic-bezier(.3,.1,.7,.9) forwards}
+@keyframes throwBall{
   0%{opacity:1;bottom:2%;left:14%;transform:scale(.55) rotate(0)}
   55%{bottom:62%;left:36%;transform:scale(.9) rotate(320deg)}
   100%{opacity:1;bottom:34%;left:50%;transform:scale(1) rotate(720deg)}
 }
-.scene-egg.wobble,.scene-egg.gone{opacity:1;left:50%;bottom:34%;transform:scale(1)}
-.scene-egg.wobble{animation:wob .42s ease-in-out 3}
+.scene-ball.wobble,.scene-ball.gone{opacity:1;left:50%;bottom:34%;transform:scale(1)}
+.scene-ball.wobble{animation:wob .42s ease-in-out 3}
 @keyframes wob{0%,100%{rotate:0}25%{rotate:-17deg}75%{rotate:17deg}}
-.scene-egg.gone{animation:eggPop .35s forwards}
-@keyframes eggPop{to{opacity:0;transform:scale(1.5)}}
+.scene-ball.gone{animation:ballPop .35s forwards}
+@keyframes ballPop{to{opacity:0;transform:scale(1.5)}}
+.ball-top{transform-origin:6px 50px;animation:ballOpen .3s forwards}   /* otwarcie: góra odchyla się na zawiasie */
+@keyframes ballOpen{to{transform:rotate(-40deg) translateY(-8px)}}
 
 .scene-flash{
   position:absolute;z-index:4;width:26px;height:26px;border-radius:50%;
@@ -312,8 +298,7 @@ body.editing .rar{display:none}
   background:linear-gradient(#EFE6D3,#E4D7BC);border-bottom:3px solid var(--ink);
   padding:14px 16px 6px;border-radius:19px 19px 0 0;
 }
-.m-hero .art{width:100%;aspect-ratio:200/140;max-height:210px}
-.m-hero .art svg{width:100%;height:100%;display:block}
+.m-hero .art{width:100%;aspect-ratio:1;max-height:210px}
 .m-body{padding:14px 18px 18px}
 .m-body h2{margin:0;font-size:26px;line-height:1.1}
 .m-lat{margin:2px 0 10px;font-style:italic;color:#8C9A96;font-weight:700;font-size:14px}
@@ -380,8 +365,8 @@ body.editing .rar{display:none}
 .ar-slot .who{font:800 13px var(--font-b);color:var(--ink-soft)}
 .ar-slot .nm,.fighter .nm{font:800 14px var(--font-b);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .side-a .who{color:#2F6E8F}.side-b .who{color:#B65340}
-.ar-slot .art,.fighter .art,.ar-pick .art{display:block;width:100%;aspect-ratio:200/140}
-.ar-slot svg,.fighter svg,.ar-pick svg,.sugg .s-art svg{width:100%;height:100%;display:block}
+.ar-slot .art,.fighter .art,.ar-pick .art{display:block;width:100%;aspect-ratio:1}
+.sugg .s-art img{width:100%;height:100%;display:block}
 .fighter.side-b .art{transform:scaleX(-1)}
 .ar-bar{display:flex;gap:8px;align-items:stretch;justify-content:center;margin:12px 0 10px;flex-wrap:wrap}
 .seg{display:flex;background:#fff;border:2px solid var(--line);border-radius:14px;padding:3px;gap:3px}
@@ -442,11 +427,14 @@ body.editing .rar{display:none}
 .m-actions.center{justify-content:center}
 
 /* kolory kategorii */
-.cat-dino{background:#4F7A4A}.cat-ptero{background:#6E8CA8}.cat-marine{background:#2F6E8F}.cat-mammal{background:#8C6A52}.cat-other{background:#A85B36}
+.art img{width:100%;height:100%;object-fit:contain;display:block}
+.art img.px{image-rendering:pixelated}
+img.ghost{filter:brightness(0) opacity(.7)}   /* sylwetka niezłapanego */
+.tag.type{text-shadow:0 1px 1px rgba(0,0,0,.35)}
 .stat.wide{grid-column:1/-1}
 .stat b.small{font:800 13px/1.35 var(--font-b);display:block}
 .tag.letter{padding:11px 16px}
-.sugg .s-art{width:54px;flex:0 0 auto;aspect-ratio:200/140}
+.sugg .s-art{width:54px;flex:0 0 auto;aspect-ratio:1}
 .chip .emo{font-size:15px}
 .icon-btn.holding{background:var(--amber);transition:background 1s}
 

@@ -1,156 +1,102 @@
 /* ================= ARENA – silnik walki (bez DOM) =================
-   Statystyki liczone z prawdziwych danych (masa, broń, pancerz, prędkość),
-   silnik rund z wersji ChatGPT. Strojenie: node tmp/sim.js
-   m = log-masa w skali 0..1 (10 g → 0, 100 t → 1): 70-tonowy zauropod nie jest 10 000× silniejszy od raptora. */
+   Statystyki bazowe z gier (js/species.js) + prawdziwa tabela typów (CHART): Wodny ×2 na Ognistego itd.
+   Strojenie: node tmp/sim.js */
 const TUNE = {
-  logMassMin: -2, logMassSpan: 7,
-  hp: [60, 160, 2.2],                        // hp  = a + b·m^c
-  atk: [10, 70, 7, 0.25, 1.5],               // atk = a + b·m^e + c·W,  W = najlepsza broń + d·Σ pozostałych
-  wt: { bite: 1, claw: 0.8, squeeze: 0.9, horn: 0.8, tail: 0.8, ram: 0.7 },
-  atkDiet: { M: 10, Ry: 5, W: 1, P: -20 },   // łowcy umieją walczyć, filtratorzy nie
-  def: [14, 40, 8],                          // def = a + b·m + c·pancerz
-  spd: [18, 0.75, 16], spdFly: 5,            // spd = a + b·km/h + c·(1-m)   (mały = zwinny)
-  evade: [0.14, 0.04],                       // unik = a·(1-m)² + b·lotnik
-  pack: { pack: 0.45, 'pack?': 0.25 },       // tylko mięsożercy
-  fortressKg: 20000,
-  sizeKg: [30, 500, 5000, 25000],            // progi klas rozmiaru 1..5
-};
-// ulubieńcy: statystyki wpisane ręcznie, nadpisują wyliczone (reszta pól bez zmian)
-const STARS = {
-  'albertosaurus-sarcophagus': { tag: '⭐ Dinozaur Alberta', hp: 160, attack: 86, speed: 60, evade: .07 }, // zwinny jak raptor, gryzie jak T. rex
+  hp: [50, 1.2],         // hp  = a + b·bazowe HP
+  dmg: [7, .26, .11], roll: [.7, .45],   // obrażenia = a + b·atak − c·obrona, potem × typ × losowo [od, +zakres]
+  immune: .25,           // „nie działa” (×0) → prawie nie działa, inaczej Gastly i Rattata nie mogą się trafić
+  dodge: [.04, .002, .04, .03, .25],  // unik = a + b·(przewaga szybkości) + c·latający, w granicach [d, e]
+  crit: [.08, 1.5], arena: 1.2, special: .2,   // cios krytyczny: szansa, mnożnik; premia terenu; jak często automat używa ruchu specjalnego
 };
 const ROUNDS = 8;
 const clampN = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
+// typ → [nazwa, ikona, kolor, ruch specjalny]
+const TYPES = {
+  normal: ['Normalny', '⚪', '#A8A77A', 'Ciało-cios'], fire: ['Ognisty', '🔥', '#EE8130', 'Miotacz ognia'],
+  water: ['Wodny', '💧', '#6390F0', 'Wodna armata'], grass: ['Trawiasty', '🌿', '#7AC74C', 'Liściaste ostrze'],
+  electric: ['Elektryczny', '⚡', '#F7D02C', 'Piorun'], ice: ['Lodowy', '❄️', '#96D9D6', 'Lodowy promień'],
+  fighting: ['Walczący', '🥊', '#C22E28', 'Karate-cios'], poison: ['Trujący', '☠️', '#A33EA1', 'Trujące żądło'],
+  ground: ['Ziemny', '🏜️', '#E2BF65', 'Trzęsienie ziemi'], flying: ['Latający', '🪽', '#A98FF3', 'Powietrzne cięcie'],
+  psychic: ['Psychiczny', '🔮', '#F95587', 'Psychopromień'], bug: ['Robaczy', '🐛', '#A6B91A', 'Rój żądeł'],
+  rock: ['Kamienny', '🪨', '#B6A136', 'Lawina kamieni'], ghost: ['Duch', '👻', '#735797', 'Kula cienia'],
+  dragon: ['Smoczy', '🐉', '#6F35FC', 'Smoczy gniew'], dark: ['Mroczny', '🌑', '#705746', 'Chrupnięcie'],
+  steel: ['Stalowy', '⚙️', '#B7B7CE', 'Stalowy ogon'], fairy: ['Wróżkowy', '🧚', '#D685AD', 'Blask księżyca'],
+};
+// klucze jak THEMES w arena3d.js; types: kto dostaje premię ×TUNE.arena
 const ARENAS = {
-  plains: { name: 'Wielka równina', icon: '🌾', desc: 'Dużo miejsca na szarże i rozpęd.' },
-  forest: { name: 'Gęsty las', icon: '🌲', desc: 'Mniejsze i szybsze zwierzęta łatwiej się ukrywają.' },
-  swamp: { name: 'Pradawne mokradła', icon: '🪷', desc: 'Krokodyle i ziemno-wodne drapieżniki czują się tu świetnie.' },
-  coast: { name: 'Płytkie wybrzeże', icon: '🏝️', desc: 'Równe szanse dla zwierząt lądowych i wodnych.' },
-  deep: { name: 'Głębokie morze', icon: '🌊', desc: 'Wodne drapieżniki mogą wykorzystać pełnię szybkości.' },
-  cliffs: { name: 'Skaliste urwiska', icon: '⛰️', desc: 'Latające gady zyskują przestrzeń do pikowania.' },
-  desert: { name: 'Gorąca pustynia', icon: '🏜️', desc: 'Upał męczy olbrzymy – małe i szybkie zwierzęta mają przewagę.' },
-  volcano: { name: 'Wulkaniczna dolina', icon: '🌋', desc: 'Lecą kamienie! Pancerz chroni lepiej niż zwykle.' },
-  tundra: { name: 'Mroźna tundra', icon: '❄️', desc: 'Zimno! Ssaki w grubym futrze czują się tu jak w domu.' },
+  plains: { name: 'Wielka łąka', icon: '🌾', types: ['normal', 'electric', 'psychic'] },
+  forest: { name: 'Las Viridian', icon: '🌲', types: ['grass', 'bug'] },
+  swamp: { name: 'Trujące bagna', icon: '🪷', types: ['poison', 'ghost'] },
+  coast: { name: 'Plaża', icon: '🏝️', types: ['water', 'flying'] },
+  deep: { name: 'Głębiny', icon: '🌊', types: ['water', 'dragon'] },
+  cliffs: { name: 'Góra Księżycowa', icon: '⛰️', types: ['rock', 'flying', 'fairy'] },
+  desert: { name: 'Pustynia', icon: '🏜️', types: ['ground', 'fighting'] },
+  volcano: { name: 'Wyspa Cynamonowa', icon: '🌋', types: ['fire', 'dragon'] },
+  tundra: { name: 'Lodowe wyspy', icon: '❄️', types: ['ice', 'psychic'] },
 };
-const LAND = ['plains', 'forest', 'swamp', 'desert', 'volcano', 'tundra'];
-// body → [nazwa, mnożnik, szansa]
-const SPECIALS = {
-  ankylosaur: ['🔨 Młot ogonowy', 1.30, .20], stegosaur: ['🦔 Kolczasty ogon', 1.27, .19], ceratopsian: ['📯 Szarża rogami', 1.25, .18],
-  pachy: ['💥 Uderzenie kopułą', 1.24, .19], sauropod: ['🦶 Grzmiące tupnięcie', 1.22, .12], pterosaur: ['🪽 Atak z pikowania', 1.24, .20],
-  marine: ['🌊 Atak z głębin', 1.25, .14], 'marine-long': ['🌊 Zamach płetwą', 1.18, .15], croc: ['🐊 Błyskawiczne ugryzienie', 1.25, .19],
-  theropod: ['🦖 Potężne ugryzienie', 1.22, .16], smalltheropod: ['🗡️ Sierpowaty pazur', 1.22, .18], turtle: ['🐢 Taranująca skorupa', 1.18, .13],
-  mammal: ['🐾 Szarża z pazurami', 1.22, .17], bug: ['🦂 Szczypce', 1.20, .15], fish: ['🐟 Błyskawiczny zwrot', 1.18, .14],
-};
-const SPECIAL_DEFAULT = ['⚡ Mocny cios', 1.17, .12];
+for (const a of Object.values(ARENAS)) a.desc = `Premia dla: ${a.types.map(t => TYPES[t][1] + ' ' + TYPES[t][0]).join(', ')}.`;
 // ruchy gracza w trybie „ty wybierasz”: pewniejszy cios, ryzykowny atak specjalny, obrona
 const MOVES = {
-  bite: { icon: '🦷', label: 'Atak' },
+  bite: { icon: '👊', label: 'Atak' },
   special: { icon: '⚡', label: 'Specjalny', mult: 1.5, miss: .35 },
   guard: { icon: '🛡️', label: 'Obrona', block: .5, heal: .08 },
 };
 
-/* ---------- statystyki z prawdziwych danych ---------- */
-function statsOf(s) {
-  const K = TUNE, m = clampN((Math.log10(s.kg) - K.logMassMin) / K.logMassSpan, 0, 1);
-  const { armor = 0, ...offense } = s.weapons || {};
-  const vals = Object.entries(offense).map(([k, v]) => v * (K.wt[k] || 0.7)), top = Math.max(0, ...vals);
-  const W = top + K.atk[3] * (vals.reduce((a, b) => a + b, 0) - top);
-  const flier = s.loco === 'fly', carn = s.diet === 'M' || s.diet === 'Ry';
-  return {
-    hp: clampN(Math.round(K.hp[0] + K.hp[1] * m ** K.hp[2]), 72, 220),
-    attack: clampN(Math.round(K.atk[0] + K.atk[1] * m ** K.atk[4] + K.atk[2] * W + (K.atkDiet[s.diet] || 0)), 24, 99),
-    defense: clampN(Math.round(K.def[0] + K.def[1] * m + K.def[2] * armor), 24, 99),
-    speed: clampN(Math.round(K.spd[0] + K.spd[1] * (s.kmh || 10) + K.spd[2] * (1 - m) + (flier ? K.spdFly : 0)), 18, 99),
-    evade: K.evade[0] * (1 - m) ** 2 + (flier ? K.evade[1] : 0),
-    pack: carn ? K.pack[s.social] || 0 : 0,
-    size: 1 + K.sizeKg.filter(t => s.kg >= t).length,
-    armored: armor >= 2,
-    fortress: s.kg >= K.fortressKg && s.diet === 'R' && s.loco === 'quad',
-    ...STARS[s.id],
-  };
-}
-function traitsOf(st, s) {
-  const t = st.tag ? [st.tag] : [];
-  if (st.pack) t.push(`🐾 Atak grupowy ${Math.round(st.pack * 100)}%`);
-  if (st.fortress) t.push('🏔️ Żywa forteca');
-  if (st.armored) t.push('🛡️ Pancerz');
-  if (s.loco === 'fly') t.push('🌪️ Unik w locie');
-  if (s.cat === 'marine') t.push('🌊 Premia w wodzie');
-  return t;
-}
+/* ---------- statystyki ---------- */
+const statsOf = s => ({ hp: Math.round(TUNE.hp[0] + TUNE.hp[1] * s.hp), attack: Math.max(s.atk, s.satk), defense: Math.round((s.def + s.sdef) / 2), speed: s.spd });
+// mnożnik typu ataku t na obrońcę o typach def: Ognisty na Trawiasty/Robaczy = ×4
+const typeMult = (t, def) => def.reduce((m, d) => m * ((CHART[t][d] ?? 1) || TUNE.immune), 1);
+// najlepszy typ atakującego przeciw temu obrońcy
+const bestType = (att, def) => att.types.reduce((a, b) => typeMult(b, def.types) > typeMult(a, def.types) ? b : a);
 
-/* ---------- teren ---------- */
+/* ---------- teren: losowy spośród pasujących do typów zawodników ---------- */
 function pickArena(a, b, rnd = Math.random) {
-  const sea = [a, b].filter(p => p.s.cat === 'marine').length;
-  if (sea === 2) return ARENAS.deep;
-  if (sea === 1) return ARENAS.coast;
-  if (a.s.loco === 'fly' || b.s.loco === 'fly') return ARENAS.cliffs;
-  return ARENAS[LAND[Math.floor(rnd() * LAND.length)]];
-}
-function arenaMods(p, arena) {
-  const m = { attack: 0, defense: 0, speed: 0, dodge: 0 }, body = p.s.body;
-  if (arena === ARENAS.deep && p.s.cat === 'marine') { m.attack += 12; m.speed += 13; }
-  // wybrzeże: bez premii dla wodnych – inaczej Mozazaur wygrywał z każdym zwierzęciem lądowym
-  if (arena === ARENAS.cliffs && p.s.loco === 'fly') { m.speed += 13; m.dodge += .09; m.attack += 4; }
-  if (arena === ARENAS.forest) { if (p.size <= 2) { m.speed += 7; m.dodge += .05; } else if (p.size >= 5) m.speed -= 5; }
-  if (arena === ARENAS.plains) { if (body === 'sauropod') m.defense += 8; if (/theropod/.test(body)) m.speed += 4; }
-  if (arena === ARENAS.swamp && (body === 'croc' || body === 'synapsid')) { m.attack += 9; m.defense += 7; }
-  if (arena === ARENAS.desert) { if (p.size <= 2) m.speed += 6; else if (p.size >= 5) m.speed -= 6; }
-  if (arena === ARENAS.volcano && p.armored) m.defense += 8;
-  if (arena === ARENAS.tundra && p.s.cat === 'mammal') { m.attack += 5; m.defense += 6; }
-  return m;
+  const types = [...a.s.types, ...b.s.types], fit = Object.values(ARENAS).filter(ar => ar.types.some(t => types.includes(t)));
+  return fit.length ? fit[Math.floor(rnd() * fit.length)] : ARENAS.plains;
 }
 
 /* ---------- walka ---------- */
 function fighter(s) {
   const st = statsOf(s);
-  return { s, id: s.id, name: s.name, ...st, hp0: st.hp, packReady: true, fortressReady: st.fortress, guard: 0 };
+  return { s, id: s.id, name: s.name, ...st, hp0: st.hp, guard: 0 };
 }
 function newBattle(sa, sb, rnd = Math.random) {
   const a = fighter(sa), b = fighter(sb);
   return { a, b, arena: pickArena(a, b, rnd), round: 1, events: [], winner: null, rnd };
 }
-function special(p, arena) {
-  const x = SPECIALS[p.s.body] || SPECIAL_DEFAULT;
-  const chance = p.s.body === 'sauropod' && p.size >= 5 ? .20 : p.s.body === 'marine' && arena === ARENAS.deep ? .24 : x[2];
-  return { name: x[0], mult: x[1], chance };
-}
 function attack(B, att, def, move) {
-  const rnd = B.rnd, am = arenaMods(att, B.arena), dm = arenaMods(def, B.arena);
-  const ev = { round: B.round, att: att.id, def: def.id, damage: 0, move };
+  const rnd = B.rnd, K = TUNE, ev = { round: B.round, att: att.id, def: def.id, damage: 0, move };
   if (move === 'guard') {
     att.guard = MOVES.guard.block;
     const heal = Math.round(att.hp0 * MOVES.guard.heal);
     att.hp = Math.min(att.hp0, att.hp + heal);
     return { ...ev, heal, hpAtt: att.hp, text: `🛡️ ${att.name} broni się i odzyskuje ${heal} energii.` };
   }
-  if (move === 'special' && rnd() < MOVES.special.miss) return { ...ev, miss: true, text: `💨 ${att.name} próbuje ciosu specjalnego… pudło!` };
-  const dodge = clampN(.035 + Math.max(0, (def.speed + dm.speed) - (att.speed + am.speed)) * .0015 + def.evade + dm.dodge, .025, .26);
+  const t = bestType(att.s, def.s), [, icon, , moveName] = TYPES[t];
+  if (move === 'special' && rnd() < MOVES.special.miss) return { ...ev, miss: true, text: `💨 ${att.name} próbuje: ${icon} ${moveName}… pudło!` };
+  const dodge = clampN(K.dodge[0] + Math.max(0, def.speed - att.speed) * K.dodge[1] + (def.s.types.includes('flying') ? K.dodge[2] : 0), K.dodge[3], K.dodge[4]);
   if (move !== 'special' && rnd() < dodge) return { ...ev, dodge: true, hpDef: def.hp, text: `${def.name} wykonuje unik!` };
-  let mult = .82 + rnd() * .38;
-  const notes = [];
-  if (att.packReady && rnd() < att.pack) { att.packReady = false; mult *= 1.34; notes.push('🐾 atak grupowy'); }
-  const sp = special(att, B.arena);
-  if (move === 'special') { mult *= MOVES.special.mult; notes.push(sp.name); }
-  else if (rnd() < sp.chance) { mult *= sp.mult; notes.push(sp.name); }
-  if (rnd() < .105) { mult *= 1.48; notes.push('✨ cios krytyczny'); }
-  let dmg = (14 + (att.attack + am.attack) * .34 - (def.defense + dm.defense) * .17) * mult;
-  if (def.armored) { dmg *= .84; if (rnd() < .45) notes.push('🛡️ pancerz osłabił cios'); }
-  if (def.fortressReady) { dmg *= .60; def.fortressReady = false; notes.push('🏔️ żywa forteca'); }
+  const tm = typeMult(t, def.s.types), notes = [];
+  let mult = (K.roll[0] + rnd() * K.roll[1]) * tm;
+  if (move === 'special') { mult *= MOVES.special.mult; notes.push(`${icon} ${moveName}`); }
+  if (B.arena.types.includes(t)) mult *= K.arena;
+  if (rnd() < K.crit[0]) { mult *= K.crit[1]; notes.push('✨ cios krytyczny'); }
+  if (tm >= 2) notes.push('💥 super skuteczny!'); else if (tm < 1) notes.push('😕 mało skuteczny');
+  let dmg = Math.max(3, K.dmg[0] + att.attack * K.dmg[1] - def.defense * K.dmg[2]) * mult;
   if (def.guard) { dmg *= def.guard; def.guard = 0; notes.push('🛡️ obrona'); ev.guarded = true; }
-  dmg = clampN(Math.round(dmg), 5, 58);
+  dmg = clampN(Math.round(dmg), 2, 90);
   def.hp = Math.max(0, def.hp - dmg);
-  return { ...ev, damage: dmg, hpDef: def.hp, text: `${notes.length ? notes.join(' + ') + ' — ' : ''}${att.name} zadaje ${dmg} obrażeń.` };
+  return { ...ev, damage: dmg, hpDef: def.hp, type: t, text: `${att.name}: ${notes.length ? notes.join(' + ') + ' — ' : ''}${dmg} obrażeń.` };
 }
-/* jedna runda; moveA = ruch gracza (tryb „ty wybierasz”) albo undefined (automat) */
+/* jedna runda; moveA = ruch gracza (tryb „ty wybierasz”) albo undefined (automat: czasem ruch specjalny) */
 function playRound(B, moveA) {
-  const { a, b, rnd } = B, am = arenaMods(a, B.arena), bm = arenaMods(b, B.arena);
-  const order = a.speed + am.speed + rnd() * 18 >= b.speed + bm.speed + rnd() * 18 ? [a, b] : [b, a];
+  const { a, b, rnd } = B;
+  const order = a.speed + rnd() * 18 >= b.speed + rnd() * 18 ? [a, b] : [b, a];
   const out = [];
   for (const att of order) {
     const def = att === a ? b : a;
-    if (att.hp > 0 && def.hp > 0) out.push(attack(B, att, def, att === a ? moveA : undefined));
+    if (att.hp > 0 && def.hp > 0) out.push(attack(B, att, def, att === a && moveA || (rnd() < TUNE.special ? 'special' : 'bite')));
   }
   B.round++;
   if (a.hp <= 0 || b.hp <= 0) B.winner = a.hp > 0 ? a : b;
@@ -168,4 +114,4 @@ function autoBattle(sa, sb, rnd) {
   return B;
 }
 
-if (typeof module !== 'undefined') module.exports = { TUNE, STARS, ARENAS, MOVES, statsOf, traitsOf, newBattle, playRound, autoBattle };
+if (typeof module !== 'undefined') module.exports = { TUNE, TYPES, ARENAS, MOVES, statsOf, typeMult, bestType, newBattle, playRound, autoBattle };

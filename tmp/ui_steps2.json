@@ -1,4 +1,0 @@
-[
-  { "name": "start", "wait": 800, "shot": "d1_start.png", "h": 1000 },
-  { "name": "łap", "js": "['trex','tri','stego','anky','para','pterano','mosa','velo','spino','brachio'].forEach(function(n){});document.querySelector('#q').value='triceratops';document.querySelector('#huntForm').dispatchEvent(new Event('submit',{cancelable:true}))", "wait": 4200, "shot": "d2_after.png", "h": 1000 }
-]

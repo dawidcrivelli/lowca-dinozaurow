@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#123C38">
+<meta name="theme-color" content="#D8262E">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg">
-<title>Łowca Dinozaurów</title>
+<title>Łowca Pokémonów</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
@@ -19,10 +19,10 @@
 <header class="top">
   <div class="wrap top-in">
     <div class="brand">
-      <span class="brand-badge" id="brandEgg"></span>
+      <span class="brand-badge" id="brandBall"></span>
       <span>
-        <h1>Łowca Dinozaurów</h1>
-        <p class="tagline">Wpisz nazwę, rzuć jajem, złap zwierzaka</p>
+        <h1>Łowca Pokémonów</h1>
+        <p class="tagline">Wpisz imię, rzuć Poké Ballem, złap Pokémona</p>
       </span>
     </div>
     <div class="top-actions">
@@ -52,7 +52,7 @@
     <form id="huntForm" autocomplete="off">
       <div class="search-pill">
         <span class="mag" aria-hidden="true">🔍</span>
-        <input id="q" type="text" placeholder="Jakiego dinozaura szukasz?" aria-label="Nazwa dinozaura" enterkeyhint="search">
+        <input id="q" type="text" placeholder="Jakiego Pokémona szukasz?" aria-label="Imię Pokémona" enterkeyhint="search">
         <button type="submit" class="go">Szukaj</button>
       </div>
     </form>
@@ -63,10 +63,10 @@
   <!-- POSTĘP -->
   <section class="progress-card">
     <div class="pc-head">
-      <div class="pc-egg" id="pcEgg"></div>
+      <div class="pc-ball" id="pcBall"></div>
       <div class="pc-txt">
         <strong id="pcCount">0/0</strong>
-        <span>złapanych zwierzaków</span>
+        <span>złapanych Pokémonów</span>
       </div>
       <div class="pc-rank" id="pcRank">Praktykant</div>
     </div>
@@ -90,7 +90,7 @@
   <p class="empty" id="emptyMsg" hidden>Nic tu nie ma – zmień filtr.</p>
 
   <footer class="foot">
-    <p>Dinozaury i ich sąsiedzi z innych epok. Pterozaury, gady morskie, synapsydy i ssaki <b>nie są dinozaurami</b> – mają własne etykiety.<br>Rozmiary i wagi według aktualnych szacunków naukowych.</p>
+    <p>151 Pokémonów z regionu Kanto (Red/Blue, seria Indigo). Grafiki, głosy i statystyki: <a href="https://pokeapi.co">PokeAPI</a>.<br>Pokémon © Nintendo / Game Freak / The Pokémon Company — fanowska gra dla dzieci, niekomercyjna.</p>
   </footer>
 </main>
 
@@ -99,7 +99,7 @@
   <div class="scene-sky"></div>
   <div class="scene-ground"></div>
   <div class="scene-target" id="sceneTarget"></div>
-  <div class="scene-egg" id="sceneEgg"></div>
+  <div class="scene-ball" id="sceneBall"></div>
   <div class="scene-flash" id="sceneFlash"></div>
   <p class="scene-name" id="sceneName"></p>
   <div class="confetti" id="confetti"></div>
@@ -114,8 +114,6 @@
 </div>
 
 <script src="js/species.js"></script>
-<script src="js/artspec.js"></script>
-<script src="js/art.js"></script>
 <script src="js/battle.js"></script>
 <script src="js/voices.js"></script>
 <script src="js/arena3d.js"></script>

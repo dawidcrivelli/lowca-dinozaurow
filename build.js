@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* Skleja index.html + css/app.css + js/*.js w jeden plik: dist/lowca-dinozaurow.html
+/* Skleja index.html + css/app.css + js/*.js w jeden plik: dist/lowca-pokemonow.html
    Użycie:  node build.js  [--no-fonts]
    --no-fonts  usuwa <link> do Google Fonts (dla pracy offline / w artefakcie) */
 const fs = require('fs');
@@ -24,7 +24,7 @@ if (noFonts) {
 }
 
 fs.mkdirSync(path.join(root, 'dist'), { recursive: true });
-const out = path.join(root, 'dist', 'lowca-dinozaurow.html');
+const out = path.join(root, 'dist', 'lowca-pokemonow.html');
 fs.writeFileSync(out, html);
 console.log('->', path.relative(root, out), (html.length / 1024).toFixed(0) + ' kB',
   noFonts ? '(bez Google Fonts)' : '');

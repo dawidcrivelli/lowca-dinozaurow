@@ -1,36 +1,17 @@
-/* ================= ŁOWCA DINOZAURÓW – logika aplikacji =================
-   Dane: js/species.js · rysunki: js/art.js · walka: js/battle.js */
+/* ================= ŁOWCA POKÉMONÓW – logika aplikacji =================
+   Dane: js/species.js · walka: js/battle.js · głosy: js/voices.js */
 (function () {
 'use strict';
 
 /* ---------------- zapis ----------------
-   caught: id → {t}   rec: id → {w, l}   added: własne gatunki   removed: ukryte id
-   Stare zapisy (Opus v1, ChatGPT) są przepisywane na nowe id przez legacy. */
-const KEY = 'dinoTracker.v2', KEY_OPUS = 'dinoTracker.v1', KEY_GPT = 'prehistoric_catcher_v1';
-const blank = () => ({ caught: {}, rec: {}, added: [], removed: [], settings: { sound: true, mode: 'auto' } });
-const read = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
+   caught: id → {t}   rec: id → {w, l}   removed: ukryte id */
+const KEY = 'pokeTracker.v1';
+const blank = () => ({ caught: {}, rec: {}, removed: [], settings: { sound: true, mode: 'auto' } });
+const load = j => { const db = blank(); for (const k of Object.keys(db)) if (j?.[k]) db[k] = k === 'settings' ? { ...db[k], ...j[k] } : j[k]; return db; };
+let DB = (() => { try { return load(JSON.parse(localStorage.getItem(KEY))); } catch (e) { return blank(); } })();
 function save() { try { localStorage.setItem(KEY, JSON.stringify(DB)); } catch (e) {} }
 
-const LEGACY = {};
-for (const s of SPECIES) for (const v of Object.values(s.legacy || {})) if (v) LEGACY[v] = s.id;
-const mapId = id => SPECIES.some(s => s.id === id) ? id : LEGACY[id];
-/* przyjmuje zapis dowolnej wersji: nowy, Opus ({caught, wins, added, removed}) lub ChatGPT ({state:{caught, battles}}) */
-function migrate(j) {
-  const src = (j && j.state) || j || {}, db = blank();
-  for (const [id, v] of Object.entries(src.caught || {})) { const n = mapId(id); if (n) db.caught[n] = { t: v.t || Date.parse(v.caughtAt) || Date.now() }; }
-  for (const [id, w] of Object.entries(src.wins || {})) { const n = mapId(id); if (n) db.rec[n] = { w, l: 0 }; }
-  for (const [id, r] of Object.entries((src.battles && src.battles.records) || src.rec || {})) {
-    const n = mapId(id); if (n) db.rec[n] = { w: r.wins ?? r.w ?? 0, l: r.losses ?? r.l ?? 0 };
-  }
-  db.removed = (src.removed || src.hidden || []).map(mapId).filter(Boolean);
-  db.added = (src.added || []).filter(c => c.kg);
-  Object.assign(db.settings, src.settings);
-  return db;
-}
-let DB = read(KEY) ? migrate(read(KEY)) : migrate(read(KEY_OPUS) || read(KEY_GPT));
-save();
-
-/* ---------------- wyszukiwanie: polskie znaki, aliasy, literówki ---------------- */
+/* ---------------- wyszukiwanie: wielkość liter, znaki (Mr. Mime, Farfetch'd), literówki ---------------- */
 const norm = s => String(s || '').toLowerCase().replace(/ł/g, 'l').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '');
 function lev(a, b) {
   if (Math.abs(a.length - b.length) > 3) return 9;
@@ -42,8 +23,8 @@ function lev(a, b) {
   }
   return prev[b.length];
 }
-const keysOf = sp => sp._k || (sp._k = [sp.name, sp.latin, ...(sp.aliases || [])].map(norm).filter(Boolean));
-/* 0 = dokładnie, 1 = początek (min. połowa nazwy – „zaur” nic nie złapie), 2+ = literówka */
+const keysOf = sp => sp._k || (sp._k = [norm(sp.name)]);
+/* 0 = dokładnie, 1 = początek (min. połowa nazwy – „char” nic nie złapie), 2+ = literówka; Nidoran♀ i ♂ łapie ten sam wpis → wybór w podpowiedziach */
 function search(q) {
   q = norm(q);
   if (q.length < 3) return [];
@@ -53,25 +34,35 @@ function search(q) {
       : (d => d <= tol ? 2 + d : 99)(lev(q, k))));
     if (best < 99) out.push({ sp, score: best });
   }
-  return out.sort((a, b) => a.score - b.score || a.sp.name.localeCompare(b.sp.name, 'pl'));
+  return out.sort((a, b) => a.score - b.score || a.sp.id - b.sp.id);
 }
 
-/* ---------------- lista gatunków ---------------- */
+/* ---------------- lista Pokémonów ---------------- */
 let LIST = [];
-const refreshList = () => { const rm = new Set(DB.removed); LIST = SPECIES.concat(DB.added).filter(s => !rm.has(s.id)); };
+const refreshList = () => { const rm = new Set(DB.removed); LIST = SPECIES.filter(s => !rm.has(s.id)); };
 refreshList();
-const byId = id => LIST.find(s => s.id === id);
+const byId = id => LIST.find(s => s.id === +id);
 const isCaught = id => !!DB.caught[id];
-const art = (sp, mode = 'color') => sp.custom ? drawCustom(sp.arch, sp.opts, mode) : drawSpecies(sp.id, mode);
+// ghost = czarna sylwetka; small = pikselowy sprite z gier do siatki (lekki), inaczej duża grafika
+const art = (sp, mode = 'color', small) => `<img src="${(small ? SPRITE_URL : ART_URL)(sp.id)}" crossorigin="anonymous" alt="" loading="lazy" draggable="false" class="${small ? 'px' : ''} ${mode}">`;
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const DIETS = { M: 'Mięsożerca', R: 'Roślinożerca', W: 'Wszystkożerca', Ry: 'Rybożerca', P: 'Planktonożerca', O: 'Owadożerca' };
-const EPOCHS = [[0.0117, 'Holocen'], [2.58, 'Plejstocen'], [5.33, 'Pliocen'], [23.03, 'Miocen'], [33.9, 'Oligocen'], [56, 'Eocen'], [66, 'Paleocen'],
-  [100.5, 'Kreda późna'], [145, 'Kreda wczesna'], [161.5, 'Jura późna'], [174.7, 'Jura środkowa'], [201.4, 'Jura wczesna'], [237, 'Trias późny'],
-  [247.2, 'Trias środkowy'], [251.9, 'Trias wczesny'], [298.9, 'Perm'], [358.9, 'Karbon'], [419.2, 'Dewon'], [443.8, 'Sylur'], [485.4, 'Ordowik'], [538.8, 'Kambr']];
-const epoch = ma => (EPOCHS.find(([lo]) => ma < lo) || EPOCHS[EPOCHS.length - 1])[1];
-const period = sp => sp.ma ? (epoch(sp.ma[0]) === epoch(sp.ma[1]) ? epoch(sp.ma[0]) : `${epoch(sp.ma[0])} – ${epoch(sp.ma[1])}`) : '';
-const groupLabel = sp => (GROUPS[sp.group] || ['Własny zwierzak'])[0];
-const mass = kg => kg >= 1000 ? `${+(kg / 1000).toFixed(kg < 10000 ? 1 : 0)} t` : kg >= 1 ? `${Math.round(kg)} kg` : `${Math.round(kg * 1000)} g`;
+const typeTag = t => `<span class="tag type" style="background:${TYPES[t][2]}">${TYPES[t][1]} ${TYPES[t][0]}</span>`;
+const dexNo = sp => '#' + String(sp.id).padStart(3, '0');
+const mass = kg => kg >= 1000 ? `${+(kg / 1000).toFixed(1)} t` : `${+kg.toFixed(1)} kg`;
+const evolutions = sp => SPECIES.filter(s => s.from === sp.id);
+
+/* ---------------- Poké Ball: rzadkość 1–4 → Poké / Great / Ultra / Master Ball ---------------- */
+const BALLS = [['#D8262E'], ['#3B6FD8', '#D8262E'], ['#2A2A2A', '#FFCB05'], ['#7B3FB5', '#E85AA8']];   // [góra, ozdoby]
+function drawBall(r, open) {
+  const [top, deco] = BALLS[Math.max(0, Math.min(3, (r || 1) - 1))], O = 'stroke="#1F2A44" stroke-width="6"';
+  const marks = !deco ? '' : r === 2 ? `<path d="M24 30 14 44M76 30 86 44" stroke="${deco}" stroke-width="8" stroke-linecap="round"/>`
+    : r === 3 ? `<path d="M30 12v24M70 12v24" stroke="${deco}" stroke-width="9"/>` : `<circle cx="28" cy="34" r="7" fill="${deco}"/><circle cx="72" cy="34" r="7" fill="${deco}"/><text x="50" y="30" font-size="20" font-weight="900" text-anchor="middle" fill="#fff" font-family="sans-serif">M</text>`;
+  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="ball-svg">
+    <g class="${open ? 'ball-top' : ''}"><path d="M4 50a46 46 0 0 1 92 0z" fill="${top}" ${O}/>${marks}</g>
+    <g class="${open ? 'ball-bot' : ''}"><path d="M4 50a46 46 0 0 0 92 0z" fill="#fff" ${O}/></g>
+    <circle cx="50" cy="50" r="12" fill="#fff" ${O}/><path d="M22 24c6-7 14-10 22-11" stroke="#fff" stroke-width="6" stroke-linecap="round" fill="none" opacity=".5"/>
+  </svg>`;
+}
 
 /* ---------------- dźwięk (WebAudio, bez plików) ---------------- */
 let AC = null;
@@ -104,46 +95,46 @@ function crack() {
 
 /* ---------------- elementy ---------------- */
 const $ = s => document.querySelector(s);
-const el = Object.fromEntries(['q', 'huntForm', 'sugg', 'huntMsg', 'grid', 'emptyMsg', 'chips', 'onlyMissing', 'pcCount', 'pcRank', 'pcEgg',
-  'rockFill', 'rockMarks', 'brandEgg', 'scene', 'sceneTarget', 'sceneEgg', 'sceneFlash', 'sceneName', 'confetti', 'modal', 'modalBody',
+const el = Object.fromEntries(['q', 'huntForm', 'sugg', 'huntMsg', 'grid', 'emptyMsg', 'chips', 'onlyMissing', 'pcCount', 'pcRank', 'pcBall',
+  'rockFill', 'rockMarks', 'brandBall', 'scene', 'sceneTarget', 'sceneBall', 'sceneFlash', 'sceneName', 'confetti', 'modal', 'modalBody',
   'modalClose', 'btnArena', 'btnEdit'].map(id => [id, document.getElementById(id)]));
 el.pill = $('.search-pill'); el.main = $('main.wrap');
 let filter = 'all', editing = false;
 
-const RANKS = [[0, 'Praktykant'], [5, 'Poszukiwacz'], [15, 'Tropiciel'], [30, 'Paleontolog'], [60, 'Łowca kości'], [100, 'Mistrz wykopalisk'], [150, 'Legenda prehistorii']];
+const RANKS = [[0, 'Początkujący'], [5, 'Trener'], [15, 'Tropiciel'], [30, 'Zdobywca odznak'], [60, 'Lider sali'], [100, 'Elitarna Czwórka'], [151, 'Mistrz Pokémon']];
 const rankFor = n => RANKS.filter(([k]) => n >= k).pop()[1];
 
 /* ================= SIATKA ================= */
 function tileHTML(sp) {
   const got = isCaught(sp.id);
   return `<button class="tile ${got ? '' : 'ghost'}" data-id="${sp.id}">
-    <span class="no">${String(LIST.indexOf(sp) + 1).padStart(3, '0')}</span>
+    <span class="no">${dexNo(sp)}</span>
     <span class="rar">${'<i></i>'.repeat(sp.rarity)}</span>
-    <span class="art">${art(sp, got ? 'color' : 'ghost')}</span>
+    <span class="art">${art(sp, got ? 'color' : 'ghost', 'small')}</span>
     <span class="nm">${got ? esc(sp.name) : '???'}</span>
-    <span class="grp cat-${sp.cat}"></span>
+    <span class="grp" style="background:${TYPES[sp.types[0]][2]}"></span>
     <span class="del" data-del="${sp.id}" title="Usuń z listy">✕</span></button>`;
 }
 function renderGrid(freshId) {
-  const list = LIST.filter(s => (filter === 'all' || s.cat === filter) && !(el.onlyMissing.checked && isCaught(s.id)));
+  const list = LIST.filter(s => (filter === 'all' || s.types.includes(filter)) && !(el.onlyMissing.checked && isCaught(s.id)));
   el.grid.innerHTML = list.map(tileHTML).join('');
   el.emptyMsg.hidden = list.length > 0;
   const t = freshId && el.grid.querySelector(`[data-id="${CSS.escape(freshId)}"]`);
   if (t) { t.classList.add('fresh'); t.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
 }
 function renderChips() {
-  const n = (k, got) => LIST.filter(s => (k === 'all' || s.cat === k) && (!got || isCaught(s.id))).length;
+  const n = (k, got) => LIST.filter(s => (k === 'all' || s.types.includes(k)) && (!got || isCaught(s.id))).length;
   const chip = (k, emo, label) => `<button class="chip ${filter === k ? 'on' : ''}" data-f="${k}"><span class="emo">${emo}</span> ${label}<b>${n(k, 1)}/${n(k)}</b></button>`;
-  el.chips.innerHTML = chip('all', '⭐', 'Wszystkie') + Object.entries(CATS).filter(([k]) => n(k)).map(([k, c]) => chip(k, c.emo, c.label)).join('');
+  el.chips.innerHTML = chip('all', '⭐', 'Wszystkie') + Object.entries(TYPES).filter(([k]) => n(k)).map(([k, t]) => chip(k, t[1], t[0])).join('');
 }
 function renderProgress() {
   const total = LIST.length, n = LIST.filter(s => isCaught(s.id)).length, pct = total ? n / total : 0;
   el.pcCount.textContent = `${n}/${total}`;
   el.pcRank.textContent = rankFor(n);
   el.rockFill.style.width = `calc(${(pct * 100).toFixed(1)}% - 4px)`;
-  el.pcEgg.innerHTML = drawEgg(Math.min(4, Math.floor(pct * 4) + 1), 'progress');
+  el.pcBall.innerHTML = drawBall(Math.min(4, Math.floor(pct * 4) + 1));
   el.rockMarks.innerHTML = [.25, .5, .75, 1].map((m, i) =>
-    `<i class="${pct >= m - 0.001 ? 'hit' : ''}" style="left:${m * 100}%">${drawEgg(i + 1, 'mark' + i)}</i>`).join('');
+    `<i class="${pct >= m - 0.001 ? 'hit' : ''}" style="left:${m * 100}%">${drawBall(i + 1)}</i>`).join('');
 }
 function renderAll(freshId) { renderChips(); renderProgress(); renderGrid(freshId); }
 
@@ -163,7 +154,7 @@ function showSugg() {
   el.sugg.hidden = !hits.length;
   el.sugg.innerHTML = hits.map(({ sp }) => `<button type="button" data-pick="${sp.id}">
     <span class="s-art">${art(sp, isCaught(sp.id) ? 'color' : 'ghost')}</span>
-    <span>${esc(sp.name)} <span class="s-lat">${esc(sp.latin)}</span></span>
+    <span>${esc(sp.name)} <span class="s-lat">${dexNo(sp)}</span></span>
     ${isCaught(sp.id) ? '<span class="s-got">✓ masz</span>' : ''}</button>`).join('');
 }
 let suggTimer;
@@ -178,7 +169,7 @@ el.sugg.addEventListener('mousedown', e => {
 el.huntForm.addEventListener('submit', e => {
   e.preventDefault(); el.sugg.hidden = true;
   const hit = search(el.q.value)[0];
-  if (!hit) return fail(`Nie znam nikogo takiego jak „${el.q.value.trim()}”. Spróbuj jeszcze raz!`);
+  if (!hit) return fail(`Nie ma Pokémona „${el.q.value.trim()}”. Spróbuj jeszcze raz!`);
   el.q.value = '';
   attempt(hit.sp);
 });
@@ -196,7 +187,7 @@ function attempt(sp) {
   runCatch(sp);
 }
 
-/* ================= ANIMACJA ŁAPANIA: rzut jajem, kołysanie, pęknięcie, ryk ================= */
+/* ================= ANIMACJA ŁAPANIA: rzut Poké Ballem, 3 kołysania, otwarcie, okrzyk ================= */
 let busy = false;
 function runCatch(sp) {
   if (busy) return; busy = true;
@@ -204,23 +195,23 @@ function runCatch(sp) {
   el.sceneTarget.className = 'scene-target idle'; el.sceneTarget.innerHTML = art(sp, 'ghost');
   el.sceneName.className = 'scene-name'; el.sceneName.textContent = '';
   el.sceneFlash.className = 'scene-flash'; el.confetti.innerHTML = '';
-  el.sceneEgg.className = 'scene-egg'; el.sceneEgg.innerHTML = drawEgg(sp.rarity, sp.id);
+  el.sceneBall.className = 'scene-ball'; el.sceneBall.innerHTML = drawBall(sp.rarity);
   const steps = [
-    [120, () => { el.sceneEgg.className = 'scene-egg throw'; blip(520); }], [640, () => blip(300, .08)],
-    [760, () => { el.sceneEgg.className = 'scene-egg wobble'; }], [900, () => blip(400, .07)], [1320, () => blip(430, .07)], [1740, () => blip(460, .07)],
-    [2060, () => { crack(); el.sceneEgg.innerHTML = drawEggCracked(sp.rarity, sp.id); el.sceneEgg.className = 'scene-egg gone'; el.sceneFlash.className = 'scene-flash on'; }],
+    [120, () => { el.sceneBall.className = 'scene-ball throw'; blip(520); }], [640, () => blip(300, .08)],
+    [760, () => { el.sceneBall.className = 'scene-ball wobble'; }], [900, () => blip(400, .07)], [1320, () => blip(430, .07)], [1740, () => blip(460, .07)],
+    [2060, () => { crack(); el.sceneBall.innerHTML = drawBall(sp.rarity, 'open'); el.sceneBall.className = 'scene-ball gone'; el.sceneFlash.className = 'scene-flash on'; }],
     [2320, () => {
       el.sceneTarget.innerHTML = art(sp); el.sceneTarget.className = 'scene-target show';
       el.sceneName.textContent = sp.name; el.sceneName.className = 'scene-name show';
-      cry(sp, 'call'); confettiBurst();
+      cry(sp, 'call'); confettiBurst(sp);
       DB.caught[sp.id] = { t: Date.now() }; save();
     }],
     [3900, () => { el.scene.hidden = true; busy = false; renderAll(sp.id); say(`Złapany! <b>${esc(sp.name)}</b> dołącza do kolekcji.`, 'good'); openCard(sp); }],
   ];
   steps.forEach(([ms, fn]) => setTimeout(fn, ms));
 }
-function confettiBurst() {
-  const colors = ['#F5A524', '#FFF3D0', '#7FA86B', '#4E9C93', '#D2764A'];
+function confettiBurst(sp) {
+  const colors = ['#FFCB05', '#FFFFFF', '#D8262E', '#3B6FD8', ...sp.types.map(t => TYPES[t][2])].slice(0, 5);
   el.confetti.innerHTML = Array.from({ length: 46 }, (_, i) => {
     const a = i / 46 * Math.PI * 2 + Math.random(), d = 120 + Math.random() * 260;
     return `<i style="left:50%;top:48%;background:${colors[i % 5]};--dx:${(Math.cos(a) * d) | 0}px;--dy:${(Math.sin(a) * d + 140) | 0}px;--rot:${(Math.random() * 900 - 450) | 0}deg;animation-delay:${(Math.random() * .12).toFixed(2)}s"></i>`;
@@ -237,50 +228,47 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 const openCard = sp => openModal(isCaught(sp.id) ? caughtCard(sp) : hintCard(sp));
 
 /* paski statystyk z ikonami – czytelne bez umiejętności czytania */
-const STAT_ICONS = [['hp', '❤️', 'Życie', 220], ['attack', '🦷', 'Atak', 99], ['defense', '🛡️', 'Obrona', 99], ['speed', '💨', 'Szybkość', 99]];
+const STAT_ICONS = [['hp', '❤️', 'Życie', 250], ['attack', '👊', 'Atak', 160], ['defense', '🛡️', 'Obrona', 160], ['speed', '💨', 'Szybkość', 150]];
 const statBars = st => `<div class="sbars">${STAT_ICONS.map(([k, ico, lbl, max]) =>
   `<div class="sbar" title="${lbl}"><span>${ico}</span><i><b style="width:${Math.round(100 * st[k] / max)}%"></b></i><em>${st[k]}</em></div>`).join('')}</div>`;
 const record = id => DB.rec[id] || { w: 0, l: 0 };
 
 function caughtCard(sp) {
-  const st = statsOf(sp), r = record(sp.id), dino = (GROUPS[sp.group] || [])[1];
-  const size = [sp.len && `${sp.len} m długości`, sp.wing && `${sp.wing} m rozpiętości skrzydeł`, sp.h && `${sp.h} m wysokości`].filter(Boolean).join(' · ');
+  const st = statsOf(sp), r = record(sp.id), pre = byId(sp.from), next = evolutions(sp);
+  const evo = [pre && `z ${esc(pre.name)}`, next.length && `w ${next.map(s => isCaught(s.id) ? esc(s.name) : '???').join(' / ')}`].filter(Boolean).join(' → ');
   return `
   <div class="m-hero"><div class="art">${art(sp)}</div></div>
   <div class="m-body">
-    <h2>${esc(sp.name)}</h2><p class="m-lat">${esc(sp.latin || '')}</p>
+    <h2>${esc(sp.name)}</h2><p class="m-lat">${dexNo(sp)} · ${esc(sp.kind || '')}</p>
     <div class="m-tags">
-      <span class="tag cat-${sp.cat}">${esc(groupLabel(sp))}</span>
-      ${dino === false ? '<span class="tag light">NIE dinozaur</span>' : ''}
-      <span class="tag light">${DIETS[sp.diet] || ''}</span>
-      ${period(sp) ? `<span class="tag light">${period(sp)}</span>` : ''}
+      ${sp.types.map(typeTag).join('')}
+      ${sp.legend ? '<span class="tag light">⭐ Legendarny</span>' : ''}
       <span class="tag light">${'★'.repeat(sp.rarity)}${'☆'.repeat(4 - sp.rarity)}</span>
     </div>
-    <div class="m-fact"><b>CZY WIESZ, ŻE…</b>${esc(sp.fact)}</div>
+    <div class="m-fact"><b>CZY WIESZ, ŻE…</b>${esc(sp.fact || '')}</div>
     <div class="m-stats">
       <div class="stat"><span>WAGA</span><b>${mass(sp.kg)}</b></div>
-      <div class="stat"><span>WIELKOŚĆ</span><b class="small">${size || '?'}</b></div>
-      ${sp.weaponsTxt ? `<div class="stat wide"><span>BROŃ</span><b class="small">${esc(sp.weaponsTxt)}</b></div>` : ''}
+      <div class="stat"><span>WZROST</span><b>${sp.m} m</b></div>
+      ${evo ? `<div class="stat wide"><span>EWOLUCJA</span><b class="small">${evo}</b></div>` : ''}
     </div>
     ${statBars(st)}
-    <p class="traits">${traitsOf(st, sp).join(' · ')} <span class="record">⚔️ ${r.w} wygranych · ${r.l} przegranych</span></p>
+    <p class="traits"><span class="record">⚔️ ${r.w} wygranych · ${r.l} przegranych</span></p>
     <div class="m-actions">
       <button class="btn amber big" data-arena="${sp.id}">⚔️ Do areny</button>
       <button class="btn ghost" data-close="1">Zamknij</button>
-      ${editing ? `<button class="btn danger" data-release="${sp.id}">Uwolnij</button>` : ''}
+      ${editing ? `<button class="btn danger" data-release="${sp.id}">Wypuść</button>` : ''}
     </div>
   </div>`;
 }
 function hintCard(sp) {
-  const size = sp.kg >= 10000 ? 'olbrzym' : sp.kg >= 1000 ? 'duży' : sp.kg >= 30 ? 'średni' : 'mały';
+  const size = sp.m >= 3 ? 'olbrzym' : sp.m >= 1.5 ? 'duży' : sp.m >= .7 ? 'średni' : 'mały';
   return `
   <div class="m-hero"><div class="art">${art(sp, 'ghost')}</div></div>
   <div class="m-body">
     <div class="m-hint">
-      <p class="q">? ? ?</p><div class="lbl">PODPOWIEDŹ</div><p>${esc(sp.hint)}</p>
-      <div class="hint-fields"><span>${CATS[sp.cat]?.emo || ''} ${esc(groupLabel(sp))}</span><span>${DIETS[sp.diet] || ''}</span>
-        <span>${size}${sp.len ? ` (${sp.len} m)` : ''}</span><span>${'★'.repeat(sp.rarity)}</span></div>
-      <p class="more">Wpisz jego nazwę w wyszukiwarce, żeby go złapać!</p>
+      <p class="q">Kto to za Pokémon?</p><div class="lbl">PODPOWIEDŹ</div><p>${esc(sp.hint || '')}</p>
+      <div class="hint-fields">${sp.types.map(typeTag).join('')}<span>${size} (${sp.m} m)</span><span>${'★'.repeat(sp.rarity)}</span></div>
+      <p class="more">Wpisz jego imię w wyszukiwarce, żeby go złapać!</p>
     </div>
     <div class="m-actions">
       <button class="btn" data-letter="${sp.id}">Pokaż pierwszą literę</button>
@@ -306,17 +294,17 @@ el.modalBody.addEventListener('click', e => {
 /* ================= ARENA =================
    Wybór zawodników obrazkami (młodszy nie musi czytać), tryb ▶️ oglądam / 👆 walczę. */
 const A = { a: null, b: null, slot: 'a', B: null, timers: [], token: 0 };
-/* widok areny: 'mix' rysunki na scenie 3D (domyślny) | '3d' bryły 3D */
-const view3d = () => DB.settings.view === '3d' ? '3d' : 'mix';
+/* widok areny: '3d' scena 3D (domyślny, jeśli jest WebGL) | '2d' same obrazki */
+const view3d = () => window.Arena3D?.ok && DB.settings.view !== '2d';
 function stopBattle() { A.timers.forEach(clearTimeout); A.timers = []; A.token++; window.Arena3D?.stop(); }
 const later = (ms, fn) => { const t = A.token; A.timers.push(setTimeout(() => t === A.token && fn(), ms)); };
 const roster = () => LIST.filter(s => isCaught(s.id));
-const randomOther = id => { const p = roster().filter(s => s.id !== id); return p[Math.floor(Math.random() * p.length)]; };
+const randomOther = id => { const p = roster().filter(s => s.id !== +id); return p[Math.floor(Math.random() * p.length)]; };
 
 function openArena(preId) {
   stopBattle();
   if (roster().length < 2) return openModal(`<div class="m-body"><h2>⚔️ Arena</h2>
-    <p class="m-lat">Najpierw złap co najmniej dwa zwierzaki.</p>
+    <p class="m-lat">Najpierw złap co najmniej dwa Pokémony.</p>
     <div class="m-actions"><button class="btn ghost" data-close="1">Rozumiem</button></div></div>`);
   if (preId) { A.a = byId(preId); A.b = randomOther(preId); A.slot = 'b'; }
   if (!A.a || !isCaught(A.a.id)) { A.a = roster()[0]; A.slot = 'a'; }
@@ -338,13 +326,13 @@ function renderSetup() {
         <button class="${mode === 'auto' ? 'on' : ''}" data-mode="auto" title="Oglądam walkę">▶️<small>Oglądam</small></button>
         <button class="${mode === 'play' ? 'on' : ''}" data-mode="play" title="Sam wybieram ruchy">👆<small>Walczę</small></button>
       </div>
-      ${window.Arena3D?.ok ? `<div class="seg" role="group" aria-label="Widok">${[['mix', '🏞️'], ['3d', '🧊']].map(([v, i]) =>
-        `<button class="${view3d() === v ? 'on' : ''}" data-view="${v}">${i}<small>${v === 'mix' ? 'rysunki' : '3D'}</small></button>`).join('')}</div>` : ''}
+      ${window.Arena3D?.ok ? `<div class="seg" role="group" aria-label="Widok">${[['2d', '🖼️'], ['3d', '🧊']].map(([v, i]) =>
+        `<button class="${view3d() === (v === '3d') ? 'on' : ''}" data-view="${v}">${i}<small>${v.toUpperCase()}</small></button>`).join('')}</div>` : ''}
       <button class="btn ghost icon" data-random="1" title="Losuj rywala">🎲</button>
       <button class="btn amber big" data-fight="1">⚔️ Walka!</button>
     </div>
     <div class="ar-pick">${roster().map(s => `<button data-pick="${s.id}" class="${s === A.a ? 'is-a' : s === A.b ? 'is-b' : ''}">
-      <span class="art">${art(s)}</span><span class="nm">${esc(s.name)}</span></button>`).join('')}</div>
+      <span class="art">${art(s, 'color', 'small')}</span><span class="nm">${esc(s.name)}</span></button>`).join('')}</div>
   </div>`, 'wide');
 }
 function onArenaClick(e) {
@@ -382,7 +370,7 @@ function startFight() {
     <div class="battle-log" id="log"><div><strong>Runda 1.</strong> Walka się zaczyna!</div></div>
     <div class="battle-result" id="result" hidden></div>
   </div>`, 'wide');
-  if (window.Arena3D?.ok) Arena3D.start($('.fight-grid'), B, view3d() === 'mix' ? 'bill' : 'model');   // bez WebGL zostaje widok 2D
+  if (view3d()) Arena3D.start($('.fight-grid'), B);
   thud();
   play ? later(500, askMove) : later(500, autoStep);
 }
@@ -448,31 +436,8 @@ el.btnEdit.addEventListener('click', () => { if (!editing) say('Tryb rodzica: pr
 el.btnEdit.addEventListener('contextmenu', e => e.preventDefault());
 
 function removeSpecies(id) {
-  if (!confirm('Usunąć ten gatunek z listy?')) return;
-  DB.removed.push(id); delete DB.caught[id]; save(); refreshList(); renderAll();
-}
-/* własny zwierzak: archetyp rysunku → ciało do walki, ruch, dieta, broń */
-const ARCH_BODY = {
-  thero: ['theropod', 'biped', 'M', { bite: 2 }], raptor: ['smalltheropod', 'biped', 'M', { claw: 2, bite: 1 }], ornimim: ['smalltheropod', 'biped', 'W', {}],
-  tbird: ['theropod', 'biped', 'M', { bite: 2 }], dragon: ['theropod', 'biped', 'M', { bite: 2, claw: 1 }], prosauro: ['sauropod', 'biped', 'R', { claw: 1 }],
-  sauro: ['sauropod', 'quad', 'R', { tail: 1 }], cerat: ['ceratopsian', 'quad', 'R', { horn: 2 }], armor: ['ankylosaur', 'quad', 'R', { tail: 2, armor: 3 }],
-  stego: ['stegosaur', 'quad', 'R', { tail: 2, armor: 1 }], hadro: ['hadrosaur', 'quad', 'R', {}], orni: ['hadrosaur', 'biped', 'R', {}],
-  dome: ['pachy', 'biped', 'R', { ram: 2 }], ptero: ['pterosaur', 'fly', 'Ry', { bite: 1 }], bird: ['pterosaur', 'fly', 'W', { claw: 1 }],
-  plesio: ['marine-long', 'swim', 'Ry', { bite: 1 }], mosa: ['marine', 'swim', 'M', { bite: 2 }], ichthyo: ['marine', 'swim', 'Ry', { bite: 1 }],
-  shark: ['marine', 'swim', 'M', { bite: 3 }], whale: ['marine', 'swim', 'M', { bite: 2 }], fish: ['fish', 'swim', 'M', { bite: 1 }],
-  croc: ['croc', 'amphib', 'M', { bite: 2, armor: 1 }], lizard: ['reptile', 'quad', 'M', { bite: 1 }], snake: ['reptile', 'crawl', 'M', { squeeze: 2 }],
-  turtle: ['turtle', 'swim', 'W', { armor: 3 }], sail: ['synapsid', 'quad', 'M', { bite: 1 }], synap: ['synapsid', 'quad', 'M', { bite: 1 }],
-  amphib: ['reptile', 'amphib', 'M', { bite: 1 }], bug: ['bug', 'crawl', 'W', {}], ammo: ['bug', 'swim', 'M', {}], scorp: ['bug', 'swim', 'M', { claw: 2 }],
-  mammal: ['mammal', 'quad', 'M', { bite: 2 }], cat: ['mammal', 'quad', 'M', { bite: 2, claw: 1 }], ele: ['mammal', 'quad', 'R', { horn: 2 }],
-  sloth: ['mammal', 'quad', 'R', { claw: 2 }],
-};
-const SIZES = [['Mały jak kura', 3], ['Jak człowiek', 80], ['Jak słoń', 5000], ['Olbrzym', 30000]];
-function addSpecies(name, latin, arch, cat, kg) {
-  const [body, loco, diet, weapons] = ARCH_BODY[arch] || ['reptile', 'quad', 'W', {}];
-  const sp = { id: 'own-' + norm(name) + '-' + Date.now().toString(36), name, latin, arch, opts: { p: Math.floor(Math.random() * PAL.length) }, cat, group: 'own', body, loco, diet, weapons, kg: +kg,
-    kmh: 20, social: 'solo', rarity: 2, custom: true, hint: 'Ten zwierzak został dodany przez rodzica', fact: 'Dopisaliście go sami — wymyślcie o nim własną ciekawostkę!' };
-  DB.added.push(sp); save(); refreshList(); renderAll();
-  return sp;
+  if (!confirm('Usunąć tego Pokémona z listy?')) return;
+  DB.removed.push(+id); delete DB.caught[id]; save(); refreshList(); renderAll();
 }
 function download(obj, name) {
   const a = document.createElement('a');
@@ -490,16 +455,7 @@ function toggleEdit() {
   editBar.className = 'edit-bar';
   editBar.innerHTML = `
     <h3>⚙️ Tryb rodzica</h3>
-    <p>Dodaj brakującego ulubieńca albo usuń gatunek z listy (✕ na kafelku). Zapis z wersji ChatGPT wczytasz przyciskiem „Wczytaj z pliku”.</p>
-    <div class="eb-row">
-      <input id="ebName" placeholder="Nazwa po polsku, np. Ultrazaur"><input id="ebLat" placeholder="Nazwa łacińska (opcjonalnie)">
-    </div>
-    <div class="eb-row">
-      <select id="ebArch">${ARCH_LIST.map(([k, v]) => `<option value="${k}">${v}</option>`).join('')}</select>
-      <select id="ebCat">${Object.entries(CATS).map(([k, c]) => `<option value="${k}">${c.emo} ${c.label}</option>`).join('')}</select>
-      <select id="ebKg">${SIZES.map(([l, kg]) => `<option value="${kg}">${l}</option>`).join('')}</select>
-      <button class="btn amber" data-eb="add">Dodaj</button>
-    </div>
+    <p>Usuń Pokémona z listy (✕ na kafelku) albo przenieś postęp na inne urządzenie przez plik.</p>
     <div class="eb-tools">
       <button class="btn ghost" data-eb="restore">Przywróć usunięte (${DB.removed.length})</button>
       <button class="btn ghost" data-eb="export">Zapisz do pliku</button>
@@ -513,19 +469,14 @@ function toggleEdit() {
     const b = e.target.closest('[data-eb]'); if (!b) return;
     const v = id => editBar.querySelector(id).value.trim();
     ({
-      add() {
-        if (v('#ebName').length < 2) return alert('Wpisz nazwę zwierzaka.');
-        openCard(addSpecies(v('#ebName'), v('#ebLat'), v('#ebArch'), v('#ebCat'), v('#ebKg')));
-        editBar.querySelector('#ebName').value = editBar.querySelector('#ebLat').value = '';
-      },
       restore() { DB.removed = []; save(); refreshList(); renderAll(); b.textContent = 'Przywróć usunięte (0)'; },
-      export() { download(DB, `lowca-dinozaurow-${new Date().toISOString().slice(0, 10)}.json`); },
+      export() { download(DB, `lowca-pokemonow-${new Date().toISOString().slice(0, 10)}.json`); },
       import() {
         const inp = Object.assign(document.createElement('input'), { type: 'file', accept: 'application/json,.json' });
         inp.onchange = async () => {
           try {
-            const db = migrate(JSON.parse(await inp.files[0].text()));
-            if (!confirm(`Wczytać zapis? ${Object.keys(db.caught).length} złapanych zwierząt. Obecny postęp zostanie zastąpiony.`)) return;
+            const db = load(JSON.parse(await inp.files[0].text()));
+            if (!confirm(`Wczytać zapis? ${Object.keys(db.caught).length} złapanych Pokémonów. Obecny postęp zostanie zastąpiony.`)) return;
             DB = db; save(); refreshList(); renderAll();
           } catch (err) { alert('Nie udało się wczytać tego pliku.'); }
         };
@@ -533,14 +484,14 @@ function toggleEdit() {
       },
       sound() { DB.settings.sound = !DB.settings.sound; save(); b.textContent = `Dźwięk: ${DB.settings.sound ? 'wł.' : 'wył.'}`; },
       all() { LIST.forEach(s => { DB.caught[s.id] = DB.caught[s.id] || { t: Date.now() }; }); save(); renderAll(); },
-      reset() { if (confirm('Na pewno wyzerować cały postęp (złapane, dodane, usunięte, walki)?')) { DB = blank(); save(); refreshList(); renderAll(); } },
+      reset() { if (confirm('Na pewno wyzerować cały postęp (złapane, usunięte, walki)?')) { DB = blank(); save(); refreshList(); renderAll(); } },
     })[b.dataset.eb]();
   });
 }
 
 /* ================= START ================= */
-el.brandEgg.innerHTML = drawEgg(3, 'brand');
+el.brandBall.innerHTML = drawBall(1);
 renderAll();
-if (!Object.keys(DB.caught).length) say('Zacznij od czegoś łatwego — spróbuj wpisać „tyranozaur”.');
+if (!Object.keys(DB.caught).length) say('Zacznij od czegoś łatwego — spróbuj wpisać „Pikachu”.');
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => {});
 })();

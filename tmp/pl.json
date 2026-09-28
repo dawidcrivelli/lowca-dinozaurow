@@ -1,0 +1,757 @@
+{
+ "1": {
+  "kind": "Pokémon Nasiono",
+  "hint": "Mały, zielony stworek z cebulką rosnącą na grzbiecie.",
+  "fact": "Na grzbiecie ma dziwne nasiono, które rośnie razem z nim od narodzin."
+ },
+ "2": {
+  "kind": "Pokémon Nasiono",
+  "hint": "Zielony stworek z pękającym pąkiem kwiatu na grzbiecie, chodzi na czterech łapach.",
+  "fact": "Gdy pąk na grzbiecie robi się duży i ciężki, trudno mu stać na dwóch łapach."
+ },
+ "3": {
+  "kind": "Pokémon Nasiono",
+  "hint": "Duży zielony stworek z ogromnym kwiatem na grzbiecie.",
+  "fact": "Jego kwiat rozkwita, gdy wchłania energię słońca, więc wciąż szuka słonecznych miejsc."
+ },
+ "4": {
+  "kind": "Pokémon Jaszczurka",
+  "hint": "Mała pomarańczowa jaszczurka z płomieniem na końcu ogona.",
+  "fact": "Uwielbia gorące miejsca. Gdy pada deszcz, z jego ogona unosi się para."
+ },
+ "5": {
+  "kind": "Pokémon Płomień",
+  "hint": "Czerwona jaszczurka z pazurami i ognistym ogonem, trochę zadziorna.",
+  "fact": "Gdy macha płonącym ogonem, temperatura wokół robi się bardzo wysoka."
+ },
+ "6": {
+  "kind": "Pokémon Płomień",
+  "hint": "Wielki pomarańczowy stworek ze skrzydłami, zieje ogniem.",
+  "fact": "Zionie ogniem tak gorącym, że mógłby roztopić skałę."
+ },
+ "7": {
+  "kind": "Pokémon Mały Żółw",
+  "hint": "Niebieski żółwik ze skorupą na grzbiecie.",
+  "fact": "Po urodzeniu jego grzbiet twardnieje w skorupę. Mocno strzela pianą z pyszczka."
+ },
+ "8": {
+  "kind": "Pokémon Żółw",
+  "hint": "Niebiesko-biały żółw z futrzastym, puszystym ogonem.",
+  "fact": "Lubi chować się w wodzie. Podczas szybkiego pływania utrzymuje równowagę, poruszając uszami."
+ },
+ "9": {
+  "kind": "Pokémon Skorupiak",
+  "hint": "Wielki niebieski żółw z działkami wodnymi wystającymi ze skorupy.",
+  "fact": "Ma na skorupie działka wodne pod dużym ciśnieniem, którymi wykonuje szybkie szarże."
+ },
+ "10": {
+  "kind": "Pokémon Gąsienica",
+  "hint": "Zielona gąsienica z małymi odnóżkami, powoli pełznie po ziemi.",
+  "fact": "Jej krótkie nóżki mają przyssawki, dzięki którym bez trudu wspina się po zboczach i murach."
+ },
+ "11": {
+  "kind": "Pokémon Kokon",
+  "hint": "Zielony kokon, który prawie się nie rusza, czeka w bezruchu.",
+  "fact": "Ma miękką skorupkę, więc jest bezbronny, gdy coś go zaatakuje."
+ },
+ "12": {
+  "kind": "Pokémon Motyl",
+  "hint": "Fioletowo-biały motyl z wielkimi skrzydłami.",
+  "fact": "W walce trzepocze skrzydłami bardzo szybko, wypuszczając w powietrze drobny pyłek."
+ },
+ "13": {
+  "kind": "Pokémon Włochaty Robak",
+  "hint": "Mała żółta larwa z ostrym kolcem na głowie.",
+  "fact": "Mieszka w lasach i zjada liście. Na głowie ma ostry, jadowity kolec."
+ },
+ "14": {
+  "kind": "Pokémon Kokon",
+  "hint": "Żółty kokon, który prawie nie umie się ruszać.",
+  "fact": "Ledwo się rusza, ale w razie zagrożenia potrafi utwardzić swoją skorupkę."
+ },
+ "15": {
+  "kind": "Pokémon Trująca Pszczoła",
+  "hint": "Żółto-czarny owad z dwoma dużymi żądłami na przednich łapkach.",
+  "fact": "Lata bardzo szybko i atakuje dużymi, jadowitymi żądłami na łapkach i ogonie."
+ },
+ "16": {
+  "kind": "Pokémon Mały Ptak",
+  "hint": "Brązowy ptaszek, często widywany w lasach i na łąkach.",
+  "fact": "Machając skrzydłami tuż nad ziemią, wznieca oślepiający piasek."
+ },
+ "17": {
+  "kind": "Pokémon Ptak",
+  "hint": "Brązowo-kremowy ptak z czubkiem na głowie, pilnuje swojego terytorium.",
+  "fact": "Bardzo pilnie strzeże swojego terenu i dziobie każdego, kto się tam zjawi."
+ },
+ "18": {
+  "kind": "Pokémon Ptak",
+  "hint": "Duży ptak z pięknym czerwonym czubkiem, świetnie lata nad wodą.",
+  "fact": "Podczas łowów sunie tuż nad wodą, by szybko złapać nieuważną zdobycz."
+ },
+ "19": {
+  "kind": "Pokémon Mysz",
+  "hint": "Fioletowa mysz z dużymi przednimi zębami, szybka i wszędobylska.",
+  "fact": "Gryzie wszystko, co napotka. Jest mała i bardzo szybka, spotykana wszędzie."
+ },
+ "20": {
+  "kind": "Pokémon Mysz",
+  "hint": "Większa, brązowa mysz z długimi wąsikami.",
+  "fact": "Wąsikami utrzymuje równowagę. Podobno bez nich staje się wolniejsza."
+ },
+ "21": {
+  "kind": "Pokémon Mały Ptak",
+  "hint": "Mały brązowy ptak z dużym, ostrym dziobem.",
+  "fact": "Zjada owady na łąkach. Musi bardzo szybko machać krótkimi skrzydłami, by lecieć."
+ },
+ "22": {
+  "kind": "Pokémon Dziób",
+  "hint": "Duży ptak z ogromnym, długim dziobem i wielkimi skrzydłami.",
+  "fact": "Dzięki wielkim skrzydłom może latać bardzo długo bez odpoczynku."
+ },
+ "23": {
+  "kind": "Pokémon Wąż",
+  "hint": "Fioletowy wąż, który skrada się cicho i po kryjomu.",
+  "fact": "Rusza się bezszelestnie. Zjada jajka ptaków w całości."
+ },
+ "24": {
+  "kind": "Pokémon Kobra",
+  "hint": "Duży fioletowy wąż z groźnym wzorem przypominającym twarz na brzuchu.",
+  "fact": "Podobno wzór na jego brzuchu, który odstrasza wrogów, różni się w zależności od miejsca."
+ },
+ "25": {
+  "kind": "Pokémon Mysz",
+  "hint": "Żółty, mały stworek z czerwonymi policzkami i ogonem jak błyskawica.",
+  "fact": "Kiedy zbiera się ich wiele, ich elektryczność może wywołać burzę z błyskawicami."
+ },
+ "26": {
+  "kind": "Pokémon Mysz",
+  "hint": "Pomarańczowo-żółty stworek z długim ogonem, pełen energii elektrycznej.",
+  "fact": "Długim ogonem odprowadza prąd do ziemi, żeby nie poraziło go własne napięcie."
+ },
+ "27": {
+  "kind": "Pokémon Mysz",
+  "hint": "Żółty stworek pokryty łuskami, mieszka pod ziemią na pustyni.",
+  "fact": "Kopie głęboko pod ziemią, daleko od wody. Wychodzi na powierzchnię tylko po jedzenie."
+ },
+ "28": {
+  "kind": "Pokémon Mysz",
+  "hint": "Żółty, kolczasty stworek, zwija się w kłębek, gdy się boi.",
+  "fact": "Gdy czuje zagrożenie, zwija się w kolczastą kulkę i może się w niej nawet toczyć."
+ },
+ "29": {
+  "kind": "Pokémon Trujący Kolec",
+  "hint": "Mały niebieski stworek z króciutkimi rożkami i dużymi uszami.",
+  "fact": "Choć jest mała, ma jadowite rogi, które czynią ją niebezpieczną."
+ },
+ "30": {
+  "kind": "Pokémon Trujący Kolec",
+  "hint": "Niebieski stworek z małymi rogami, woli walczyć pazurami i zębami.",
+  "fact": "Jej rogi rosną bardzo wolno. Woli atakować pazurami i zębami niż jadem."
+ },
+ "31": {
+  "kind": "Pokémon Wiertło",
+  "hint": "Duży niebieski stworek pokryty twardymi łuskami, bardzo silny.",
+  "fact": "Twarde łuski dobrze ją chronią, a swoją siłą wykonuje potężne uderzenia."
+ },
+ "32": {
+  "kind": "Pokémon Trujący Kolec",
+  "hint": "Mały fioletowy stworek z dużymi uszami i małym rogiem na głowie.",
+  "fact": "Nasłuchuje uszami, żeby wyczuć niebezpieczeństwo. Im większy róg, tym silniejszy jad."
+ },
+ "33": {
+  "kind": "Pokémon Trujący Kolec",
+  "hint": "Fioletowy stworek z dużym rogiem na czole, gotowy do ataku.",
+  "fact": "Jest bardzo zaczepny i szybko atakuje. Róg na głowie wydziela silny jad."
+ },
+ "34": {
+  "kind": "Pokémon Wiertło",
+  "hint": "Wysoki fioletowy stworek z dużym rogiem i mocnym ogonem.",
+  "fact": "W walce używa silnego ogona, żeby zmiażdżyć i obezwładnić przeciwnika."
+ },
+ "35": {
+  "kind": "Pokémon Wróżka",
+  "hint": "Mały różowy stworek z uroczymi skrzydełkami na uszach, bardzo rzadki.",
+  "fact": "Jest urocza i magiczna, ma wielu wielbicieli, ale spotkać ją można tylko w niektórych miejscach."
+ },
+ "36": {
+  "kind": "Pokémon Wróżka",
+  "hint": "Różowy, płochliwy stworek, ukrywa się, gdy poczuje ludzi w pobliżu.",
+  "fact": "Jest bardzo płochliwa. Gdy poczuje ludzi w pobliżu, ucieka i się chowa."
+ },
+ "37": {
+  "kind": "Pokémon Lis",
+  "hint": "Pomarańczowy lisek, na początku ma tylko jeden ogon.",
+  "fact": "Rodzi się z jednym ogonem. Z wiekiem jego ogon dzieli się na kilka."
+ },
+ "38": {
+  "kind": "Pokémon Lis",
+  "hint": "Piękny lis z dziewięcioma puszystymi ogonami.",
+  "fact": "Jest bardzo mądry i pamiętliwy. Podobno nie warto ciągnąć go za ogon."
+ },
+ "39": {
+  "kind": "Pokémon Balon",
+  "hint": "Różowa, okrągła kulka z wielkimi oczami, śpiewa kołyszące piosenki.",
+  "fact": "Gdy jego wielkie oczy zaświecą, śpiewa senną melodię, która usypia wrogów."
+ },
+ "40": {
+  "kind": "Pokémon Balon",
+  "hint": "Duża, różowa, pluszowa kulka, umie się nadmuchać jak balon.",
+  "fact": "Ma miękkie i gumowate ciało. Gdy się złości, nabiera powietrza i pęcznieje ogromnie."
+ },
+ "41": {
+  "kind": "Pokémon Nietoperz",
+  "hint": "Fioletowy nietoperz bez oczu, mieszka w jaskiniach.",
+  "fact": "Żyje w gromadach w ciemnych miejscach. Znajduje cel dzięki falom ultradźwiękowym."
+ },
+ "42": {
+  "kind": "Pokémon Nietoperz",
+  "hint": "Duży fioletowy nietoperz z ogromną paszczą.",
+  "fact": "Gdy już kogoś złapie, nie odpuszcza, nawet jeśli sam robi się za ciężki, by latać."
+ },
+ "43": {
+  "kind": "Pokémon Chwast",
+  "hint": "Niebieski korzonek z listkami na głowie, chowa buzię w ziemi za dnia.",
+  "fact": "W dzień trzyma buzię w ziemi, a nocą chodzi i rozsiewa swoje ziarenka."
+ },
+ "44": {
+  "kind": "Pokémon Chwast",
+  "hint": "Niebieski stworek z kwiatem, z pyszczka wycieka mu lepki nektar.",
+  "fact": "Z jego pyszczka nie cieknie ślina, a słodki nektar, którym przyciąga zdobycz."
+ },
+ "45": {
+  "kind": "Pokémon Kwiat",
+  "hint": "Stworek z ogromnym, kolorowym kwiatem na głowie, ciężko mu go unieść.",
+  "fact": "Im większe płatki, tym więcej trującego pyłku zawierają. Ciężka głowa trudno mu utrzymać."
+ },
+ "46": {
+  "kind": "Pokémon Grzyb",
+  "hint": "Czerwony żuk z dwoma grzybkami rosnącymi na grzbiecie.",
+  "fact": "Wkopuje się, by wysysać sok z korzeni drzew. Grzyby na grzbiecie żywią się jego ciałem."
+ },
+ "47": {
+  "kind": "Pokémon Grzyb",
+  "hint": "Duży czerwony żuk z wielkim grzybem, który przejął nad nim kontrolę.",
+  "fact": "Grzyb na jego grzbiecie przejął władzę nad żukiem. Lubi wilgotne miejsca."
+ },
+ "48": {
+  "kind": "Pokémon Owad",
+  "hint": "Fioletowy, futrzasty owad z wielkimi czerwonymi oczami.",
+  "fact": "Żyje w cieniu wysokich drzew, gdzie zjada insekty. Nocą przyciąga go światło."
+ },
+ "49": {
+  "kind": "Pokémon Trująca Ćma",
+  "hint": "Fioletowa ćma z dużymi skrzydłami pokrytymi pyłkiem.",
+  "fact": "Pyłek na jego skrzydłach ma różne kolory, które pokazują, jaki rodzaj jadu ma w sobie."
+ },
+ "50": {
+  "kind": "Pokémon Kret",
+  "hint": "Brązowa główka wystająca z ziemi, resztę ciała chowa pod nią.",
+  "fact": "Żyje głęboko pod ziemią i zjada korzenie roślin. Czasem wystawia głowę na powierzchnię."
+ },
+ "51": {
+  "kind": "Pokémon Kret",
+  "hint": "Trzy brązowe głowy wystające razem z ziemi.",
+  "fact": "To trójka zrośniętych ze sobą kretów, którzy kopiąc, potrafią wywołać wielkie wstrząsy ziemi."
+ },
+ "52": {
+  "kind": "Pokémon Kot Drapacz",
+  "hint": "Kremowy kot z monetką na czole, uwielbia lśniące przedmioty.",
+  "fact": "Kocha okrągłe przedmioty. Wieczorami chodzi po ulicach i szuka zgubionych monet."
+ },
+ "53": {
+  "kind": "Pokémon Elegancki Kot",
+  "hint": "Elegancki kremowy kot z długimi wąsami i kręconym ogonem.",
+  "fact": "Ma piękną sierść, ale trudno go oswoić, bo bywa kapryśny i złośliwy."
+ },
+ "54": {
+  "kind": "Pokémon Kaczka",
+  "hint": "Żółta kaczka, która wygląda, jakby zawsze bolała ją głowa.",
+  "fact": "Ma nieobecny wyraz twarzy, ale ten podstępny stworek potrafi używać mocy psychicznych."
+ },
+ "55": {
+  "kind": "Pokémon Kaczka",
+  "hint": "Niebieska kaczka, elegancko pływająca w jeziorach.",
+  "fact": "Często widuje się go, jak elegancko pływa nad brzegiem jeziora."
+ },
+ "56": {
+  "kind": "Pokémon Małpka",
+  "hint": "Brązowa małpka, która potrafi się wściekać w jednej chwili.",
+  "fact": "Bardzo szybko wpada w gniew. Może być spokojna, a chwilę później już się złości."
+ },
+ "57": {
+  "kind": "Pokémon Małpka",
+  "hint": "Duża, wściekła małpa, która nie odpuszcza w pościgu.",
+  "fact": "Jest zawsze wściekła i uparta. Nie przestaje gonić celu, aż go dogoni."
+ },
+ "58": {
+  "kind": "Pokémon Szczeniak",
+  "hint": "Pomarańczowy piesek z pręgami, pilnie strzeże swojego terenu.",
+  "fact": "Bardzo pilnie strzeże swojego terytorium. Szczeka i kąsa, by odgonić intruzów."
+ },
+ "59": {
+  "kind": "Pokémon Legendarny",
+  "hint": "Wielki, piękny pies z długą sierścią, biega bardzo szybko.",
+  "fact": "Od dawna zachwyca ludzi swoją urodą. Biega tak zwinnie, jakby miał skrzydła."
+ },
+ "60": {
+  "kind": "Pokémon Kijanka",
+  "hint": "Niebieska kijanka ze spiralnym wzorem na brzuchu.",
+  "fact": "Nowe nóżki nie pozwalają mu jeszcze biegać, więc woli pływać niż chodzić."
+ },
+ "61": {
+  "kind": "Pokémon Kijanka",
+  "hint": "Niebieski stworek ze spiralą na brzuchu, żyje w wodzie i na lądzie.",
+  "fact": "Może żyć w wodzie i poza nią. Na suchym lądzie pokrywa się śluzem, by nie wyschnąć."
+ },
+ "62": {
+  "kind": "Pokémon Kijanka",
+  "hint": "Muskularny niebieski stworek, świetny pływak.",
+  "fact": "Pływa świetnie różnymi stylami i z łatwością wygrywa z najlepszymi pływakami."
+ },
+ "63": {
+  "kind": "Pokémon Psi",
+  "hint": "Mały żółty stworek z lisim ogonem, prawie zawsze śpi.",
+  "fact": "Czytając umysły, wyczuwa niebezpieczeństwo i w mgnieniu oka teleportuje się w bezpieczne miejsce."
+ },
+ "64": {
+  "kind": "Pokémon Psi",
+  "hint": "Żółty stworek z wąsami i łyżką w ręce, emanuje tajemniczą energią.",
+  "fact": "Wysyła z ciała fale, które wywołują bóle głowy tylko dlatego, że jest w pobliżu."
+ },
+ "65": {
+  "kind": "Pokémon Psi",
+  "hint": "Żółty stworek z dwiema łyżkami i bardzo długimi wąsami, niezwykle bystry.",
+  "fact": "Jego mózg działa lepiej niż superkomputer. Mówi się, że ma bardzo wysokie IQ."
+ },
+ "66": {
+  "kind": "Pokémon Siłacz",
+  "hint": "Szary, muskularny stworek, uwielbia ćwiczyć.",
+  "fact": "Kocha ćwiczyć mięśnie. Trenuje różne sztuki walki, żeby być coraz silniejszy."
+ },
+ "67": {
+  "kind": "Pokémon Siłacz",
+  "hint": "Muskularny szary stworek w pasie, który pomaga mu kontrolować siłę.",
+  "fact": "Jego ciało jest tak silne, że musi nosić specjalny pas, żeby kontrolować swoje ruchy."
+ },
+ "68": {
+  "kind": "Pokémon Siłacz",
+  "hint": "Muskularny stworek z czterema ramionami, rzuca bardzo mocne uderzenia.",
+  "fact": "Swoimi mocnymi mięśniami wyprowadza ciosy tak silne, że mogłyby wysłać rywala bardzo daleko."
+ },
+ "69": {
+  "kind": "Pokémon Kwiat",
+  "hint": "Żółta roślina z korzeniami jako nogami, łapie owady na obiad.",
+  "fact": "Ta roślina łapie i zjada owady. Korzeniami zamiast nóg wchłania potrzebną wilgoć."
+ },
+ "70": {
+  "kind": "Pokémon Łapacz Much",
+  "hint": "Żółta roślina z dużym dzwonkowatym kwiatem, groźna dla owadów.",
+  "fact": "Wypuszcza pyłek, który obezwładnia wroga, a potem dobija go swoim kwaśnym sokiem."
+ },
+ "71": {
+  "kind": "Pokémon Łapacz Much",
+  "hint": "Duża roślina z ogromnym kwiatem, żyje głęboko w dżungli.",
+  "fact": "Podobno mieszka w wielkich koloniach w głębi dżungli, skąd nikt jeszcze nie wrócił."
+ },
+ "72": {
+  "kind": "Pokémon Meduza",
+  "hint": "Niebieska meduza z czerwonymi kulkami na głowie, unosi się w wodzie.",
+  "fact": "Unosi się na mieliznach. Rybacy, którzy złapią go przypadkiem, żałują, bo parzy kwaśną cieczą."
+ },
+ "73": {
+  "kind": "Pokémon Meduza",
+  "hint": "Duża niebieska meduza z długimi mackami.",
+  "fact": "Zwykle trzyma macki krótko, ale na polowaniu wydłuża je, by usidlić zdobycz."
+ },
+ "74": {
+  "kind": "Pokémon Skała",
+  "hint": "Szary kamień z rękami i nogami, łatwo pomylić go z prawdziwym głazem.",
+  "fact": "Żyje na polach i w górach. Ludzie często biorą go za głaz i się o niego potykają."
+ },
+ "75": {
+  "kind": "Pokémon Skała",
+  "hint": "Duży kamienny stworek, który zjeżdża ze zboczy jak kula.",
+  "fact": "Przemieszcza się, zjeżdżając ze zboczy. Toczy się przez przeszkody bez zwalniania."
+ },
+ "76": {
+  "kind": "Pokémon Megaton",
+  "hint": "Ogromny kamienny stworek, twardy jak głaz.",
+  "fact": "Jego ciało jest niezwykle twarde, jak głaz. Nie szkodzi mu nawet wybuch dynamitu."
+ },
+ "77": {
+  "kind": "Pokémon Ognisty Koń",
+  "hint": "Mały koń z ognistą grzywą i ognistym ogonem.",
+  "fact": "Jego kopyta są twardsze niż diament. W mgnieniu oka może wszystko spłaszczyć."
+ },
+ "78": {
+  "kind": "Pokémon Ognisty Koń",
+  "hint": "Koń z płonącym rogiem, bardzo lubi wyścigi.",
+  "fact": "Jest bardzo zawodowy - goni każdego, kto szybko się poruszy, żeby się z nim wyścigać."
+ },
+ "79": {
+  "kind": "Pokémon Gapa",
+  "hint": "Różowy stworek, który zawsze wygląda śpiąco i wolno się rusza.",
+  "fact": "Jest bardzo powolny i zamyślony. Potrzebuje pięciu sekund, by poczuć ból podczas ataku."
+ },
+ "80": {
+  "kind": "Pokémon Krab Pustelnik",
+  "hint": "Różowy stworek z muszlą przyczepioną do ogona.",
+  "fact": "Muszla przyczepiona do jego ogona podobno żywi się resztkami jedzenia gospodarza."
+ },
+ "81": {
+  "kind": "Pokémon Magnes",
+  "hint": "Metalowa kula z podkową i dwoma śrubkami, unosi się w powietrzu.",
+  "fact": "Unosi się w powietrzu dzięki antygrawitacji. Pojawia się nagle, wysyłając fale elektryczne."
+ },
+ "82": {
+  "kind": "Pokémon Magnes",
+  "hint": "Trzy metalowe kule zlepione razem, unoszą się w powietrzu.",
+  "fact": "Powstaje z kilku sklejonych magnetycznych kul. Często pojawia się przy wybuchach na słońcu."
+ },
+ "83": {
+  "kind": "Pokémon Dzika Kaczka",
+  "hint": "Brązowa kaczka trzymająca w skrzydle gałązkę zielonej cebuli.",
+  "fact": "Gałązka zielonej cebuli, którą trzyma, jest jego bronią - używa jej jak metalowego miecza."
+ },
+ "84": {
+  "kind": "Pokémon Bliźniaczy Ptak",
+  "hint": "Brązowy ptak z dwiema głowami na długich szyjach.",
+  "fact": "Nie lata najlepiej, ale nadrabia to szybkimi nogami. Zostawia po sobie wielkie odciski stóp."
+ },
+ "85": {
+  "kind": "Pokémon Trójgłowy Ptak",
+  "hint": "Duży ptak z trzema głowami na długich szyjach.",
+  "fact": "Dzięki trzem mózgom planuje skomplikowane strategie. Gdy dwie głowy śpią, jedna zawsze pilnuje."
+ },
+ "86": {
+  "kind": "Pokémon Lew Morski",
+  "hint": "Biała foka z twardym rogiem na głowie.",
+  "fact": "Ma na głowie twardy róg, którym rozbija nawet gęsty lód."
+ },
+ "87": {
+  "kind": "Pokémon Lew Morski",
+  "hint": "Biały morski stworek, świetnie pływa w bardzo zimnej wodzie.",
+  "fact": "Przechowuje w ciele ciepło i spokojnie pływa nawet w bardzo mroźnej wodzie."
+ },
+ "88": {
+  "kind": "Pokémon Szlam",
+  "hint": "Fioletowa, lepka kupka szlamu z oczami.",
+  "fact": "Pojawia się w brudnych miejscach. Żywi się zanieczyszczonym szlamem z fabryk."
+ },
+ "89": {
+  "kind": "Pokémon Szlam",
+  "hint": "Duża fioletowa kupa cuchnącego szlamu.",
+  "fact": "Jest pokryty brudnym, cuchnącym szlamem. Jest tak toksyczny, że nawet jego odciski są jadowite."
+ },
+ "90": {
+  "kind": "Pokémon Małż",
+  "hint": "Fioletowa muszla z językiem wystającym pomiędzy skorupkami.",
+  "fact": "Jego twarda muszla odbija każdy atak. Jest bezbronny tylko, gdy ją otworzy."
+ },
+ "91": {
+  "kind": "Pokémon Małż",
+  "hint": "Wielka kolczasta muszla, strzela kolcami, gdy jest atakowana.",
+  "fact": "Gdy jest atakowany, wystrzeliwuje serię swoich kolców. Nikt nie widział, co jest w środku."
+ },
+ "92": {
+  "kind": "Pokémon Gaz",
+  "hint": "Fioletowy, gazowy kłąb z twarzą, prawie niewidoczny.",
+  "fact": "Jest niemal niewidzialny. Otacza cel gazem i usypia go, zanim ten zdąży się zorientować."
+ },
+ "93": {
+  "kind": "Pokémon Gaz",
+  "hint": "Fioletowy cień z rękami, przenika przez mury.",
+  "fact": "Umie przenikać przez mury, więc niektórzy uważają, że pochodzi z innego wymiaru."
+ },
+ "94": {
+  "kind": "Pokémon Cień",
+  "hint": "Fioletowy stworek chowający się w cieniu w noc pełni.",
+  "fact": "W pełnię lubi udawać ludzki cień i śmiać się, kiedy kogoś nastraszy."
+ },
+ "95": {
+  "kind": "Pokémon Wąż Skalny",
+  "hint": "Ogromny wąż zbudowany z kamiennych segmentów.",
+  "fact": "Z wiekiem jego kamienne ciało staje się twarde jak diament, tylko czarne."
+ },
+ "96": {
+  "kind": "Pokémon Hipnoza",
+  "hint": "Żółty stworek z trąbką, żywi się snami śpiących.",
+  "fact": "Usypia wrogów, a potem zjada ich sny. Czasem choruje, gdy trafi mu się zły sen."
+ },
+ "97": {
+  "kind": "Pokémon Hipnoza",
+  "hint": "Żółty stworek z wahadełkiem w łapie, hipnotyzuje wzrokiem.",
+  "fact": "Gdy złapie wzrok wroga, hipnotyzuje go i wprowadza w zamęt."
+ },
+ "98": {
+  "kind": "Pokémon Krab Rzeczny",
+  "hint": "Mały pomarańczowy krab z dwoma dużymi szczypcami.",
+  "fact": "Jego szczypce to nie tylko broń - pomagają mu też utrzymać równowagę, gdy chodzi bokiem."
+ },
+ "99": {
+  "kind": "Pokémon Kleszcze",
+  "hint": "Krab z jedną ogromną szczypcą, większą niż całe jego ciało.",
+  "fact": "Jego wielka szczypta ma ogromną siłę, ale przez swój rozmiar jest niewygodna w użyciu."
+ },
+ "100": {
+  "kind": "Pokémon Kula",
+  "hint": "Czerwono-biała kula, wygląda jak Pokéball.",
+  "fact": "Zwykle spotykany w elektrowniach. Bywa mylony z Pokéballem, przez co poraża wielu ludzi."
+ },
+ "101": {
+  "kind": "Pokémon Kula",
+  "hint": "Czerwono-biała kula, magazynuje mnóstwo energii elektrycznej.",
+  "fact": "Przechowuje w sobie ogromne ilości energii pod wysokim ciśnieniem i czasem nagle wybucha."
+ },
+ "102": {
+  "kind": "Pokémon Jajo",
+  "hint": "Sześć jajek zebranych razem, czasem mylonych z prawdziwymi jajami.",
+  "fact": "Ludzie często myślą, że to zwykłe jajka. Gdy ktoś je niepokoi, atakują razem, w grupie."
+ },
+ "103": {
+  "kind": "Pokémon Kokos",
+  "hint": "Wysoka palma z trzema uśmiechniętymi głowami.",
+  "fact": "Legenda mówi, że czasem jedna z jego głów odpada i żyje dalej jako samodzielne jajko."
+ },
+ "104": {
+  "kind": "Pokémon Samotny",
+  "hint": "Mały stworek z czaszką zamiast czapki na głowie.",
+  "fact": "Nigdy nie zdejmuje czaszki z głowy, więc nikt nie widział jego prawdziwej twarzy."
+ },
+ "105": {
+  "kind": "Pokémon Stróż Kości",
+  "hint": "Stworek z czaszką na głowie, walczy kością jak bumerangiem.",
+  "fact": "Kość, którą nosi, jest jego główną bronią - rzuca nią jak bumerangiem, żeby trafić cel."
+ },
+ "106": {
+  "kind": "Pokémon Kopacz",
+  "hint": "Stworek na dwóch nogach, które umie wydłużać, kopie bardzo mocno.",
+  "fact": "Gdy się spieszy, jego nogi się wydłużają, dzięki czemu biega długimi susami."
+ },
+ "107": {
+  "kind": "Pokémon Pięściarz",
+  "hint": "Stworek, który wygląda spokojnie, ale zadaje serię szybkich uderzeń.",
+  "fact": "Nawet gdy wygląda spokojnie, umie wyprowadzić serię ciosów tak szybkich, że nie widać ich okiem."
+ },
+ "108": {
+  "kind": "Pokémon Liżący",
+  "hint": "Różowy stworek z bardzo długim, rozciągliwym językiem.",
+  "fact": "Jego język rozciąga się jak u kameleona i zostawia mrowienie, kiedy kogoś liźnie."
+ },
+ "109": {
+  "kind": "Pokémon Trujący Gaz",
+  "hint": "Fioletowa kula pełna gazu, z czaszkami na powierzchni.",
+  "fact": "W jego ciele zbiera się mnóstwo trujących gazów, dlatego czasem wybucha bez ostrzeżenia."
+ },
+ "110": {
+  "kind": "Pokémon Trujący Gaz",
+  "hint": "Dwie połączone gazowe kule z czaszkami.",
+  "fact": "Gdy dwie trujące chmury się spotkają, po latach mogą zrosnąć się w jednego stworka."
+ },
+ "111": {
+  "kind": "Pokémon Kolce",
+  "hint": "Szary stworek z rogiem, przypomina małego nosorożca.",
+  "fact": "Jego masywne kości są tysiąc razy twardsze niż ludzkie. Może z łatwością przewrócić przyczepę."
+ },
+ "112": {
+  "kind": "Pokémon Wiertło",
+  "hint": "Duży szary stworek z rogiem, chodzi na dwóch nogach jak nosorożec.",
+  "fact": "Chroniony pancerną skórą, może żyć nawet w rozgrzanej lawie."
+ },
+ "113": {
+  "kind": "Pokémon Jajo",
+  "hint": "Różowy, okrągły stworek, nosi jajko w torbie na brzuchu.",
+  "fact": "Jest rzadki i trudny do złapania. Mówi się, że przynosi szczęście temu, kto go zdobędzie."
+ },
+ "114": {
+  "kind": "Pokémon Pnącze",
+  "hint": "Niebieski kłąb pnączy, spod którego wystają tylko nogi.",
+  "fact": "Całe jego ciało jest owinięte długimi pnączami, które kołyszą się, gdy chodzi."
+ },
+ "115": {
+  "kind": "Pokémon Rodzic",
+  "hint": "Duży stworek z torbą na brzuchu, w której nosi dzieciątko.",
+  "fact": "Jej dziecko rzadko wychodzi z bezpiecznej torby na brzuchu mamy, aż ma trzy lata."
+ },
+ "116": {
+  "kind": "Pokémon Smok",
+  "hint": "Mały niebieski konik morski.",
+  "fact": "Umie precyzyjnie strzelać strumieniem atramentu, by trafić latające owady."
+ },
+ "117": {
+  "kind": "Pokémon Smok",
+  "hint": "Niebieski konik morski z kolczastą grzywą, umie pływać do tyłu.",
+  "fact": "Umie pływać do tyłu, szybko machając płetwami przypominającymi skrzydła."
+ },
+ "118": {
+  "kind": "Pokémon Złota Rybka",
+  "hint": "Biało-pomarańczowa rybka z rogiem, ma piękny falujący ogon.",
+  "fact": "Jej ogon faluje jak elegancka sukienka, dlatego zwana jest wodną królową."
+ },
+ "119": {
+  "kind": "Pokémon Złota Rybka",
+  "hint": "Czerwona rybka z rogiem, płynie pod wodę jesienią.",
+  "fact": "Jesienią, w okresie tarła, można je zobaczyć, jak silnie płyną w górę rzek i potoków."
+ },
+ "120": {
+  "kind": "Pokémon Gwiazda",
+  "hint": "Brązowa gwiazda z błyszczącym kamieniem w środku.",
+  "fact": "To zagadkowy stworek, który bez trudu odrasta, jeśli w walce straci jakiś kawałek."
+ },
+ "121": {
+  "kind": "Pokémon Zagadka",
+  "hint": "Fioletowa gwiazda z lśniącym klejnotem w środku.",
+  "fact": "Jego rdzeń świeci wszystkimi kolorami tęczy. Niektórzy cenią go jak prawdziwy klejnot."
+ },
+ "122": {
+  "kind": "Pokémon Bariera",
+  "hint": "Stworek udający, że dotyka niewidzialnych rzeczy rękami.",
+  "fact": "Jeśli ktoś przerwie mu udawanie, może go poklepać swoimi szerokimi dłońmi."
+ },
+ "123": {
+  "kind": "Pokémon Modliszka",
+  "hint": "Zielony stworek z ostrymi sierpami zamiast rąk, szybki jak ninja.",
+  "fact": "Jest szybki i zwinny jak ninja - potrafi stworzyć wrażenie, że jest go więcej niż jeden."
+ },
+ "124": {
+  "kind": "Pokémon Ludzka Postać",
+  "hint": "Różowy stworek z długimi włosami, chodzi kołysząc się na boki.",
+  "fact": "Chodząc, kołysze się zabawnie, a czasem sprawia, że inni zaczynają razem z nim tańczyć."
+ },
+ "125": {
+  "kind": "Pokémon Elektryczny",
+  "hint": "Żółty stworek w czarnych paskach, pełen elektryczności.",
+  "fact": "Zwykle mieszka koło elektrowni, ale gdy się oddali, może spowodować przerwy w prądzie w mieście."
+ },
+ "126": {
+  "kind": "Pokémon Ziejący Ogniem",
+  "hint": "Czerwono-pomarańczowy stworek, cały świeci ogniem.",
+  "fact": "Jego ciało zawsze świeci pomarańczowo, dzięki czemu świetnie chowa się w płomieniach."
+ },
+ "127": {
+  "kind": "Pokémon Żuk Jelonek",
+  "hint": "Brązowy żuk z dwoma ogromnymi kleszczami na głowie.",
+  "fact": "Jeśli nie zdoła zmiażdżyć wroga kleszczami, mocno nim potrząsa i odrzuca daleko."
+ },
+ "128": {
+  "kind": "Pokémon Dziki Byk",
+  "hint": "Brązowy byk z trzema ogonami jak biczami.",
+  "fact": "Kiedy wybierze cel, szarżuje wściekle, smagając siebie swoimi długimi ogonami."
+ },
+ "129": {
+  "kind": "Pokémon Ryba",
+  "hint": "Pomarańczowa rybka, uważana za bardzo słabą, ale wytrwałą.",
+  "fact": "Dawno temu był znacznie silniejszy niż jego dzisiejsi, dość słabi potomkowie."
+ },
+ "130": {
+  "kind": "Pokémon Okrutnik",
+  "hint": "Ogromny niebieski wąż morski z groźnym pyskiem.",
+  "fact": "Rzadko widziany w naturze. Jest wielki i groźny, w gniewie może zniszczyć całe miasto."
+ },
+ "131": {
+  "kind": "Pokémon Transportowy",
+  "hint": "Duży niebiesko-biały stworek z długą szyją i skorupą, przewozi ludzi przez wodę.",
+  "fact": "Był kiedyś tak intensywnie łowiony, że jest teraz bardzo rzadki. Przewozi ludzi przez morze."
+ },
+ "132": {
+  "kind": "Pokémon Przemiana",
+  "hint": "Różowa, prosta kulka bez twarzy, która umie przybrać dowolny kształt.",
+  "fact": "Umie skopiować kod genetyczny przeciwnika i w mgnieniu oka zmienić się w jego bliźniaka."
+ },
+ "133": {
+  "kind": "Pokémon Ewolucja",
+  "hint": "Brązowy, futrzasty stworek przypominający lisiego szczeniaka.",
+  "fact": "Ma niezwykły kod genetyczny, dzięki czemu może się zmieniać pod wpływem specjalnych kamieni."
+ },
+ "134": {
+  "kind": "Pokémon Bąbelkowy Odrzutowiec",
+  "hint": "Niebieski, wodny stworek z ogonem przypominającym płetwę syreny.",
+  "fact": "Mieszka blisko wody. Jego długi ogon z płetwą bywa mylony z ogonem syreny."
+ },
+ "135": {
+  "kind": "Pokémon Błyskawica",
+  "hint": "Żółty, kolczasty stworek pełen elektryczności.",
+  "fact": "Zbiera w powietrzu ładunki elektryczne, by wystrzelić potężnym błyskawicznym wyładowaniem."
+ },
+ "136": {
+  "kind": "Pokémon Płomień",
+  "hint": "Pomarańczowy, puszysty stworek gorący jak ognisko.",
+  "fact": "Gdy magazynuje w sobie ciepło, jego temperatura ciała może być bardzo, bardzo wysoka."
+ },
+ "137": {
+  "kind": "Pokémon Wirtualny",
+  "hint": "Kanciasty, kolorowy stworek, jakby zrobiony z komputerowego kodu.",
+  "fact": "Jest zrobiony z samego kodu programu i może swobodnie poruszać się w cyberprzestrzeni."
+ },
+ "138": {
+  "kind": "Pokémon Spirala",
+  "hint": "Mały stworek z zakręconą muszlą i czułkami, dawno wyginął.",
+  "fact": "Wyginął już dawno temu, ale w rzadkich przypadkach udało się go odtworzyć ze skamielin."
+ },
+ "139": {
+  "kind": "Pokémon Spirala",
+  "hint": "Stworek z dużą zakręconą muszlą, żył bardzo dawno temu.",
+  "fact": "Ten prehistoryczny stworek wyginął, gdy jego ciężka muszla utrudniła mu łowienie zdobyczy."
+ },
+ "140": {
+  "kind": "Pokémon Skorupiak",
+  "hint": "Płaski, brązowy stworek przypominający skamieniałego kraba.",
+  "fact": "Odtworzono go ze skamieliny znalezionej na dnie dawnego oceanu."
+ },
+ "141": {
+  "kind": "Pokémon Skorupiak",
+  "hint": "Stworek z ostrymi szponami, ma opływowy kształt jak do pływania.",
+  "fact": "Jego gładki kształt świetnie się nadaje do pływania. Poluje, siekając zdobycz szponami."
+ },
+ "142": {
+  "kind": "Pokémon Skamielina",
+  "hint": "Latający stworek z ostrymi zębami, sprowadzony z bardzo dawnych czasów.",
+  "fact": "Ten zajadły, prehistoryczny stworek atakuje wroga swoimi ostrymi jak piła zębami."
+ },
+ "143": {
+  "kind": "Pokémon Śpioch",
+  "hint": "Wielki, gruby stworek, który tylko śpi i jada.",
+  "fact": "Jest bardzo leniwy. Tylko jada i śpi, a im większy się robi, tym bardziej mu się nie chce."
+ },
+ "144": {
+  "kind": "Pokémon Mróz",
+  "hint": "Legendarny niebieski ptak z lodowymi skrzydłami.",
+  "fact": "Ten legendarny ptak podobno pojawia się osobom zagubionym w śnieżnych górach."
+ },
+ "145": {
+  "kind": "Pokémon Elektryczny",
+  "hint": "Legendarny żółty ptak z piórami jak błyskawice.",
+  "fact": "Ten legendarny ptak pojawia się z chmur, zsyłając ogromne błyskawice."
+ },
+ "146": {
+  "kind": "Pokémon Płomień",
+  "hint": "Legendarny ognisty ptak z płomiennymi skrzydłami.",
+  "fact": "To legendarny ptak ognia. Każdy ruch jego skrzydeł tworzy oślepiający błysk płomieni."
+ },
+ "147": {
+  "kind": "Pokémon Smok",
+  "hint": "Długi, niebieski wężowaty stworek, żyje w wodzie.",
+  "fact": "Długo uważano go za mit, aż niedawno znaleziono małą kolonię żyjącą pod wodą."
+ },
+ "148": {
+  "kind": "Pokémon Smok",
+  "hint": "Długi, niebieski stworek z kryształkami na szyi i ogonie.",
+  "fact": "Ten mistyczny stworek emanuje spokojną aurą i podobno umie wpływać na pogodę."
+ },
+ "149": {
+  "kind": "Pokémon Smok",
+  "hint": "Duży, zielony stworek ze skrzydłami, bardzo mądry.",
+  "fact": "Rzadko widziany stworek, którego mądrość podobno dorównuje ludzkiej."
+ },
+ "150": {
+  "kind": "Pokémon Genetyczny",
+  "hint": "Fioletowo-szary, silny stworek stworzony przez naukowca.",
+  "fact": "Powstał, gdy naukowiec przez wiele lat prowadził eksperymenty z genami i DNA."
+ },
+ "151": {
+  "kind": "Pokémon Nowy Gatunek",
+  "hint": "Mały, różowy, kociowaty stworek, bardzo rzadki i tajemniczy.",
+  "fact": "Jest tak rzadki, że wielu ekspertów wciąż uważa go za legendę. Widziało go bardzo mało osób."
+ }
+}

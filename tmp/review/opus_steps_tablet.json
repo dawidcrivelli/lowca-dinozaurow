@@ -1,5 +1,0 @@
-[
-  { "js": "localStorage.clear();var d={caught:{},added:[],removed:[],wins:{}};['trex','tri','stego','anky','para','pterano','mosa','velo','spino','brachio'].forEach(i=>d.caught[i]={t:1});localStorage.setItem('dinoTracker.v1',JSON.stringify(d));location.reload()", "wait": 1800 },
-  { "shot": "opus_tablet.png", "h": 1024 },
-  { "js": "btnArena.click()", "wait": 400, "shot": "opus_tablet_arena.png", "h": 1024 }
-]

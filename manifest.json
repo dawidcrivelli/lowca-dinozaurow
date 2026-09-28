@@ -1,9 +1,9 @@
 {
-  "name": "Łowca Dinozaurów",
-  "short_name": "Dinozaury",
+  "name": "Łowca Pokémonów",
+  "short_name": "Pokémony",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#F6EFE0",
-  "theme_color": "#123C38",
+  "background_color": "#F3F6FC",
+  "theme_color": "#D8262E",
   "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }]
 }
