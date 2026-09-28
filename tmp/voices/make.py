@@ -6,20 +6,22 @@ import json, os, subprocess, array, math
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.join(HERE, '..', '..'); OUT = os.path.join(ROOT, 'sounds')
 RATE, FADE_IN, FADE_OUT, PEAK, WIN = 44100, .02, .25, .89, .05
 TRIM, TAIL = .01, 3   # ~ −20 dB: cichsze brzegi to tło, nie zwierzę; +3 bloki (150 ms) naturalnego wygasania
-PICK = {   # głos → [(kandydat, maks. długość s), …]; kilka nagrań = losowane, walka mniej się powtarza
-    'bigroar': [(0, 3.5), (1, 3.0)], 'roar': [(2, 2.2), (3, 1.2)], 'growl': [(1, 2.2), (3, 2.2)], 'screech': [(2, 1.8), (1, 1.8)],
-    'shriek': [(1, 1.8), (0, 1.8)], 'bellow': [(0, 2.5)], 'honk': [(2, 1.8)], 'grunt': [(2, 1.4)], 'hiss': [(1, 2.0), (0, 2.0)],
-    'whale': [(0, 3.0)], 'trumpet': [(0, 2.0), (1, 2.5)], 'moo': [(0, 2.2)], 'click': [(0, 1.5)], 'bubble': [(2, 1.5)],
-    'hit': [(3, .7), (2, .6)], 'whoosh': [(1, .6)],
+PICK = {   # głos → [(kandydat, maks. długość s[, lista kandydatów gdy inna niż głos]), …]; warianty losowane, walka mniej się powtarza
+    'bigroar': [(0, 3.5, 'roar'), (4, 3.5, 'roar'), (7, 3.0, 'roar')], 'roar': [(2, 2.2), (3, 1.2), (8, 1.5)],
+    'growl': [(1, 2.2), (3, 2.2), (8, 2.2)], 'screech': [(2, 1.8), (1, 1.8), (8, 1.2, 'roar')], 'shriek': [(1, 1.8), (0, 1.8), (4, 1.8)],
+    'bellow': [(0, 2.5), (5, 2.5, 'grunt'), (5, 2.5, 'trumpet')], 'honk': [(2, 1.8), (4, 1.0), (7, 1.8)],
+    'grunt': [(2, 1.4), (6, 1.7), (1, 2.0)], 'hiss': [(1, 2.0), (0, 2.0), (5, 2.0)], 'whale': [(0, 3.0), (9, 2.5), (3, 2.0), (8, 1.0)],
+    'trumpet': [(0, 2.0), (1, 2.5), (4, 1.2)], 'moo': [(0, 2.2), (2, 2.2), (8, 2.2)], 'click': [(0, 1.5), (3, 1.5), (1, 1.5)],
+    'bubble': [(2, 1.5), (0, 1.5), (4, 1.2)], 'splash': [(5, .9, 'bubble'), (6, .9, 'bubble')],
+    'hit': [(3, .7), (2, .6), (8, .5)], 'whoosh': [(1, .6), (8, .6), (2, .6)],
 }
-SRC = {'bigroar': 'roar'}   # głos → lista kandydatów z fetch.py (gdy inna nazwa)
 cand = json.load(open(os.path.join(HERE, 'cand.json')))
 os.makedirs(OUT, exist_ok=True)
 for f in os.listdir(OUT): os.remove(os.path.join(OUT, f))
 credits = ['# Dźwięki', '', 'Nagrania z [Freesound](https://freesound.org), licencja **CC0** (domena publiczna) — przycięte i znormalizowane przez `tmp/voices/make.py`.', '',
            '| plik | nagranie | autor |', '|---|---|---|']
-for voice, i, maxlen, name in [(v, i, m, f'{v}_{n}') for v, l in PICK.items() for n, (i, m) in enumerate(l)]:
-    c = cand[SRC.get(voice, voice)][i]
+for src, i, maxlen, name in [(p[2] if len(p) > 2 else v, p[0], p[1], f'{v}_{n}') for v, l in PICK.items() for n, p in enumerate(l)]:
+    c = cand[src][i]
     pcm = array.array('h', subprocess.run(['ffmpeg', '-v', 'error', '-i', os.path.join(HERE, c['file']), '-ac', '1', '-ar', str(RATE), '-f', 's16le', '-'],
                                           capture_output=True, check=True).stdout)
     # okno o maks. długości z największą energią (krok 50 ms)
