@@ -12,8 +12,8 @@ Wersja Pokémon [Łowcy Dinozaurów](https://dawidcrivelli.github.io/lowca-dinoz
 - **Poké Ball wg rzadkości**: Poké / Great / Ultra / Master Ball (legendarne).
 - **Arena** — statystyki bazowe z gier i prawdziwa tabela typów (Wodny ×2 na Ognistego…); teren daje premię swoim typom
   (Wyspa Cynamonowa: 🔥, Góra Księżycowa: 🪨🪽🧚…). Tryby ▶️ oglądam / 👆 walczę, widok 2D albo 3D.
-- **Karty** z zestawu „Pokémon 151” (Scarlet & Violet, 2023): na karcie Pokémona przełącznik 🃏 obrazek/karta,
-  w siatce widok segregatora (☑️ 🃏 karty).
+- **Karty** z zestawu „Pokémon 151” (Scarlet & Violet, 2023): u góry przełącznik 🎨 Pokémony / 🃏 Karty
+  (siatka i karta Pokémona); dotknij karty lub obrazka → pełny ekran.
 - **Walka kartami** (🃏 w nagłówku) — uproszczone zasady Battle Academy: drużyna 3 Pokémonów Podstawowych, co turę
   energia, ewolucja (tylko w złapane!), odwrót, ataki z prawdziwym kosztem i obrażeniami, słabość ×2, 3 nagrody (ex daje 2).
 - **Oryginalne okrzyki** z Red/Blue.
