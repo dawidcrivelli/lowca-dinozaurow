@@ -1,0 +1,20 @@
+[
+  { "js": "localStorage.clear();location.reload()", "wait": 1800 },
+  { "shot": "opus_home.png", "h": 1300 },
+  { "js": "q.value='tyranosaur';q.dispatchEvent(new Event('input'))", "wait": 300, "shot": "opus_suggest.png", "h": 700 },
+  { "js": "huntForm.dispatchEvent(new Event('submit',{cancelable:true}))", "wait": 450, "shot": "opus_catch1_throw.png", "h": 800 },
+  { "wait": 700, "shot": "opus_catch2_wobble.png", "h": 800 },
+  { "wait": 1350, "shot": "opus_catch3_reveal.png", "h": 800 },
+  { "wait": 1700, "shot": "opus_caught_card.png", "h": 1000 },
+  { "js": "modalClose.click()", "wait": 300 },
+  { "js": "document.querySelectorAll('.tile.ghost')[6].click()", "wait": 400, "shot": "opus_hint.png", "h": 900 },
+  { "js": "modalClose.click()", "wait": 200 },
+  { "js": "(function(){var d=JSON.parse(localStorage.getItem('dinoTracker.v1')||'{}');d.caught=d.caught||{};['trex','tri','stego','anky','para','pterano','mosa','velo','spino','brachio','dimetro','megalodon','archaeo','diplo','allo','carno','quetzal','elasmo','mammoth','smilodon','iguano','pachy','styra','ichthyo','sarco','meganeura','deino','galli','kentro','edmonto'].forEach(function(i){d.caught[i]={t:Date.now()}});d.added=d.added||[];d.removed=d.removed||[];d.wins=d.wins||{};localStorage.setItem('dinoTracker.v1',JSON.stringify(d));location.reload();})()", "wait": 1800 },
+  { "shot": "opus_collection.png", "h": 2200 },
+  { "js": "btnArena.click()", "wait": 400, "shot": "opus_arena0.png", "h": 1000 },
+  { "js": "document.querySelectorAll('[data-pick2]')[0].click()", "wait": 250 },
+  { "js": "document.querySelectorAll('[data-pick2]')[3].click()", "wait": 250, "shot": "opus_arena1.png", "h": 1000 },
+  { "js": "arFight.click()", "wait": 500, "shot": "opus_arena_fight.png", "h": 1000 },
+  { "js": "modalClose.click()", "wait": 200 },
+  { "js": "btnEdit.click();scrollTo(0,0)", "wait": 300, "shot": "opus_parent.png", "h": 1100 }
+]

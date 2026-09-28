@@ -1,0 +1,3939 @@
+{
+ "opus": [
+  {
+   "id": "trex",
+   "pl": "Tyranozaur",
+   "lat": "Tyrannosaurus rex",
+   "group": "dino",
+   "type": "drap",
+   "diet": "M",
+   "len": 12,
+   "pw": 8,
+   "rarity": 4,
+   "alias": [
+    "trex",
+    "t rex",
+    "rex",
+    "tyranozaur rex",
+    "tyrannosaurus"
+   ]
+  },
+  {
+   "id": "giganoto",
+   "pl": "Gigantozaur",
+   "lat": "Giganotosaurus",
+   "group": "dino",
+   "type": "drap",
+   "diet": "M",
+   "len": 13,
+   "pw": 9,
+   "rarity": 4,
+   "alias": [
+    "gigantozaur",
+    "giganotozaur",
+    "giganotosaurus"
+   ]
+  },
+  {
+   "id": "spino",
+   "pl": "Spinozaur",
+   "lat": "Spinosaurus",
+   "group": "dino",
+   "type": "drap",
+   "diet": "Ry",
+   "len": 15,
+   "pw": 9,
+   "rarity": 4,
+   "alias": [
+    "spinozaur",
+    "spinosaurus",
+    "spino"
+   ]
+  },
+  {
+   "id": "allo",
+   "pl": "Allozaur",
+   "lat": "Allosaurus",
+   "group": "dino",
+   "type": "drap",
+   "diet": "M",
+   "len": 9,
+   "pw": 8,
+   "rarity": 3,
+   "alias": [
+    "allozaur",
+    "allosaurus",
+    "allo"
+   ]
+  },
+  {
+   "id": "carno",
+   "pl": "Karnotaur",
+   "lat": "Carnotaurus",
+   "group": "dino",
+   "type": "drap",
+   "diet": "M",
+   "len": 8,
+   "pw": 8,
+   "rarity": 3,
+   "alias": [
+    "karnotaur",
+    "carnotaurus",
+    "karnotaurus"
+   ]
+  },
+  {
+   "id": "cerato",
+   "pl": "Ceratozaur",
+   "lat": "Ceratosaurus",
+   "group": "dino",
+   "type": "drap",
+   "diet": "M",
+   "len": 6,
+   "pw": 7,
+   "rarity": 3,
+   "alias": [
+    "ceratozaur",
+    "ceratosaurus"
+   ]
+  },
+  {
+   "id": "dilo",
+   "pl": "Dilofozaur",
+   "lat": "Dilophosaurus",
+   "group": "dino",
+   "type": "drap",
+   "diet": "M",
+   "len": 7,
+   "pw": 8,
+   "rarity": 3,
+   "alias": [
+    "dilofozaur",
+    "dilophosaurus",
+    "dilofosaurus"
+   ]
+  },
+  {
+   "id": "velo",
+   "pl": "Welociraptor",
+   "lat": "Velociraptor",
+   "group": "dino",
+   "type": "zwinny",
+   "diet": "M",
+   "len": 2,
+   "pw": 4,
+   "rarity": 2,
+   "alias": [
+    "welociraptor",
+    "velociraptor",
+    "raptor",
+    "veloc"
+   ]
+  },
+  {
+   "id": "deino",
+   "pl": "Deinonych",
+   "lat": "Deinonychus",
+   "group": "dino",
+   "type": "zwinny",
+   "diet": "M",
+   "len": 3,
+   "pw": 4,
+   "rarity": 3,
+   "alias": [
+    "deinonych",
+    "deinonychus",
+    "deinonyk"
+   ]
+  },
+  {
+   "id": "utah",
+   "pl": "Utahraptor",
+   "lat": "Utahraptor",
+   "group": "dino",
+   "type": "drap",
+   "diet": "M",
+   "len": 6,
+   "pw": 7,
+   "rarity": 4,
+   "alias": [
+    "utahraptor",
+    "utaraptor"
+   ]
+  },
+  {
+   "id": "compso",
+   "pl": "Kompsognat",
+   "lat": "Compsognathus",
+   "group": "dino",
+   "type": "zwinny",
+   "diet": "M",
+   "len": 1,
+   "pw": 3,
+   "rarity": 1,
+   "alias": [
+    "kompsognat",
+    "compsognathus",
+    "kompsognatus"
+   ]
+  },
+  {
+   "id": "galli",
+   "pl": "Gallimim",
+   "lat": "Gallimimus",
+   "group": "dino",
+   "type": "zwinny",
+   "diet": "W",
+   "len": 6,
+   "pw": 5,
+   "rarity": 2,
+   "alias": [
+    "gallimim",
+    "gallimimus",
+    "galimim"
+   ]
+  },
+  {
+   "id": "struthio",
+   "pl": "Struthiomim",
+   "lat": "Struthiomimus",
+   "group": "dino",
+   "type": "zwinny",
+   "diet": "W",
+   "len": 4,
+   "pw": 5,
+   "rarity": 2,
+   "alias": [
+    "struthiomim",
+    "struthiomimus",
+    "strutiomim"
+   ]
+  },
+  {
+   "id": "ovi",
+   "pl": "Owiraptor",
+   "lat": "Oviraptor",
+   "group": "dino",
+   "type": "zwinny",
+   "diet": "W",
+   "len": 2,
+   "pw": 4,
+   "rarity": 2,
+   "alias": [
+    "owiraptor",
+    "oviraptor",
+    "oviraptor"
+   ]
+  },
+  {
+   "id": "theri",
+   "pl": "Terizinozaur",
+   "lat": "Therizinosaurus",
+   "group": "dino",
+   "type": "drap",
+   "diet": "R",
+   "len": 10,
+   "pw": 8,
+   "rarity": 4,
+   "alias": [
+    "terizinozaur",
+    "therizinosaurus",
+    "teryzinozaur"
+   ]
+  },
+  {
+   "id": "bary",
+   "pl": "Baryonyks",
+   "lat": "Baryonyx",
+   "group": "dino",
+   "type": "drap",
+   "diet": "Ry",
+   "len": 9,
+   "pw": 8,
+   "rarity": 3,
+   "alias": [
+    "baryonyks",
+    "baryonyx",
+    "barionyks"
+   ]
+  },
+  {
+   "id": "sucho",
+   "pl": "Suchomim",
+   "lat": "Suchomimus",
+   "group": "dino",
+   "type": "drap",
+   "diet": "Ry",
+   "len": 11,
+   "pw": 8,
+   "rarity": 3,
+   "alias": [
+    "suchomim",
+    "suchomimus",
+    "suchomimus"
+   ]
+  },
+  {
+   "id": "alberto",
+   "pl": "Albertozaur",
+   "lat": "Albertosaurus",
+   "group": "dino",
+   "type": "drap",
+   "diet": "M",
+   "len": 9,
+   "pw": 8,
+   "rarity": 3,
+   "alias": [
+    "albertozaur",
+    "albertosaurus"
+   ]
+  },
+  {
+   "id": "daspleto",
+   "pl": "Daspletozaur",
+   "lat": "Daspletosaurus",
+   "group": "dino",
+   "type": "drap",
+   "diet": "M",
+   "len": 9,
+   "pw": 8,
+   "rarity": 3,
+   "alias": [
+    "daspletozaur",
+    "daspletosaurus"
+   ]
+  },
+  {
+   "id": "acro",
+   "pl": "Akrokantozaur",
+   "lat": "Acrocanthosaurus",
+   "group": "dino",
+   "type": "drap",
+   "diet": "M",
+   "len": 11,
+   "pw": 8,
+   "rarity": 3,
+   "alias": [
+    "akrokantozaur",
+    "acrocanthosaurus"
+   ]
+  },
+  {
+   "id": "tarbo",
+   "pl": "Tarbozaur",
+   "lat": "Tarbosaurus",
+   "group": "dino",
+   "type": "drap",
+   "diet": "M",
+   "len": 10,
+   "pw": 8,
+   "rarity": 3,
+   "alias": [
+    "tarbozaur",
+    "tarbosaurus"
+   ]
+  },
+  {
+   "id": "troodon",
+   "pl": "Troodon",
+   "lat": "Troodon",
+   "group": "dino",
+   "type": "zwinny",
+   "diet": "W",
+   "len": 2,
+   "pw": 4,
+   "rarity": 2,
+   "alias": [
+    "troodon",
+    "troodont"
+   ]
+  },
+  {
+   "id": "coelo",
+   "pl": "Celofyz",
+   "lat": "Coelophysis",
+   "group": "dino",
+   "type": "zwinny",
+   "diet": "M",
+   "len": 3,
+   "pw": 4,
+   "rarity": 1,
+   "alias": [
+    "celofyz",
+    "coelophysis",
+    "celofyzys"
+   ]
+  },
+  {
+   "id": "herrera",
+   "pl": "Herrerazaur",
+   "lat": "Herrerasaurus",
+   "group": "dino",
+   "type": "drap",
+   "diet": "M",
+   "len": 5,
+   "pw": 7,
+   "rarity": 2,
+   "alias": [
+    "herrerazaur",
+    "herrerasaurus"
+   ]
+  },
+  {
+   "id": "megalo",
+   "pl": "Megalozaur",
+   "lat": "Megalosaurus",
+   "group": "dino",
+   "type": "drap",
+   "diet": "M",
+   "len": 7,
+   "pw": 8,
+   "rarity": 2,
+   "alias": [
+    "megalozaur",
+    "megalosaurus"
+   ]
+  },
+  {
+   "id": "cryo",
+   "pl": "Kriolofozaur",
+   "lat": "Cryolophosaurus",
+   "group": "dino",
+   "type": "drap",
+   "diet": "M",
+   "len": 7,
+   "pw": 8,
+   "rarity": 3,
+   "alias": [
+    "kriolofozaur",
+    "cryolophosaurus",
+    "krylofozaur"
+   ]
+  },
+  {
+   "id": "brachio",
+   "pl": "Brachiozaur",
+   "lat": "Brachiosaurus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 22,
+   "pw": 8,
+   "rarity": 4,
+   "alias": [
+    "brachiozaur",
+    "brachiosaurus",
+    "brachjozaur"
+   ]
+  },
+  {
+   "id": "diplo",
+   "pl": "Diplodok",
+   "lat": "Diplodocus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 26,
+   "pw": 8,
+   "rarity": 3,
+   "alias": [
+    "diplodok",
+    "diplodocus",
+    "dyplodok"
+   ]
+  },
+  {
+   "id": "apato",
+   "pl": "Apatozaur",
+   "lat": "Apatosaurus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 22,
+   "pw": 8,
+   "rarity": 3,
+   "alias": [
+    "apatozaur",
+    "apatosaurus"
+   ]
+  },
+  {
+   "id": "bronto",
+   "pl": "Brontozaur",
+   "lat": "Brontosaurus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 22,
+   "pw": 8,
+   "rarity": 3,
+   "alias": [
+    "brontozaur",
+    "brontosaurus",
+    "bronto"
+   ]
+  },
+  {
+   "id": "argenti",
+   "pl": "Argentynozaur",
+   "lat": "Argentinosaurus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 35,
+   "pw": 9,
+   "rarity": 4,
+   "alias": [
+    "argentynozaur",
+    "argentinosaurus",
+    "argentinozaur"
+   ]
+  },
+  {
+   "id": "amarga",
+   "pl": "Amargazaur",
+   "lat": "Amargasaurus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 10,
+   "pw": 7,
+   "rarity": 3,
+   "alias": [
+    "amargazaur",
+    "amargasaurus"
+   ]
+  },
+  {
+   "id": "camara",
+   "pl": "Kamarazaur",
+   "lat": "Camarasaurus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 18,
+   "pw": 8,
+   "rarity": 2,
+   "alias": [
+    "kamarazaur",
+    "camarasaurus"
+   ]
+  },
+  {
+   "id": "mamen",
+   "pl": "Mamenchizaur",
+   "lat": "Mamenchisaurus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 25,
+   "pw": 8,
+   "rarity": 3,
+   "alias": [
+    "mamenchizaur",
+    "mamenchisaurus"
+   ]
+  },
+  {
+   "id": "salta",
+   "pl": "Saltazaur",
+   "lat": "Saltasaurus",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 12,
+   "pw": 8,
+   "rarity": 3,
+   "alias": [
+    "saltazaur",
+    "saltasaurus"
+   ]
+  },
+  {
+   "id": "alamo",
+   "pl": "Alamozaur",
+   "lat": "Alamosaurus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 26,
+   "pw": 8,
+   "rarity": 3,
+   "alias": [
+    "alamozaur",
+    "alamosaurus"
+   ]
+  },
+  {
+   "id": "plateo",
+   "pl": "Plateozaur",
+   "lat": "Plateosaurus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 8,
+   "pw": 6,
+   "rarity": 2,
+   "alias": [
+    "plateozaur",
+    "plateosaurus"
+   ]
+  },
+  {
+   "id": "masso",
+   "pl": "Massospondyl",
+   "lat": "Massospondylus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 5,
+   "pw": 6,
+   "rarity": 2,
+   "alias": [
+    "massospondyl",
+    "massospondylus",
+    "masospondyl"
+   ]
+  },
+  {
+   "id": "tri",
+   "pl": "Triceratops",
+   "lat": "Triceratops",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 9,
+   "pw": 7,
+   "rarity": 4,
+   "alias": [
+    "triceratops",
+    "tricerator",
+    "tri",
+    "triceratop"
+   ]
+  },
+  {
+   "id": "styra",
+   "pl": "Styrakozaur",
+   "lat": "Styracosaurus",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 6,
+   "pw": 7,
+   "rarity": 3,
+   "alias": [
+    "styrakozaur",
+    "styracosaurus",
+    "stirakozaur"
+   ]
+  },
+  {
+   "id": "penta",
+   "pl": "Pentaceratops",
+   "lat": "Pentaceratops",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 6,
+   "pw": 7,
+   "rarity": 3,
+   "alias": [
+    "pentaceratops",
+    "pentaceratop"
+   ]
+  },
+  {
+   "id": "toro",
+   "pl": "Torozaur",
+   "lat": "Torosaurus",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 8,
+   "pw": 7,
+   "rarity": 3,
+   "alias": [
+    "torozaur",
+    "torosaurus"
+   ]
+  },
+  {
+   "id": "proto",
+   "pl": "Protoceratops",
+   "lat": "Protoceratops",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 2,
+   "pw": 5,
+   "rarity": 2,
+   "alias": [
+    "protoceratops",
+    "protoceratop"
+   ]
+  },
+  {
+   "id": "centro",
+   "pl": "Centrozaur",
+   "lat": "Centrosaurus",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 6,
+   "pw": 7,
+   "rarity": 2,
+   "alias": [
+    "centrozaur",
+    "centrosaurus"
+   ]
+  },
+  {
+   "id": "chasmo",
+   "pl": "Chasmozaur",
+   "lat": "Chasmosaurus",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 5,
+   "pw": 6,
+   "rarity": 2,
+   "alias": [
+    "chasmozaur",
+    "chasmosaurus"
+   ]
+  },
+  {
+   "id": "kosmo",
+   "pl": "Kosmoceratops",
+   "lat": "Kosmoceratops",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 5,
+   "pw": 6,
+   "rarity": 3,
+   "alias": [
+    "kosmoceratops",
+    "kosmoceratop"
+   ]
+  },
+  {
+   "id": "einio",
+   "pl": "Einiozaur",
+   "lat": "Einiosaurus",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 5,
+   "pw": 6,
+   "rarity": 2,
+   "alias": [
+    "einiozaur",
+    "einiosaurus"
+   ]
+  },
+  {
+   "id": "psitta",
+   "pl": "Psittakozaur",
+   "lat": "Psittacosaurus",
+   "group": "dino",
+   "type": "zwinny",
+   "diet": "R",
+   "len": 2,
+   "pw": 4,
+   "rarity": 2,
+   "alias": [
+    "psittakozaur",
+    "psittacosaurus",
+    "psitakozaur"
+   ]
+  },
+  {
+   "id": "anky",
+   "pl": "Ankylozaur",
+   "lat": "Ankylosaurus",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 8,
+   "pw": 7,
+   "rarity": 4,
+   "alias": [
+    "ankylozaur",
+    "ankylosaurus",
+    "anky",
+    "ankilozaur"
+   ]
+  },
+  {
+   "id": "euoplo",
+   "pl": "Euoplocefal",
+   "lat": "Euoplocephalus",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 6,
+   "pw": 7,
+   "rarity": 3,
+   "alias": [
+    "euoplocefal",
+    "euoplocephalus",
+    "euplocefal"
+   ]
+  },
+  {
+   "id": "nodo",
+   "pl": "Nodozaur",
+   "lat": "Nodosaurus",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 6,
+   "pw": 7,
+   "rarity": 2,
+   "alias": [
+    "nodozaur",
+    "nodosaurus"
+   ]
+  },
+  {
+   "id": "edmontonia",
+   "pl": "Edmontonia",
+   "lat": "Edmontonia",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 7,
+   "pw": 7,
+   "rarity": 3,
+   "alias": [
+    "edmontonia"
+   ]
+  },
+  {
+   "id": "sauropelta",
+   "pl": "Sauropelta",
+   "lat": "Sauropelta",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 5,
+   "pw": 6,
+   "rarity": 2,
+   "alias": [
+    "sauropelta"
+   ]
+  },
+  {
+   "id": "polacanthus",
+   "pl": "Polakant",
+   "lat": "Polacanthus",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 5,
+   "pw": 6,
+   "rarity": 2,
+   "alias": [
+    "polakant",
+    "polacanthus",
+    "polakantus"
+   ]
+  },
+  {
+   "id": "gastonia",
+   "pl": "Gastonia",
+   "lat": "Gastonia",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 5,
+   "pw": 6,
+   "rarity": 2,
+   "alias": [
+    "gastonia"
+   ]
+  },
+  {
+   "id": "scelido",
+   "pl": "Scelidozaur",
+   "lat": "Scelidosaurus",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 4,
+   "pw": 6,
+   "rarity": 2,
+   "alias": [
+    "scelidozaur",
+    "scelidosaurus"
+   ]
+  },
+  {
+   "id": "stego",
+   "pl": "Stegozaur",
+   "lat": "Stegosaurus",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 9,
+   "pw": 7,
+   "rarity": 4,
+   "alias": [
+    "stegozaur",
+    "stegosaurus",
+    "stego"
+   ]
+  },
+  {
+   "id": "kentro",
+   "pl": "Kentrozaur",
+   "lat": "Kentrosaurus",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 5,
+   "pw": 6,
+   "rarity": 3,
+   "alias": [
+    "kentrozaur",
+    "kentrosaurus"
+   ]
+  },
+  {
+   "id": "miragaia",
+   "pl": "Miragaia",
+   "lat": "Miragaia",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 6,
+   "pw": 7,
+   "rarity": 2,
+   "alias": [
+    "miragaia",
+    "miragaja"
+   ]
+  },
+  {
+   "id": "hespero",
+   "pl": "Hesperozaur",
+   "lat": "Hesperosaurus",
+   "group": "dino",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 6,
+   "pw": 7,
+   "rarity": 2,
+   "alias": [
+    "hesperozaur",
+    "hesperosaurus"
+   ]
+  },
+  {
+   "id": "edmonto",
+   "pl": "Edmontozaur",
+   "lat": "Edmontosaurus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 12,
+   "pw": 7,
+   "rarity": 3,
+   "alias": [
+    "edmontozaur",
+    "edmontosaurus"
+   ]
+  },
+  {
+   "id": "para",
+   "pl": "Parazaurolof",
+   "lat": "Parasaurolophus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 10,
+   "pw": 7,
+   "rarity": 4,
+   "alias": [
+    "parazaurolof",
+    "parasaurolophus",
+    "parazaurolophus",
+    "para"
+   ]
+  },
+  {
+   "id": "koryto",
+   "pl": "Korytozaur",
+   "lat": "Corythosaurus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 9,
+   "pw": 7,
+   "rarity": 3,
+   "alias": [
+    "korytozaur",
+    "corythosaurus"
+   ]
+  },
+  {
+   "id": "lambeo",
+   "pl": "Lambeozaur",
+   "lat": "Lambeosaurus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 9,
+   "pw": 7,
+   "rarity": 3,
+   "alias": [
+    "lambeozaur",
+    "lambeosaurus"
+   ]
+  },
+  {
+   "id": "maia",
+   "pl": "Majazaura",
+   "lat": "Maiasaura",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 9,
+   "pw": 7,
+   "rarity": 3,
+   "alias": [
+    "majazaura",
+    "maiasaura",
+    "majazaur"
+   ]
+  },
+  {
+   "id": "iguano",
+   "pl": "Iguanodon",
+   "lat": "Iguanodon",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 10,
+   "pw": 7,
+   "rarity": 3,
+   "alias": [
+    "iguanodon",
+    "igwanodon"
+   ]
+  },
+  {
+   "id": "ourano",
+   "pl": "Ouranozaur",
+   "lat": "Ouranosaurus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 7,
+   "pw": 6,
+   "rarity": 3,
+   "alias": [
+    "ouranozaur",
+    "ouranosaurus",
+    "uranozaur"
+   ]
+  },
+  {
+   "id": "hypsi",
+   "pl": "Hypsilofodon",
+   "lat": "Hypsilophodon",
+   "group": "dino",
+   "type": "zwinny",
+   "diet": "R",
+   "len": 2,
+   "pw": 4,
+   "rarity": 1,
+   "alias": [
+    "hypsilofodon",
+    "hypsilophodon",
+    "hipsilofodon"
+   ]
+  },
+  {
+   "id": "tenonto",
+   "pl": "Tenontozaur",
+   "lat": "Tenontosaurus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 7,
+   "pw": 6,
+   "rarity": 2,
+   "alias": [
+    "tenontozaur",
+    "tenontosaurus"
+   ]
+  },
+  {
+   "id": "hadrosaurus",
+   "pl": "Hadrozaur",
+   "lat": "Hadrosaurus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 8,
+   "pw": 6,
+   "rarity": 2,
+   "alias": [
+    "hadrozaur",
+    "hadrosaurus"
+   ]
+  },
+  {
+   "id": "saurolof",
+   "pl": "Saurolof",
+   "lat": "Saurolophus",
+   "group": "dino",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 10,
+   "pw": 7,
+   "rarity": 2,
+   "alias": [
+    "saurolof",
+    "saurolophus",
+    "saurolofus"
+   ]
+  },
+  {
+   "id": "pachy",
+   "pl": "Pachycefalozaur",
+   "lat": "Pachycephalosaurus",
+   "group": "dino",
+   "type": "zwinny",
+   "diet": "W",
+   "len": 5,
+   "pw": 5,
+   "rarity": 3,
+   "alias": [
+    "pachycefalozaur",
+    "pachycephalosaurus",
+    "pachy",
+    "pachycefal"
+   ]
+  },
+  {
+   "id": "stygi",
+   "pl": "Stygimoloch",
+   "lat": "Stygimoloch",
+   "group": "dino",
+   "type": "zwinny",
+   "diet": "W",
+   "len": 3,
+   "pw": 4,
+   "rarity": 3,
+   "alias": [
+    "stygimoloch",
+    "stygimolok"
+   ]
+  },
+  {
+   "id": "dracorex",
+   "pl": "Dracorex",
+   "lat": "Dracorex hogwartsia",
+   "group": "dino",
+   "type": "zwinny",
+   "diet": "W",
+   "len": 3,
+   "pw": 4,
+   "rarity": 3,
+   "alias": [
+    "dracorex",
+    "drakoreks"
+   ]
+  },
+  {
+   "id": "homalo",
+   "pl": "Homalocefal",
+   "lat": "Homalocephale",
+   "group": "dino",
+   "type": "zwinny",
+   "diet": "W",
+   "len": 3,
+   "pw": 4,
+   "rarity": 2,
+   "alias": [
+    "homalocefal",
+    "homalocephale"
+   ]
+  },
+  {
+   "id": "pterano",
+   "pl": "Pteranodon",
+   "lat": "Pteranodon",
+   "group": "ptero",
+   "type": "zwinny",
+   "diet": "Ry",
+   "len": 7,
+   "pw": 6,
+   "rarity": 3,
+   "alias": [
+    "pteranodon",
+    "pteranadon",
+    "pterandon"
+   ]
+  },
+  {
+   "id": "pterodak",
+   "pl": "Pterodaktyl",
+   "lat": "Pterodactylus",
+   "group": "ptero",
+   "type": "zwinny",
+   "diet": "Ry",
+   "len": 1,
+   "pw": 3,
+   "rarity": 2,
+   "alias": [
+    "pterodaktyl",
+    "pterodactylus",
+    "pterodaktil",
+    "pterodaktyle"
+   ]
+  },
+  {
+   "id": "quetzal",
+   "pl": "Kecalkoatl",
+   "lat": "Quetzalcoatlus",
+   "group": "ptero",
+   "type": "zwinny",
+   "diet": "M",
+   "len": 11,
+   "pw": 6,
+   "rarity": 4,
+   "alias": [
+    "kecalkoatl",
+    "quetzalcoatlus",
+    "kwecalkoatl",
+    "quetzal"
+   ]
+  },
+  {
+   "id": "rhampho",
+   "pl": "Ramforynch",
+   "lat": "Rhamphorhynchus",
+   "group": "ptero",
+   "type": "zwinny",
+   "diet": "Ry",
+   "len": 1,
+   "pw": 3,
+   "rarity": 2,
+   "alias": [
+    "ramforynch",
+    "rhamphorhynchus",
+    "ramforynchus"
+   ]
+  },
+  {
+   "id": "dimorpho",
+   "pl": "Dimorfodon",
+   "lat": "Dimorphodon",
+   "group": "ptero",
+   "type": "zwinny",
+   "diet": "M",
+   "len": 1,
+   "pw": 3,
+   "rarity": 2,
+   "alias": [
+    "dimorfodon",
+    "dimorphodon"
+   ]
+  },
+  {
+   "id": "tapejara",
+   "pl": "Tapejara",
+   "lat": "Tapejara",
+   "group": "ptero",
+   "type": "zwinny",
+   "diet": "W",
+   "len": 3,
+   "pw": 4,
+   "rarity": 3,
+   "alias": [
+    "tapejara",
+    "tapejera"
+   ]
+  },
+  {
+   "id": "tropeo",
+   "pl": "Tropeognat",
+   "lat": "Tropeognathus",
+   "group": "ptero",
+   "type": "zwinny",
+   "diet": "Ry",
+   "len": 6,
+   "pw": 5,
+   "rarity": 2,
+   "alias": [
+    "tropeognat",
+    "tropeognathus"
+   ]
+  },
+  {
+   "id": "nyctosaurus",
+   "pl": "Nyktozaur",
+   "lat": "Nyctosaurus",
+   "group": "ptero",
+   "type": "zwinny",
+   "diet": "Ry",
+   "len": 2,
+   "pw": 4,
+   "rarity": 3,
+   "alias": [
+    "nyktozaur",
+    "nyctosaurus"
+   ]
+  },
+  {
+   "id": "plesio",
+   "pl": "Plezjozaur",
+   "lat": "Plesiosaurus",
+   "group": "morskie",
+   "type": "wodny",
+   "diet": "Ry",
+   "len": 4,
+   "pw": 5,
+   "rarity": 3,
+   "alias": [
+    "plezjozaur",
+    "plesiosaurus",
+    "plezjozaury"
+   ]
+  },
+  {
+   "id": "elasmo",
+   "pl": "Elasmozaur",
+   "lat": "Elasmosaurus",
+   "group": "morskie",
+   "type": "wodny",
+   "diet": "Ry",
+   "len": 12,
+   "pw": 6,
+   "rarity": 4,
+   "alias": [
+    "elasmozaur",
+    "elasmosaurus"
+   ]
+  },
+  {
+   "id": "krypto",
+   "pl": "Kryptoklid",
+   "lat": "Cryptoclidus",
+   "group": "morskie",
+   "type": "wodny",
+   "diet": "Ry",
+   "len": 4,
+   "pw": 5,
+   "rarity": 2,
+   "alias": [
+    "kryptoklid",
+    "cryptoclidus"
+   ]
+  },
+  {
+   "id": "notho",
+   "pl": "Nothozaur",
+   "lat": "Nothosaurus",
+   "group": "morskie",
+   "type": "wodny",
+   "diet": "Ry",
+   "len": 3,
+   "pw": 4,
+   "rarity": 2,
+   "alias": [
+    "nothozaur",
+    "nothosaurus",
+    "notozaur"
+   ]
+  },
+  {
+   "id": "mosa",
+   "pl": "Mozazaur",
+   "lat": "Mosasaurus",
+   "group": "morskie",
+   "type": "wodny",
+   "diet": "M",
+   "len": 17,
+   "pw": 7,
+   "rarity": 4,
+   "alias": [
+    "mozazaur",
+    "mosasaurus",
+    "mozazaury",
+    "mosa"
+   ]
+  },
+  {
+   "id": "tylo",
+   "pl": "Tylozaur",
+   "lat": "Tylosaurus",
+   "group": "morskie",
+   "type": "wodny",
+   "diet": "M",
+   "len": 14,
+   "pw": 7,
+   "rarity": 3,
+   "alias": [
+    "tylozaur",
+    "tylosaurus"
+   ]
+  },
+  {
+   "id": "liopleuro",
+   "pl": "Liopleurodon",
+   "lat": "Liopleurodon",
+   "group": "morskie",
+   "type": "wodny",
+   "diet": "M",
+   "len": 7,
+   "pw": 6,
+   "rarity": 3,
+   "alias": [
+    "liopleurodon",
+    "lioplerodon"
+   ]
+  },
+  {
+   "id": "krono",
+   "pl": "Kronozaur",
+   "lat": "Kronosaurus",
+   "group": "morskie",
+   "type": "wodny",
+   "diet": "M",
+   "len": 10,
+   "pw": 6,
+   "rarity": 3,
+   "alias": [
+    "kronozaur",
+    "kronosaurus"
+   ]
+  },
+  {
+   "id": "ichthyo",
+   "pl": "Ichtiozaur",
+   "lat": "Ichthyosaurus",
+   "group": "morskie",
+   "type": "wodny",
+   "diet": "Ry",
+   "len": 3,
+   "pw": 4,
+   "rarity": 2,
+   "alias": [
+    "ichtiozaur",
+    "ichthyosaurus",
+    "ichtiozaury",
+    "ihtiozaur"
+   ]
+  },
+  {
+   "id": "ophthalmo",
+   "pl": "Oftalmozaur",
+   "lat": "Ophthalmosaurus",
+   "group": "morskie",
+   "type": "wodny",
+   "diet": "Ry",
+   "len": 6,
+   "pw": 5,
+   "rarity": 3,
+   "alias": [
+    "oftalmozaur",
+    "ophthalmosaurus",
+    "oftalmozaury"
+   ]
+  },
+  {
+   "id": "shoni",
+   "pl": "Szonizaur",
+   "lat": "Shonisaurus",
+   "group": "morskie",
+   "type": "wodny",
+   "diet": "Ry",
+   "len": 15,
+   "pw": 7,
+   "rarity": 3,
+   "alias": [
+    "szonizaur",
+    "shonisaurus",
+    "shonizaur"
+   ]
+  },
+  {
+   "id": "archelon",
+   "pl": "Archelon",
+   "lat": "Archelon",
+   "group": "morskie",
+   "type": "wodny",
+   "diet": "W",
+   "len": 4,
+   "pw": 5,
+   "rarity": 3,
+   "alias": [
+    "archelon",
+    "archelona"
+   ]
+  },
+  {
+   "id": "megalodon",
+   "pl": "Megalodon",
+   "lat": "Otodus megalodon",
+   "group": "inne",
+   "type": "wodny",
+   "diet": "M",
+   "len": 18,
+   "pw": 7,
+   "rarity": 4,
+   "alias": [
+    "megalodon",
+    "megalodons",
+    "meg"
+   ]
+  },
+  {
+   "id": "dunkleo",
+   "pl": "Dunkleosteus",
+   "lat": "Dunkleosteus",
+   "group": "inne",
+   "type": "wodny",
+   "diet": "M",
+   "len": 8,
+   "pw": 6,
+   "rarity": 4,
+   "alias": [
+    "dunkleosteus",
+    "dunkleozaur",
+    "dunkleo"
+   ]
+  },
+  {
+   "id": "leedsi",
+   "pl": "Leedsichthys",
+   "lat": "Leedsichthys",
+   "group": "inne",
+   "type": "wodny",
+   "diet": "W",
+   "len": 16,
+   "pw": 7,
+   "rarity": 3,
+   "alias": [
+    "leedsichthys",
+    "leedsichtys",
+    "ledsichthys"
+   ]
+  },
+  {
+   "id": "sarco",
+   "pl": "Sarkozuch",
+   "lat": "Sarcosuchus",
+   "group": "inne",
+   "type": "wodny",
+   "diet": "M",
+   "len": 12,
+   "pw": 6,
+   "rarity": 3,
+   "alias": [
+    "sarkozuch",
+    "sarcosuchus",
+    "sarkosuch",
+    "superkrokodyl"
+   ]
+  },
+  {
+   "id": "deinosuchus",
+   "pl": "Deinozuch",
+   "lat": "Deinosuchus",
+   "group": "inne",
+   "type": "wodny",
+   "diet": "M",
+   "len": 11,
+   "pw": 6,
+   "rarity": 3,
+   "alias": [
+    "deinozuch",
+    "deinosuchus",
+    "deinosuch"
+   ]
+  },
+  {
+   "id": "posto",
+   "pl": "Postozuch",
+   "lat": "Postosuchus",
+   "group": "inne",
+   "type": "drap",
+   "diet": "M",
+   "len": 5,
+   "pw": 7,
+   "rarity": 2,
+   "alias": [
+    "postozuch",
+    "postosuchus",
+    "postosuch"
+   ]
+  },
+  {
+   "id": "protosuchus",
+   "pl": "Protozuch",
+   "lat": "Protosuchus",
+   "group": "inne",
+   "type": "drap",
+   "diet": "M",
+   "len": 1,
+   "pw": 5,
+   "rarity": 1,
+   "alias": [
+    "protozuch",
+    "protosuchus",
+    "protosuch"
+   ]
+  },
+  {
+   "id": "kapro",
+   "pl": "Kaprozuch",
+   "lat": "Kaprosuchus",
+   "group": "inne",
+   "type": "drap",
+   "diet": "M",
+   "len": 6,
+   "pw": 7,
+   "rarity": 2,
+   "alias": [
+    "kaprozuch",
+    "kaprosuchus",
+    "kaprosuch"
+   ]
+  },
+  {
+   "id": "dimetro",
+   "pl": "Dimetrodon",
+   "lat": "Dimetrodon",
+   "group": "inne",
+   "type": "drap",
+   "diet": "M",
+   "len": 4,
+   "pw": 7,
+   "rarity": 3,
+   "alias": [
+    "dimetrodon",
+    "dimetradon",
+    "dimetrodont"
+   ]
+  },
+  {
+   "id": "edapho",
+   "pl": "Edafozaur",
+   "lat": "Edaphosaurus",
+   "group": "inne",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 3,
+   "pw": 6,
+   "rarity": 2,
+   "alias": [
+    "edafozaur",
+    "edaphosaurus"
+   ]
+  },
+  {
+   "id": "lystro",
+   "pl": "Lystrozaur",
+   "lat": "Lystrosaurus",
+   "group": "inne",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 1,
+   "pw": 4,
+   "rarity": 2,
+   "alias": [
+    "lystrozaur",
+    "lystrosaurus",
+    "listrozaur"
+   ]
+  },
+  {
+   "id": "moschops",
+   "pl": "Moschops",
+   "lat": "Moschops",
+   "group": "inne",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 3,
+   "pw": 6,
+   "rarity": 2,
+   "alias": [
+    "moschops",
+    "moshops"
+   ]
+  },
+  {
+   "id": "eryops",
+   "pl": "Eryops",
+   "lat": "Eryops",
+   "group": "inne",
+   "type": "wodny",
+   "diet": "M",
+   "len": 2,
+   "pw": 4,
+   "rarity": 2,
+   "alias": [
+    "eryops",
+    "eriops"
+   ]
+  },
+  {
+   "id": "diplocaulus",
+   "pl": "Diplokaulus",
+   "lat": "Diplocaulus",
+   "group": "inne",
+   "type": "wodny",
+   "diet": "Ry",
+   "len": 1,
+   "pw": 3,
+   "rarity": 2,
+   "alias": [
+    "diplokaulus",
+    "diplocaulus",
+    "diplokaul"
+   ]
+  },
+  {
+   "id": "meganeura",
+   "pl": "Meganeura",
+   "lat": "Meganeura",
+   "group": "inne",
+   "type": "zwinny",
+   "diet": "M",
+   "len": 1,
+   "pw": 3,
+   "rarity": 3,
+   "alias": [
+    "meganeura",
+    "meganeuria",
+    "megaeura"
+   ]
+  },
+  {
+   "id": "arthropleura",
+   "pl": "Artropleura",
+   "lat": "Arthropleura",
+   "group": "inne",
+   "type": "pancerz",
+   "diet": "R",
+   "len": 3,
+   "pw": 6,
+   "rarity": 3,
+   "alias": [
+    "artropleura",
+    "arthropleura",
+    "artopleura"
+   ]
+  },
+  {
+   "id": "trilobit",
+   "pl": "Trylobit",
+   "lat": "Trilobita",
+   "group": "inne",
+   "type": "pancerz",
+   "diet": "W",
+   "len": 1,
+   "pw": 4,
+   "rarity": 1,
+   "alias": [
+    "trylobit",
+    "trilobit",
+    "trilobita",
+    "trylobity"
+   ]
+  },
+  {
+   "id": "mammoth",
+   "pl": "Mamut",
+   "lat": "Mammuthus primigenius",
+   "group": "inne",
+   "type": "olbrzym",
+   "diet": "R",
+   "len": 5,
+   "pw": 6,
+   "rarity": 3,
+   "alias": [
+    "mamut",
+    "mammoth",
+    "mammuthus",
+    "mamut wlochaty"
+   ]
+  },
+  {
+   "id": "smilodon",
+   "pl": "Smilodon",
+   "lat": "Smilodon fatalis",
+   "group": "inne",
+   "type": "drap",
+   "diet": "M",
+   "len": 2,
+   "pw": 6,
+   "rarity": 3,
+   "alias": [
+    "smilodon",
+    "tygrys szablozebny",
+    "szablozebny",
+    "smilodont"
+   ]
+  },
+  {
+   "id": "archaeo",
+   "pl": "Archeopteryks",
+   "lat": "Archaeopteryx",
+   "group": "dino",
+   "type": "zwinny",
+   "diet": "M",
+   "len": 1,
+   "pw": 3,
+   "rarity": 3,
+   "alias": [
+    "archeopteryks",
+    "archaeopteryx",
+    "archeopteryx",
+    "archeopteryks"
+   ]
+  },
+  {
+   "id": "micro",
+   "pl": "Mikroraptor",
+   "lat": "Microraptor",
+   "group": "dino",
+   "type": "zwinny",
+   "diet": "M",
+   "len": 1,
+   "pw": 3,
+   "rarity": 3,
+   "alias": [
+    "mikroraptor",
+    "microraptor",
+    "mikro raptor"
+   ]
+  }
+ ],
+ "gpt": [
+  {
+   "id": "tyrannosaurus-rex",
+   "name": "Tyranozaur rex",
+   "latin": "Tyrannosaurus rex",
+   "alias": [
+    "t rex",
+    "t-rex",
+    "tyranozaur",
+    "trex"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 4,
+   "attack": 94,
+   "defense": 56,
+   "speed": 59,
+   "hp": 140,
+   "pack": 0.31,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "triceratops-horridus",
+   "name": "Triceratops",
+   "latin": "Triceratops horridus",
+   "alias": [
+    "triceratops"
+   ],
+   "category": "dino",
+   "body": "ceratopsian",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 57,
+   "defense": 87,
+   "speed": 46,
+   "hp": 148,
+   "pack": 0,
+   "evade": 0,
+   "armored": true,
+   "fortress": false
+  },
+  {
+   "id": "stegosaurus-stenops",
+   "name": "Stegozaur",
+   "latin": "Stegosaurus stenops",
+   "alias": [
+    "stegosaurus"
+   ],
+   "category": "dino",
+   "body": "stegosaur",
+   "diet": "Roślinożerny",
+   "era": "Jura",
+   "size": 3,
+   "attack": 63,
+   "defense": 76,
+   "speed": 25,
+   "hp": 154,
+   "pack": 0,
+   "evade": 0,
+   "armored": true,
+   "fortress": false
+  },
+  {
+   "id": "brachiosaurus-altithorax",
+   "name": "Brachiozaur",
+   "latin": "Brachiosaurus altithorax",
+   "alias": [
+    "brachiosaurus"
+   ],
+   "category": "dino",
+   "body": "sauropod",
+   "diet": "Roślinożerny",
+   "era": "Jura",
+   "size": 5,
+   "attack": 57,
+   "defense": 99,
+   "speed": 18,
+   "hp": 220,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": true
+  },
+  {
+   "id": "apatosaurus-louisae",
+   "name": "Apatozaur",
+   "latin": "Apatosaurus louisae",
+   "alias": [
+    "apatosaurus"
+   ],
+   "category": "dino",
+   "body": "sauropod",
+   "diet": "Roślinożerny",
+   "era": "Jura",
+   "size": 5,
+   "attack": 58,
+   "defense": 91,
+   "speed": 18,
+   "hp": 218,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": true
+  },
+  {
+   "id": "brontosaurus-excelsus",
+   "name": "Brontozaur",
+   "latin": "Brontosaurus excelsus",
+   "alias": [
+    "brontosaurus"
+   ],
+   "category": "dino",
+   "body": "sauropod",
+   "diet": "Roślinożerny",
+   "era": "Jura",
+   "size": 5,
+   "attack": 58,
+   "defense": 92,
+   "speed": 18,
+   "hp": 214,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": true
+  },
+  {
+   "id": "diplodocus-carnegii",
+   "name": "Diplodok",
+   "latin": "Diplodocus carnegii",
+   "alias": [
+    "diplodocus"
+   ],
+   "category": "dino",
+   "body": "sauropod",
+   "diet": "Roślinożerny",
+   "era": "Jura",
+   "size": 5,
+   "attack": 58,
+   "defense": 94,
+   "speed": 18,
+   "hp": 220,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": true
+  },
+  {
+   "id": "allosaurus-fragilis",
+   "name": "Allozaur",
+   "latin": "Allosaurus fragilis",
+   "alias": [
+    "allosaurus"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Mięsożerny",
+   "era": "Jura",
+   "size": 3,
+   "attack": 87,
+   "defense": 46,
+   "speed": 62,
+   "hp": 128,
+   "pack": 0.43,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "velociraptor-mongoliensis",
+   "name": "Welociraptor",
+   "latin": "Velociraptor mongoliensis",
+   "alias": [
+    "velociraptor",
+    "raptor"
+   ],
+   "category": "dino",
+   "body": "smalltheropod",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 1,
+   "attack": 60,
+   "defense": 25,
+   "speed": 99,
+   "hp": 72,
+   "pack": 0.68,
+   "evade": 0.04,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "deinonychus-antirrhopus",
+   "name": "Deinonych",
+   "latin": "Deinonychus antirrhopus",
+   "alias": [
+    "deinonychus"
+   ],
+   "category": "dino",
+   "body": "smalltheropod",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 1,
+   "attack": 54,
+   "defense": 35,
+   "speed": 99,
+   "hp": 72,
+   "pack": 0.68,
+   "evade": 0.04,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "utahraptor-ostrommaysorum",
+   "name": "Utahraptor",
+   "latin": "Utahraptor ostrommaysorum",
+   "alias": [
+    "utah raptor"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 84,
+   "defense": 52,
+   "speed": 64,
+   "hp": 130,
+   "pack": 0.43,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "carnotaurus-sastrei",
+   "name": "Karnotaur",
+   "latin": "Carnotaurus sastrei",
+   "alias": [
+    "carnotaurus",
+    "karnotaurus"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 80,
+   "defense": 53,
+   "speed": 71,
+   "hp": 114,
+   "pack": 0.31,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "spinosaurus-aegyptiacus",
+   "name": "Spinozaur",
+   "latin": "Spinosaurus aegyptiacus",
+   "alias": [
+    "spinosaurus"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Rybożerny",
+   "era": "Kreda",
+   "size": 4,
+   "attack": 81,
+   "defense": 58,
+   "speed": 64,
+   "hp": 144,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "giganotosaurus-carolinii",
+   "name": "Giganotozaur",
+   "latin": "Giganotosaurus carolinii",
+   "alias": [
+    "giganotosaurus"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 4,
+   "attack": 89,
+   "defense": 59,
+   "speed": 53,
+   "hp": 152,
+   "pack": 0.31,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "carcharodontosaurus-saharicus",
+   "name": "Karcharodontozaur",
+   "latin": "Carcharodontosaurus saharicus",
+   "alias": [
+    "carcharodontosaurus"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 4,
+   "attack": 87,
+   "defense": 57,
+   "speed": 58,
+   "hp": 148,
+   "pack": 0.31,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "ceratosaurus-nasicornis",
+   "name": "Ceratozaur",
+   "latin": "Ceratosaurus nasicornis",
+   "alias": [
+    "ceratosaurus"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Mięsożerny",
+   "era": "Jura",
+   "size": 3,
+   "attack": 85,
+   "defense": 44,
+   "speed": 64,
+   "hp": 124,
+   "pack": 0.31,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "dilophosaurus-wetherilli",
+   "name": "Dilofozaur",
+   "latin": "Dilophosaurus wetherilli",
+   "alias": [
+    "dilophosaurus"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Mięsożerny",
+   "era": "Jura",
+   "size": 3,
+   "attack": 83,
+   "defense": 43,
+   "speed": 69,
+   "hp": 128,
+   "pack": 0.31,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "coelophysis-bauri",
+   "name": "Celofyz",
+   "latin": "Coelophysis bauri",
+   "alias": [
+    "coelophysis"
+   ],
+   "category": "dino",
+   "body": "smalltheropod",
+   "diet": "Mięsożerny",
+   "era": "Trias",
+   "size": 1,
+   "attack": 58,
+   "defense": 34,
+   "speed": 99,
+   "hp": 72,
+   "pack": 0.68,
+   "evade": 0.04,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "compsognathus-longipes",
+   "name": "Kompsognat",
+   "latin": "Compsognathus longipes",
+   "alias": [
+    "compsognathus",
+    "kompsognatus"
+   ],
+   "category": "dino",
+   "body": "smalltheropod",
+   "diet": "Mięsożerny",
+   "era": "Jura",
+   "size": 1,
+   "attack": 57,
+   "defense": 27,
+   "speed": 99,
+   "hp": 72,
+   "pack": 0.56,
+   "evade": 0.04,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "oviraptor-philoceratops",
+   "name": "Owiraptor",
+   "latin": "Oviraptor philoceratops",
+   "alias": [
+    "oviraptor"
+   ],
+   "category": "dino",
+   "body": "smalltheropod",
+   "diet": "Wszystkożerny",
+   "era": "Kreda",
+   "size": 1,
+   "attack": 56,
+   "defense": 29,
+   "speed": 99,
+   "hp": 72,
+   "pack": 0,
+   "evade": 0.04,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "gallimimus-bullatus",
+   "name": "Gallimim",
+   "latin": "Gallimimus bullatus",
+   "alias": [
+    "gallimimus"
+   ],
+   "category": "dino",
+   "body": "smalltheropod",
+   "diet": "Wszystkożerny",
+   "era": "Kreda",
+   "size": 1,
+   "attack": 47,
+   "defense": 29,
+   "speed": 99,
+   "hp": 74,
+   "pack": 0,
+   "evade": 0.04,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "ornithomimus-velox",
+   "name": "Ornitomim",
+   "latin": "Ornithomimus velox",
+   "alias": [
+    "ornithomimus"
+   ],
+   "category": "dino",
+   "body": "smalltheropod",
+   "diet": "Wszystkożerny",
+   "era": "Kreda",
+   "size": 1,
+   "attack": 52,
+   "defense": 30,
+   "speed": 99,
+   "hp": 74,
+   "pack": 0,
+   "evade": 0.04,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "therizinosaurus-cheloniformis",
+   "name": "Terizinozaur",
+   "latin": "Therizinosaurus cheloniformis",
+   "alias": [
+    "therizinosaurus"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 74,
+   "defense": 58,
+   "speed": 62,
+   "hp": 134,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "ankylosaurus-magniventris",
+   "name": "Ankylozaur",
+   "latin": "Ankylosaurus magniventris",
+   "alias": [
+    "ankylosaurus"
+   ],
+   "category": "dino",
+   "body": "ankylosaur",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 59,
+   "defense": 97,
+   "speed": 28,
+   "hp": 158,
+   "pack": 0,
+   "evade": 0,
+   "armored": true,
+   "fortress": false
+  },
+  {
+   "id": "euoplocephalus-tutus",
+   "name": "Euoplocefal",
+   "latin": "Euoplocephalus tutus",
+   "alias": [
+    "euoplocephalus",
+    "euplocefal"
+   ],
+   "category": "dino",
+   "body": "ankylosaur",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 55,
+   "defense": 99,
+   "speed": 27,
+   "hp": 152,
+   "pack": 0,
+   "evade": 0,
+   "armored": true,
+   "fortress": false
+  },
+  {
+   "id": "nodosaurus-textilis",
+   "name": "Nodozaur",
+   "latin": "Nodosaurus textilis",
+   "alias": [
+    "nodosaurus"
+   ],
+   "category": "dino",
+   "body": "ankylosaur",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 52,
+   "defense": 99,
+   "speed": 28,
+   "hp": 154,
+   "pack": 0,
+   "evade": 0,
+   "armored": true,
+   "fortress": false
+  },
+  {
+   "id": "edmontonia-rugosidens",
+   "name": "Edmontonia",
+   "latin": "Edmontonia rugosidens",
+   "alias": [
+    "edmontonia"
+   ],
+   "category": "dino",
+   "body": "ankylosaur",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 53,
+   "defense": 99,
+   "speed": 25,
+   "hp": 166,
+   "pack": 0,
+   "evade": 0,
+   "armored": true,
+   "fortress": false
+  },
+  {
+   "id": "pachycephalosaurus-wyomingensis",
+   "name": "Pachycefalozaur",
+   "latin": "Pachycephalosaurus wyomingensis",
+   "alias": [
+    "pachycephalosaurus"
+   ],
+   "category": "dino",
+   "body": "pachy",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 60,
+   "defense": 60,
+   "speed": 66,
+   "hp": 120,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "stygimoloch-spinifer",
+   "name": "Stygimoloch",
+   "latin": "Stygimoloch spinifer",
+   "alias": [
+    "stygimoloch"
+   ],
+   "category": "dino",
+   "body": "pachy",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 55,
+   "defense": 66,
+   "speed": 70,
+   "hp": 122,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "parasaurolophus-walkeri",
+   "name": "Parazaurolof",
+   "latin": "Parasaurolophus walkeri",
+   "alias": [
+    "parasaurolophus"
+   ],
+   "category": "dino",
+   "body": "hadrosaur",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 43,
+   "defense": 53,
+   "speed": 73,
+   "hp": 137,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "edmontosaurus-annectens",
+   "name": "Edmontozaur",
+   "latin": "Edmontosaurus annectens",
+   "alias": [
+    "edmontosaurus"
+   ],
+   "category": "dino",
+   "body": "hadrosaur",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 40,
+   "defense": 61,
+   "speed": 63,
+   "hp": 131,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "corythosaurus-casuarius",
+   "name": "Korytozaur",
+   "latin": "Corythosaurus casuarius",
+   "alias": [
+    "corythosaurus"
+   ],
+   "category": "dino",
+   "body": "hadrosaur",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 42,
+   "defense": 61,
+   "speed": 71,
+   "hp": 119,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "iguanodon-bernissartensis",
+   "name": "Iguanodon",
+   "latin": "Iguanodon bernissartensis",
+   "alias": [
+    "iguanodon"
+   ],
+   "category": "dino",
+   "body": "hadrosaur",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 45,
+   "defense": 53,
+   "speed": 67,
+   "hp": 125,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "maiasaura-peeblesorum",
+   "name": "Majazaura",
+   "latin": "Maiasaura peeblesorum",
+   "alias": [
+    "maiasaura"
+   ],
+   "category": "dino",
+   "body": "hadrosaur",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 38,
+   "defense": 60,
+   "speed": 68,
+   "hp": 133,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "lambeosaurus-lambei",
+   "name": "Lambeozaur",
+   "latin": "Lambeosaurus lambei",
+   "alias": [
+    "lambeosaurus"
+   ],
+   "category": "dino",
+   "body": "hadrosaur",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 37,
+   "defense": 56,
+   "speed": 67,
+   "hp": 121,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "saurolophus-osborni",
+   "name": "Zaurolof",
+   "latin": "Saurolophus osborni",
+   "alias": [
+    "saurolophus"
+   ],
+   "category": "dino",
+   "body": "hadrosaur",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 38,
+   "defense": 57,
+   "speed": 67,
+   "hp": 133,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "centrosaurus-apertus",
+   "name": "Centrozaur",
+   "latin": "Centrosaurus apertus",
+   "alias": [
+    "centrosaurus"
+   ],
+   "category": "dino",
+   "body": "ceratopsian",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 63,
+   "defense": 79,
+   "speed": 47,
+   "hp": 160,
+   "pack": 0,
+   "evade": 0,
+   "armored": true,
+   "fortress": false
+  },
+  {
+   "id": "styracosaurus-albertensis",
+   "name": "Styrakozaur",
+   "latin": "Styracosaurus albertensis",
+   "alias": [
+    "styracosaurus"
+   ],
+   "category": "dino",
+   "body": "ceratopsian",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 63,
+   "defense": 79,
+   "speed": 41,
+   "hp": 148,
+   "pack": 0,
+   "evade": 0,
+   "armored": true,
+   "fortress": false
+  },
+  {
+   "id": "protoceratops-andrewsi",
+   "name": "Protoceratops",
+   "latin": "Protoceratops andrewsi",
+   "alias": [
+    "protoceratops"
+   ],
+   "category": "dino",
+   "body": "ceratopsian",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 57,
+   "defense": 84,
+   "speed": 45,
+   "hp": 148,
+   "pack": 0,
+   "evade": 0,
+   "armored": true,
+   "fortress": false
+  },
+  {
+   "id": "torosaurus-latus",
+   "name": "Torozaur",
+   "latin": "Torosaurus latus",
+   "alias": [
+    "torosaurus"
+   ],
+   "category": "dino",
+   "body": "ceratopsian",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 67,
+   "defense": 86,
+   "speed": 40,
+   "hp": 156,
+   "pack": 0,
+   "evade": 0,
+   "armored": true,
+   "fortress": false
+  },
+  {
+   "id": "pentaceratops-sternbergii",
+   "name": "Pentaceratops",
+   "latin": "Pentaceratops sternbergii",
+   "alias": [
+    "pentaceratops"
+   ],
+   "category": "dino",
+   "body": "ceratopsian",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 66,
+   "defense": 80,
+   "speed": 43,
+   "hp": 140,
+   "pack": 0,
+   "evade": 0,
+   "armored": true,
+   "fortress": false
+  },
+  {
+   "id": "chasmosaurus-belli",
+   "name": "Chasmozaur",
+   "latin": "Chasmosaurus belli",
+   "alias": [
+    "chasmosaurus"
+   ],
+   "category": "dino",
+   "body": "ceratopsian",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 65,
+   "defense": 81,
+   "speed": 39,
+   "hp": 152,
+   "pack": 0,
+   "evade": 0,
+   "armored": true,
+   "fortress": false
+  },
+  {
+   "id": "albertosaurus-sarcophagus",
+   "name": "Albertozaur",
+   "latin": "Albertosaurus sarcophagus",
+   "alias": [
+    "albertosaurus"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 85,
+   "defense": 47,
+   "speed": 64,
+   "hp": 114,
+   "pack": 0.43,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "daspletosaurus-torosus",
+   "name": "Daspletozaur",
+   "latin": "Daspletosaurus torosus",
+   "alias": [
+    "daspletosaurus"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 78,
+   "defense": 51,
+   "speed": 68,
+   "hp": 122,
+   "pack": 0.31,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "acrocanthosaurus-atokensis",
+   "name": "Akrokantozaur",
+   "latin": "Acrocanthosaurus atokensis",
+   "alias": [
+    "acrocanthosaurus"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 4,
+   "attack": 93,
+   "defense": 57,
+   "speed": 58,
+   "hp": 142,
+   "pack": 0.31,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "megalosaurus-bucklandii",
+   "name": "Megalozaur",
+   "latin": "Megalosaurus bucklandii",
+   "alias": [
+    "megalosaurus"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Mięsożerny",
+   "era": "Jura",
+   "size": 3,
+   "attack": 79,
+   "defense": 49,
+   "speed": 66,
+   "hp": 134,
+   "pack": 0.31,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "baryonyx-walkeri",
+   "name": "Barionyks",
+   "latin": "Baryonyx walkeri",
+   "alias": [
+    "baryonyx",
+    "barionyx"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Rybożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 74,
+   "defense": 49,
+   "speed": 72,
+   "hp": 118,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "suchomimus-tenerensis",
+   "name": "Suchomim",
+   "latin": "Suchomimus tenerensis",
+   "alias": [
+    "suchomimus"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Rybożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 75,
+   "defense": 47,
+   "speed": 70,
+   "hp": 120,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "majungasaurus-crenatissimus",
+   "name": "Majungazaur",
+   "latin": "Majungasaurus crenatissimus",
+   "alias": [
+    "majungasaurus"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 80,
+   "defense": 53,
+   "speed": 67,
+   "hp": 126,
+   "pack": 0.31,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "kentrosaurus-aethiopicus",
+   "name": "Kentrozaur",
+   "latin": "Kentrosaurus aethiopicus",
+   "alias": [
+    "kentrosaurus"
+   ],
+   "category": "dino",
+   "body": "stegosaur",
+   "diet": "Roślinożerny",
+   "era": "Jura",
+   "size": 3,
+   "attack": 65,
+   "defense": 77,
+   "speed": 23,
+   "hp": 140,
+   "pack": 0,
+   "evade": 0,
+   "armored": true,
+   "fortress": false
+  },
+  {
+   "id": "plateosaurus-engelhardti",
+   "name": "Plateozaur",
+   "latin": "Plateosaurus engelhardti",
+   "alias": [
+    "plateosaurus"
+   ],
+   "category": "dino",
+   "body": "sauropod",
+   "diet": "Roślinożerny",
+   "era": "Trias",
+   "size": 4,
+   "attack": 51,
+   "defense": 90,
+   "speed": 25,
+   "hp": 204,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "camarasaurus-lentus",
+   "name": "Kamarazaur",
+   "latin": "Camarasaurus lentus",
+   "alias": [
+    "camarasaurus"
+   ],
+   "category": "dino",
+   "body": "sauropod",
+   "diet": "Roślinożerny",
+   "era": "Jura",
+   "size": 4,
+   "attack": 56,
+   "defense": 84,
+   "speed": 19,
+   "hp": 194,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "argentinosaurus-huinculensis",
+   "name": "Argentynozaur",
+   "latin": "Argentinosaurus huinculensis",
+   "alias": [
+    "argentinosaurus"
+   ],
+   "category": "dino",
+   "body": "sauropod",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 5,
+   "attack": 56,
+   "defense": 92,
+   "speed": 18,
+   "hp": 214,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": true
+  },
+  {
+   "id": "dreadnoughtus-schrani",
+   "name": "Dreadnoughtus",
+   "latin": "Dreadnoughtus schrani",
+   "alias": [
+    "dreadnoughtus"
+   ],
+   "category": "dino",
+   "body": "sauropod",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 5,
+   "attack": 57,
+   "defense": 99,
+   "speed": 18,
+   "hp": 212,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": true
+  },
+  {
+   "id": "saltasaurus-loricatus",
+   "name": "Saltazaur",
+   "latin": "Saltasaurus loricatus",
+   "alias": [
+    "saltasaurus"
+   ],
+   "category": "dino",
+   "body": "sauropod",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 4,
+   "attack": 53,
+   "defense": 86,
+   "speed": 18,
+   "hp": 192,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "amargasaurus-cazaui",
+   "name": "Amargazaur",
+   "latin": "Amargasaurus cazaui",
+   "alias": [
+    "amargasaurus"
+   ],
+   "category": "dino",
+   "body": "sauropod",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 4,
+   "attack": 48,
+   "defense": 90,
+   "speed": 23,
+   "hp": 190,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "europasaurus-holgeri",
+   "name": "Europazaur",
+   "latin": "Europasaurus holgeri",
+   "alias": [
+    "europasaurus"
+   ],
+   "category": "dino",
+   "body": "sauropod",
+   "diet": "Roślinożerny",
+   "era": "Jura",
+   "size": 2,
+   "attack": 48,
+   "defense": 77,
+   "speed": 32,
+   "hp": 174,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "dryosaurus-altus",
+   "name": "Dryozaur",
+   "latin": "Dryosaurus altus",
+   "alias": [
+    "dryosaurus"
+   ],
+   "category": "dino",
+   "body": "hadrosaur",
+   "diet": "Roślinożerny",
+   "era": "Jura",
+   "size": 3,
+   "attack": 38,
+   "defense": 59,
+   "speed": 72,
+   "hp": 127,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "hypsilophodon-foxii",
+   "name": "Hypsilofodon",
+   "latin": "Hypsilophodon foxii",
+   "alias": [
+    "hypsilophodon"
+   ],
+   "category": "dino",
+   "body": "hadrosaur",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 39,
+   "defense": 61,
+   "speed": 68,
+   "hp": 135,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "tenontosaurus-tilletti",
+   "name": "Tenontozaur",
+   "latin": "Tenontosaurus tilletti",
+   "alias": [
+    "tenontosaurus"
+   ],
+   "category": "dino",
+   "body": "hadrosaur",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 43,
+   "defense": 54,
+   "speed": 73,
+   "hp": 121,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "camptosaurus-dispar",
+   "name": "Kamptozaur",
+   "latin": "Camptosaurus dispar",
+   "alias": [
+    "camptosaurus"
+   ],
+   "category": "dino",
+   "body": "hadrosaur",
+   "diet": "Roślinożerny",
+   "era": "Jura",
+   "size": 3,
+   "attack": 45,
+   "defense": 58,
+   "speed": 67,
+   "hp": 129,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "ornitholestes-hermanni",
+   "name": "Ornitolest",
+   "latin": "Ornitholestes hermanni",
+   "alias": [
+    "ornitholestes"
+   ],
+   "category": "dino",
+   "body": "smalltheropod",
+   "diet": "Mięsożerny",
+   "era": "Jura",
+   "size": 1,
+   "attack": 61,
+   "defense": 29,
+   "speed": 99,
+   "hp": 72,
+   "pack": 0.56,
+   "evade": 0.04,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "struthiomimus-altus",
+   "name": "Strutiomim",
+   "latin": "Struthiomimus altus",
+   "alias": [
+    "struthiomimus"
+   ],
+   "category": "dino",
+   "body": "smalltheropod",
+   "diet": "Wszystkożerny",
+   "era": "Kreda",
+   "size": 1,
+   "attack": 50,
+   "defense": 28,
+   "speed": 99,
+   "hp": 72,
+   "pack": 0,
+   "evade": 0.04,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "dromaeosaurus-albertensis",
+   "name": "Dromeozaur",
+   "latin": "Dromaeosaurus albertensis",
+   "alias": [
+    "dromaeosaurus"
+   ],
+   "category": "dino",
+   "body": "smalltheropod",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 1,
+   "attack": 61,
+   "defense": 28,
+   "speed": 99,
+   "hp": 72,
+   "pack": 0.68,
+   "evade": 0.04,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "herrerasaurus-ischigualastensis",
+   "name": "Herrerazaur",
+   "latin": "Herrerasaurus ischigualastensis",
+   "alias": [
+    "herrerasaurus"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Mięsożerny",
+   "era": "Trias",
+   "size": 3,
+   "attack": 84,
+   "defense": 44,
+   "speed": 64,
+   "hp": 130,
+   "pack": 0.31,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "eoraptor-lunensis",
+   "name": "Eoraptor",
+   "latin": "Eoraptor lunensis",
+   "alias": [
+    "eoraptor"
+   ],
+   "category": "dino",
+   "body": "smalltheropod",
+   "diet": "Wszystkożerny",
+   "era": "Trias",
+   "size": 1,
+   "attack": 47,
+   "defense": 34,
+   "speed": 99,
+   "hp": 72,
+   "pack": 0,
+   "evade": 0.04,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "torvosaurus-tanneri",
+   "name": "Torwozaur",
+   "latin": "Torvosaurus tanneri",
+   "alias": [
+    "torvosaurus"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Mięsożerny",
+   "era": "Jura",
+   "size": 3,
+   "attack": 78,
+   "defense": 51,
+   "speed": 64,
+   "hp": 122,
+   "pack": 0.31,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "cryolophosaurus-ellioti",
+   "name": "Kriolofozaur",
+   "latin": "Cryolophosaurus ellioti",
+   "alias": [
+    "cryolophosaurus"
+   ],
+   "category": "dino",
+   "body": "theropod",
+   "diet": "Mięsożerny",
+   "era": "Jura",
+   "size": 3,
+   "attack": 86,
+   "defense": 45,
+   "speed": 62,
+   "hp": 116,
+   "pack": 0.31,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "muttaburrasaurus-langdoni",
+   "name": "Muttaburrazaur",
+   "latin": "Muttaburrasaurus langdoni",
+   "alias": [
+    "muttaburrasaurus"
+   ],
+   "category": "dino",
+   "body": "hadrosaur",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 39,
+   "defense": 56,
+   "speed": 73,
+   "hp": 117,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "ouranosaurus-nigeriensis",
+   "name": "Ouranozaur",
+   "latin": "Ouranosaurus nigeriensis",
+   "alias": [
+    "ouranosaurus"
+   ],
+   "category": "dino",
+   "body": "hadrosaur",
+   "diet": "Roślinożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 42,
+   "defense": 61,
+   "speed": 65,
+   "hp": 131,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "pteranodon-longiceps",
+   "name": "Pteranodon",
+   "latin": "Pteranodon longiceps",
+   "alias": [
+    "pteranodon"
+   ],
+   "category": "ptero",
+   "body": "pterosaur",
+   "diet": "Rybożerny",
+   "era": "Kreda",
+   "size": 2,
+   "attack": 45,
+   "defense": 37,
+   "speed": 99,
+   "hp": 76,
+   "pack": 0,
+   "evade": 0.08,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "pterodactylus-antiquus",
+   "name": "Pterodaktyl",
+   "latin": "Pterodactylus antiquus",
+   "alias": [
+    "pterodactylus",
+    "pterodaktylus"
+   ],
+   "category": "ptero",
+   "body": "pterosaur",
+   "diet": "Rybożerny",
+   "era": "Jura",
+   "size": 2,
+   "attack": 49,
+   "defense": 36,
+   "speed": 99,
+   "hp": 72,
+   "pack": 0,
+   "evade": 0.08,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "quetzalcoatlus-northropi",
+   "name": "Quetzalcoatlus",
+   "latin": "Quetzalcoatlus northropi",
+   "alias": [
+    "kecalkoatl",
+    "quetzalcoatlus"
+   ],
+   "category": "ptero",
+   "body": "pterosaur",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 4,
+   "attack": 57,
+   "defense": 44,
+   "speed": 85,
+   "hp": 118,
+   "pack": 0.16,
+   "evade": 0.08,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "rhamphorhynchus-muensteri",
+   "name": "Ramforynch",
+   "latin": "Rhamphorhynchus muensteri",
+   "alias": [
+    "rhamphorhynchus"
+   ],
+   "category": "ptero",
+   "body": "pterosaur",
+   "diet": "Rybożerny",
+   "era": "Jura",
+   "size": 2,
+   "attack": 45,
+   "defense": 32,
+   "speed": 99,
+   "hp": 82,
+   "pack": 0,
+   "evade": 0.08,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "dimorphodon-macronyx",
+   "name": "Dimorfodon",
+   "latin": "Dimorphodon macronyx",
+   "alias": [
+    "dimorphodon"
+   ],
+   "category": "ptero",
+   "body": "pterosaur",
+   "diet": "Rybożerny",
+   "era": "Jura",
+   "size": 2,
+   "attack": 48,
+   "defense": 29,
+   "speed": 99,
+   "hp": 82,
+   "pack": 0,
+   "evade": 0.08,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "tapejara-wellnhoferi",
+   "name": "Tapejara",
+   "latin": "Tapejara wellnhoferi",
+   "alias": [
+    "tapejara"
+   ],
+   "category": "ptero",
+   "body": "pterosaur",
+   "diet": "Wszystkożerny",
+   "era": "Kreda",
+   "size": 2,
+   "attack": 44,
+   "defense": 35,
+   "speed": 99,
+   "hp": 84,
+   "pack": 0,
+   "evade": 0.08,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "anhanguera-santanae",
+   "name": "Anhanguera",
+   "latin": "Anhanguera santanae",
+   "alias": [
+    "anhanguera"
+   ],
+   "category": "ptero",
+   "body": "pterosaur",
+   "diet": "Rybożerny",
+   "era": "Kreda",
+   "size": 2,
+   "attack": 49,
+   "defense": 39,
+   "speed": 99,
+   "hp": 72,
+   "pack": 0,
+   "evade": 0.08,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "nyctosaurus-gracilis",
+   "name": "Nyctosaurus",
+   "latin": "Nyctosaurus gracilis",
+   "alias": [
+    "nyktozaur",
+    "nyctosaur"
+   ],
+   "category": "ptero",
+   "body": "pterosaur",
+   "diet": "Rybożerny",
+   "era": "Kreda",
+   "size": 2,
+   "attack": 45,
+   "defense": 34,
+   "speed": 99,
+   "hp": 86,
+   "pack": 0,
+   "evade": 0.08,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "hatzegopteryx-thambema",
+   "name": "Hatzegopteryx",
+   "latin": "Hatzegopteryx thambema",
+   "alias": [
+    "hatzegopteryks"
+   ],
+   "category": "ptero",
+   "body": "pterosaur",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 4,
+   "attack": 63,
+   "defense": 40,
+   "speed": 92,
+   "hp": 116,
+   "pack": 0.16,
+   "evade": 0.08,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "tropeognathus-mesembrinus",
+   "name": "Tropeognat",
+   "latin": "Tropeognathus mesembrinus",
+   "alias": [
+    "tropeognathus"
+   ],
+   "category": "ptero",
+   "body": "pterosaur",
+   "diet": "Rybożerny",
+   "era": "Kreda",
+   "size": 2,
+   "attack": 49,
+   "defense": 36,
+   "speed": 99,
+   "hp": 88,
+   "pack": 0,
+   "evade": 0.08,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "mosasaurus-hoffmannii",
+   "name": "Mosasaurus",
+   "latin": "Mosasaurus hoffmannii",
+   "alias": [
+    "mozazaur",
+    "mosazaur"
+   ],
+   "category": "marine",
+   "body": "marine",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 4,
+   "attack": 94,
+   "defense": 64,
+   "speed": 59,
+   "hp": 173,
+   "pack": 0.16,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "tylosaurus-proriger",
+   "name": "Tylozaur",
+   "latin": "Tylosaurus proriger",
+   "alias": [
+    "tylosaurus"
+   ],
+   "category": "marine",
+   "body": "marine",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 4,
+   "attack": 94,
+   "defense": 62,
+   "speed": 59,
+   "hp": 169,
+   "pack": 0.16,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "elasmosaurus-platyurus",
+   "name": "Elazmozaur",
+   "latin": "Elasmosaurus platyurus",
+   "alias": [
+    "elasmosaurus"
+   ],
+   "category": "marine",
+   "body": "marine-long",
+   "diet": "Rybożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 58,
+   "defense": 57,
+   "speed": 72,
+   "hp": 136,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "plesiosaurus-dolichodeirus",
+   "name": "Plezjozaur",
+   "latin": "Plesiosaurus dolichodeirus",
+   "alias": [
+    "plesiosaurus"
+   ],
+   "category": "marine",
+   "body": "marine-long",
+   "diet": "Rybożerny",
+   "era": "Jura",
+   "size": 3,
+   "attack": 57,
+   "defense": 48,
+   "speed": 71,
+   "hp": 134,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "liopleurodon-ferox",
+   "name": "Liopleurodon",
+   "latin": "Liopleurodon ferox",
+   "alias": [
+    "liopleurodon"
+   ],
+   "category": "marine",
+   "body": "marine",
+   "diet": "Mięsożerny",
+   "era": "Jura",
+   "size": 4,
+   "attack": 93,
+   "defense": 63,
+   "speed": 59,
+   "hp": 161,
+   "pack": 0.16,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "kronosaurus-queenslandicus",
+   "name": "Kronozaur",
+   "latin": "Kronosaurus queenslandicus",
+   "alias": [
+    "kronosaurus"
+   ],
+   "category": "marine",
+   "body": "marine",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 4,
+   "attack": 86,
+   "defense": 70,
+   "speed": 67,
+   "hp": 169,
+   "pack": 0.16,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "ichthyosaurus-communis",
+   "name": "Ichtiozaur",
+   "latin": "Ichthyosaurus communis",
+   "alias": [
+    "ichthyosaurus"
+   ],
+   "category": "marine",
+   "body": "marine",
+   "diet": "Rybożerny",
+   "era": "Jura",
+   "size": 4,
+   "attack": 87,
+   "defense": 64,
+   "speed": 72,
+   "hp": 179,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "shonisaurus-popularis",
+   "name": "Shonisaurus",
+   "latin": "Shonisaurus popularis",
+   "alias": [
+    "szonizaur",
+    "shonizaur"
+   ],
+   "category": "marine",
+   "body": "marine",
+   "diet": "Rybożerny",
+   "era": "Trias",
+   "size": 5,
+   "attack": 90,
+   "defense": 76,
+   "speed": 56,
+   "hp": 197,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "nothosaurus-mirabilis",
+   "name": "Notozaur",
+   "latin": "Nothosaurus mirabilis",
+   "alias": [
+    "nothosaurus"
+   ],
+   "category": "marine",
+   "body": "marine-long",
+   "diet": "Rybożerny",
+   "era": "Trias",
+   "size": 3,
+   "attack": 53,
+   "defense": 55,
+   "speed": 73,
+   "hp": 126,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "pliosaurus-funkei",
+   "name": "Pliozaur",
+   "latin": "Pliosaurus funkei",
+   "alias": [
+    "pliosaurus",
+    "predator x"
+   ],
+   "category": "marine",
+   "body": "marine",
+   "diet": "Mięsożerny",
+   "era": "Jura",
+   "size": 4,
+   "attack": 87,
+   "defense": 66,
+   "speed": 68,
+   "hp": 167,
+   "pack": 0.16,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "ophthalmosaurus-icenicus",
+   "name": "Oftalmozaur",
+   "latin": "Ophthalmosaurus icenicus",
+   "alias": [
+    "ophthalmosaurus"
+   ],
+   "category": "marine",
+   "body": "marine",
+   "diet": "Rybożerny",
+   "era": "Jura",
+   "size": 4,
+   "attack": 84,
+   "defense": 69,
+   "speed": 68,
+   "hp": 161,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "leedsichthys-problematicus",
+   "name": "Leedsichthys",
+   "latin": "Leedsichthys problematicus",
+   "alias": [
+    "leedsichtys",
+    "lidsichtys"
+   ],
+   "category": "marine",
+   "body": "fish",
+   "diet": "Planktonożerny",
+   "era": "Jura",
+   "size": 5,
+   "attack": 38,
+   "defense": 59,
+   "speed": 61,
+   "hp": 178,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "archelon-ischyros",
+   "name": "Archelon",
+   "latin": "Archelon ischyros",
+   "alias": [
+    "archelon"
+   ],
+   "category": "marine",
+   "body": "turtle",
+   "diet": "Wszystkożerny",
+   "era": "Kreda",
+   "size": 3,
+   "attack": 42,
+   "defense": 93,
+   "speed": 23,
+   "hp": 126,
+   "pack": 0,
+   "evade": 0,
+   "armored": true,
+   "fortress": false
+  },
+  {
+   "id": "sarcosuchus-imperator",
+   "name": "Sarcosuchus",
+   "latin": "Sarcosuchus imperator",
+   "alias": [
+    "sarkozuch",
+    "sarcozuch"
+   ],
+   "category": "other",
+   "body": "croc",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 4,
+   "attack": 86,
+   "defense": 79,
+   "speed": 37,
+   "hp": 162,
+   "pack": 0.16,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "deinosuchus-hatcheri",
+   "name": "Deinozuch",
+   "latin": "Deinosuchus hatcheri",
+   "alias": [
+    "deinosuchus"
+   ],
+   "category": "other",
+   "body": "croc",
+   "diet": "Mięsożerny",
+   "era": "Kreda",
+   "size": 4,
+   "attack": 84,
+   "defense": 85,
+   "speed": 36,
+   "hp": 158,
+   "pack": 0.16,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "protosuchus-richardsoni",
+   "name": "Protozuch",
+   "latin": "Protosuchus richardsoni",
+   "alias": [
+    "protosuchus"
+   ],
+   "category": "other",
+   "body": "croc",
+   "diet": "Mięsożerny",
+   "era": "Jura",
+   "size": 3,
+   "attack": 75,
+   "defense": 72,
+   "speed": 42,
+   "hp": 146,
+   "pack": 0.16,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "postosuchus-kirkpatricki",
+   "name": "Postozuch",
+   "latin": "Postosuchus kirkpatricki",
+   "alias": [
+    "postosuchus"
+   ],
+   "category": "other",
+   "body": "croc",
+   "diet": "Mięsożerny",
+   "era": "Trias",
+   "size": 3,
+   "attack": 85,
+   "defense": 73,
+   "speed": 40,
+   "hp": 148,
+   "pack": 0.16,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "dimetrodon-grandis",
+   "name": "Dimetrodon",
+   "latin": "Dimetrodon grandis",
+   "alias": [
+    "dimetrodon"
+   ],
+   "category": "other",
+   "body": "synapsid",
+   "diet": "Mięsożerny",
+   "era": "Perm",
+   "size": 3,
+   "attack": 74,
+   "defense": 48,
+   "speed": 46,
+   "hp": 116,
+   "pack": 0.16,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "edaphosaurus-pogonias",
+   "name": "Edafosaurus",
+   "latin": "Edaphosaurus pogonias",
+   "alias": [
+    "edaphosaurus",
+    "edafosaur"
+   ],
+   "category": "other",
+   "body": "synapsid",
+   "diet": "Roślinożerny",
+   "era": "Perm",
+   "size": 3,
+   "attack": 66,
+   "defense": 58,
+   "speed": 47,
+   "hp": 128,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  },
+  {
+   "id": "tanystropheus-longobardicus",
+   "name": "Tanystrof",
+   "latin": "Tanystropheus longobardicus",
+   "alias": [
+    "tanystropheus"
+   ],
+   "category": "other",
+   "body": "reptile",
+   "diet": "Rybożerny",
+   "era": "Trias",
+   "size": 2,
+   "attack": 49,
+   "defense": 52,
+   "speed": 68,
+   "hp": 112,
+   "pack": 0,
+   "evade": 0,
+   "armored": false,
+   "fortress": false
+  }
+ ]
+}
