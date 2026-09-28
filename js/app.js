@@ -24,13 +24,13 @@ function lev(a, b) {
   return prev[b.length];
 }
 const keysOf = sp => sp._k || (sp._k = [norm(sp.name)]);
-/* 0 = dokładnie, 1 = początek (min. połowa nazwy – „char” nic nie złapie), 2+ = literówka; Nidoran♀ i ♂ łapie ten sam wpis → wybór w podpowiedziach */
+/* 0 = dokładnie, 1 = początek (od 3 liter: „pik” → Pikachu), 2+ = literówka; Nidoran♀ i ♂ łapie ten sam wpis → wybór w podpowiedziach */
 function search(q) {
   q = norm(q);
   if (q.length < 3) return [];
   const tol = q.length <= 5 ? 1 : q.length <= 9 ? 2 : 3, out = [];
   for (const sp of LIST) {
-    const best = Math.min(...keysOf(sp).map(k => k === q ? 0 : k.startsWith(q) && q.length >= Math.max(4, k.length / 2) ? 1
+    const best = Math.min(...keysOf(sp).map(k => k === q ? 0 : k.startsWith(q) ? 1
       : (d => d <= tol ? 2 + d : 99)(lev(q, k))));
     if (best < 99) out.push({ sp, score: best });
   }
@@ -97,7 +97,7 @@ function crack() {
 const $ = s => document.querySelector(s);
 const el = Object.fromEntries(['q', 'huntForm', 'sugg', 'huntMsg', 'grid', 'emptyMsg', 'chips', 'onlyMissing', 'pcCount', 'pcRank', 'pcBall',
   'rockFill', 'rockMarks', 'brandBall', 'scene', 'sceneTarget', 'sceneBall', 'sceneFlash', 'sceneName', 'confetti', 'modal', 'modalBody',
-  'modalClose', 'btnArena', 'btnCards', 'btnEdit', 'modeSeg', 'zoom'].map(id => [id, document.getElementById(id)]));
+  'huntBox', 'modalClose', 'btnArena', 'btnCards', 'btnEdit', 'modeSeg', 'zoom'].map(id => [id, document.getElementById(id)]));
 el.pill = $('.search-pill'); el.main = $('main.wrap');
 let filter = 'all', editing = false;
 
@@ -194,7 +194,7 @@ function fail(text) {
 }
 function attempt(sp) {
   if (!sp) return;
-  audio();
+  audio(); if (!el.modal.hidden) closeModal();
   if (isCaught(sp.id)) { say(`${esc(sp.name)} jest już w Twojej kolekcji!`, 'good'); return openCard(sp); }
   say('');
   runCatch(sp);
@@ -233,8 +233,14 @@ function confettiBurst(sp) {
 }
 
 /* ================= KARTY ================= */
-function openModal(html, cls = '') { el.modalBody.innerHTML = html; el.modal.className = 'modal ' + cls; el.modal.hidden = false; }
-function closeModal() { el.modal.hidden = true; stopBattle(); }
+/* wyszukiwarka wędruje do okna nieznanego Pokémona (.m-hunt), żeby od razu zgadywać; wraca na stronę przy zamknięciu */
+const huntHome = el.huntBox.parentNode;
+const dockHunt = slot => {
+  (slot || huntHome).append(el.huntBox);
+  if (slot) { say(''); if (matchMedia('(hover: hover)').matches) el.q.focus({ preventScroll: true }); }   // na telefonie klawiatura zasłoniłaby podpowiedź
+};
+function openModal(html, cls = '') { dockHunt(); el.modalBody.innerHTML = html; el.modal.className = 'modal ' + cls; el.modal.hidden = false; dockHunt(el.modalBody.querySelector('.m-hunt')); }
+function closeModal() { el.modal.hidden = true; stopBattle(); dockHunt(); }
 el.modalClose.addEventListener('click', closeModal);
 el.modal.addEventListener('click', e => { if (e.target === el.modal) closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') el.zoom.hidden ? closeModal() : (el.zoom.hidden = true); });
@@ -284,8 +290,8 @@ function hintCard(sp) {
     <div class="m-hint">
       <p class="q">Kto to za Pokémon?</p><div class="lbl">PODPOWIEDŹ</div><p>${esc(sp.hint || '')}</p>
       <div class="hint-fields">${sp.types.map(typeTag).join('')}<span>${size} (${sp.m} m)</span><span>${'★'.repeat(sp.rarity)}</span></div>
-      <p class="more">Wpisz jego imię w wyszukiwarce, żeby go złapać!</p>
     </div>
+    <div class="m-hunt"></div>
     <div class="m-actions">
       <button class="btn" data-letter="${sp.id}">Pokaż pierwszą literę</button>
       <button class="btn ghost" data-close="1">Zamknij</button>

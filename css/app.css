@@ -340,6 +340,7 @@ body.editing .rar{display:none}
 .m-hint .q{font:800 40px var(--font-h);color:var(--stone-dk);margin:0 0 6px}
 .m-hint p{margin:0;font-size:15.5px;font-weight:700;line-height:1.5}
 .m-hint .lbl{font-size:11px;letter-spacing:1.4px;color:var(--amber-dk);font-weight:900;margin-bottom:6px}
+.m-hunt{margin-top:14px}
 .m-hint .more{margin-top:10px;font-size:13.5px;color:var(--ink-soft);font-weight:700}
 .hint-fields{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
 .hint-fields span{background:var(--paper-2);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:800;color:var(--ink-soft)}
