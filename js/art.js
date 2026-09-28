@@ -117,6 +117,9 @@ function SKULL(hx,hy,sn,D,tp,hk){const T=hy+D*(1-tp)*.55,B=hy+D-D*(1-tp)*.35,X=h
   return {T,B,X,d:`M${P(hx-6,hy+2)} C${P(hx+sn*.35,hy-4)} ${P(X-sn*.2,T-1)} ${P(X,T)} C${P(X+4,T+1)} ${P(X+4,B+hk-1)} ${P(X+hk*.3,B+hk)} `
     +`C${P(X-sn*.4,B+3)} ${P(hx+sn*.25,hy+D+5)} ${P(hx-8,hy+D)} Z`};}
 
+/* pióra raptorów (fz:2): liczba i długości piór ogona, lotek, grzywy, czubka */
+const FZ={tailN:6,tailGrow:10,sweep:18,wingN:5,wing:[6,16,20,1.8],ruff:8,crest:9};
+
 /* ---------- dwunożni i półczworonożni: teropody, raptory, strusiopodobne, ptaki terroru, smok,
               prozauropody, ornitopody, kaczodziobe, grubogłowe, psitakozaur ---------- */
 function A_thero(c,o){
@@ -141,6 +144,10 @@ function A_thero(c,o){
     ...[.25,.45,.65].map(t=>LINE(PL([CB([[bx-rx*.9,by-4],[bx-rx*.7,by-ry-40],[bx+rx*.5,by-ry-40],[bx+rx*.7,by-6]],t),[bx-rx*.6+rx*1.3*t,by-ry*.6]]),2)));
   if(o.fz) p.push(...SPINES(TQ,9,7,10,c[0],{side:-1,tilt:3,t0:.05,t1:.92,r:1}),...SPINES(BQ,5,6,12,c[0],{side:-1,tilt:3,r:1}),
     ...SPINES(NQ,4,6,10,c[0],{side:1,tilt:-3,t0:.15,t1:.8,r:1}));
+  /* fz:2 (raptory) – pióra widoczne też w sylwetce: frędzle ogona rosnące ku końcowi, postrzępiona grzywa */
+  if(o.fz>1){const tw=o.tw||ry*1.2,hw=t=>(tw+(3.5-tw)*t)/2;
+    p.push(...[-1,1].flatMap(s=>SPINES(TQ,FZ.tailN,t=>hw(t)+4+FZ.tailGrow*t,8,c[1],{side:s,tilt:FZ.sweep,t0:.35,t1:1,r:1})),
+      ...SPINES(BQ,6,FZ.ruff,7,c[0],{side:-1,tilt:4}),...SPINES(NQ,5,FZ.ruff,7,c[0],{side:1,tilt:-4,t0:.1,t1:.85}));}
   if(o.spk) p.push(...SPINES(TQ,6,9,9,c[1],{side:-1,tilt:3,t0:.08,t1:.8,m:1}),...SPINES(BQ,4,11,10,c[1],{side:-1,tilt:3,m:1}),
     ...SPINES(NQ,3,9,9,c[1],{side:1,tilt:-3,t0:.2,t1:.8,m:1}));
   if(o.brist) p.push(...SPINES(TQ,6,14,3,c[1],{side:-1,t0:.05,t1:.5,tilt:4,m:1}));
@@ -172,6 +179,7 @@ function A_thero(c,o){
   if(o.cryo) p.push(F(`M${P(ex-9,hy+3)} C${P(ex-12,hy-16)} ${P(ex+10,hy-20)} ${P(ex+12,hy+3)} Z`,c[1],1),
     ...[-4,1,6].map(d=>LINE(PL([[ex+d,hy+1],[ex+d*1.4,hy-12]]),1.8)));
   if(o.ncr) p.push(F(`M${P(hx+2,hy+2)} C${P(hx+sn*.3,hy-11)} ${P(hx+sn*.7,hy-7)} ${P(hx+sn*.9,sk.T+1)} Z`,c[1],1));
+  if(o.fz>1) p.push(...[0,1,2].map(i=>TRI([hx-2+i*5,hy+3],[hx-12+i*3,hy-FZ.crest-i*2],[hx+4+i*5,hy+2],c[1])));
   p.push(F(sk.d,c[0]));
   if(o.hd==='dome'){const dr=o.dm||1;p.push(BL(hx+sn*.3,hy+3,sn*.52*dr,D*.62*dr,c[0]),
       SHADE(EP(hx+sn*.32,hy-D*.12*dr,sn*.38*dr,D*.3*dr,-8),c[1],.8),
@@ -194,16 +202,21 @@ function A_thero(c,o){
   if(o.cr==='bump') p.push(BL(hx+sn*.5,hy+1,8,5,c[1],1));
   if(o.fire) p.push(F(`M${P(sk.X+2,my)} C${P(sk.X+14,my-10)} ${P(sk.X+26,my-4)} ${P(sk.X+34,my-12)} C${P(sk.X+32,my+2)} ${P(sk.X+40,my+6)} ${P(sk.X+30,my+12)} C${P(sk.X+20,my+10)} ${P(sk.X+12,my+8)} ${P(sk.X+2,my+2)} Z`,FIRE[0],2),
     F(`M${P(sk.X+6,my+1)} C${P(sk.X+14,my-4)} ${P(sk.X+22,my)} ${P(sk.X+28,my-4)} C${P(sk.X+28,my+4)} ${P(sk.X+20,my+6)} ${P(sk.X+6,my+2)} Z`,FIRE[1],3));
-  /* ramię / przednia noga */
+  /* ramię / przednia noga; wf = lotki raptora, rysowane przed nogą (bliższe skrzydło) */
+  const wf=[];
   if(o.q) p.push(...LEG4(A[0]+6,A[1],13,c[0],'hoof',0,128));
   else if(aL){const fwd=o.ak==='fwd',H=fwd?[A[0]+aL,A[1]+aL*.3]:[A[0]+aL,A[1]+aL*.7+4],
       E=fwd?[A[0]+aL*.5,A[1]+aL*.35]:[A[0]+aL*.6,A[1]+aL*.35+4];
     if(o.wg) p.push(WINGF(A,H,[A[0]-10,A[1]+ry*.7],4,c[1]));
     p.push(K(PL([A,E,H]),o.aw||9,c[0]));
+    /* lotki raptora: skrzydełko z przedramienia, kreski dzielą pióra */
+    if(o.fz>1){const [tx,ty,bk,dr]=FZ.wing,T=[H[0]+tx,H[1]+ty],Bk=[A[0]-bk,A[1]+ry*dr],n=FZ.wingN;
+      wf.push(WINGF(A,T,Bk,n,c[1]),...Array.from({length:n-1},(_,i)=>LINE(PL([LERP(A,T,.35+.5*i/n),LERP(T,Bk,(i+1)/n)]),1.6)));}
     for(let i=0;i<(o.clw||0);i++) p.push(HORN(H[0]-2+i*(fwd?4:3),H[1],o.cl||6,fwd?70-i*18:70-i*14,o.cl>12?8:3.5,fwd?(o.cl||6)*.45:-1.5,c[1]));
     if(o.thumb) p.push(HORN(H[0]-2,H[1]-2,o.thumb>1?13:8,-50,o.thumb>1?7:5,0,c[1]));}
   p.push(...LEG2(bx+6,by+4,lw,c[0],L));
   if(o.sick){const x=bx+6+L*.05,y=by+4+L;p.push(K(`M${P(x+4,y+4)} C${P(x+12,y+2)} ${P(x+16,y-4)} ${P(x+16,y-12)}`,5,c[1]));}
+  p.push(...wf);
   return {p,sc:o.sc||1};
 }
 
@@ -756,7 +769,7 @@ const ARCH={thero:A_thero,sauro:A_sauro,cerat:A_cerat,armor:A_armor,stego:A_steg
 /* presety: klucz → [archetyp, domyślne opcje]; używane w ART i przy własnych zwierzętach rodzica */
 const PRESET={
   thero:['thero',{}],
-  raptor:['thero',{hd:'rap',fz:1,wg:1,sick:1,td:-4,lg:1.1,bw:26,bh:16,lw:17,nw:14,vane:[.35,7],arm:14,clw:3,sc:.9}],
+  raptor:['thero',{hd:'rap',fz:2,sick:1,td:-4,lg:1.1,bw:26,bh:16,lw:17,nw:14,arm:14,clw:3,sc:.9}],
   ornimim:['thero',{hd:'beak',bk:.6,nk:[20,-46],nw:11,lg:1.35,bw:28,bh:18,lw:17,arm:16,clw:3,td:4}],
   tbird:['thero',{hd:'bird',bk:.8,tail:'fan',lg:1.4,nk:[14,-40],nw:15,bw:26,bh:20,lw:15,rot:-12,wg:1,arm:10,fz:1}],
   dragon:['thero',{hd:'long',bat:1,spk:1,bull:1,fire:1,spade:1}],
