@@ -461,8 +461,10 @@ img.ghost{filter:brightness(0) opacity(.7)}   /* sylwetka niezłapanego */
 /* ================= KARTY ================= */
 .tile .art.tcgs{aspect-ratio:245/342}
 .tile .art.tcgs img{border-radius:6px}
-.cardback{display:grid;place-items:center;width:100%;height:100%;border-radius:8px;background:linear-gradient(135deg,#2C4FA8,#1B2F6B);border:4px solid #F2F4F8}
-.cardback svg{width:45%;opacity:.85}
+.cardback{display:flex;flex-direction:column;align-items:center;gap:6%;padding:8%;width:100%;height:100%;border-radius:8px;background:linear-gradient(135deg,#2C4FA8,#1B2F6B);border:4px solid #F2F4F8}
+.cardback .win{flex:1;width:100%;display:grid;place-items:center;border-radius:6px;background:radial-gradient(#FFF 45%,#D5E0F7)}
+.cardback .win img{width:92%;height:92%;object-fit:contain;filter:brightness(0)}
+.cardback svg{width:26%;opacity:.85}
 .duel{display:flex;flex-direction:column;gap:10px}
 .dz{display:flex;align-items:flex-end;gap:10px;background:var(--paper-2);border-radius:16px;padding:10px}
 .dz.cpu{flex-direction:row-reverse}

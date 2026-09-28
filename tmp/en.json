@@ -1303,7 +1303,7 @@
   ],
   "genus": "Electric Pokémon",
   "flavor": "Normally found near power plants, they can wander away and cause major blackouts in cities.",
-  "from": null
+  "from": "Elekid"
  },
  {
   "id": 126,
@@ -1574,6 +1574,652 @@
   ],
   "genus": "New Species Pokémon",
   "flavor": "So rare that it is still said to be a mirage by many experts. Only a few people have seen it worldwide.",
+  "from": null
+ },
+ {
+  "id": 197,
+  "name": "Umbreon",
+  "types": [
+   "dark"
+  ],
+  "genus": "Moonlight Pokémon",
+  "flavor": "When agitated, this POKéMON pro tects itself by spraying poisonous sweat from its pores.",
+  "from": "Eevee"
+ },
+ {
+  "id": 239,
+  "name": "Elekid",
+  "types": [
+   "electric"
+  ],
+  "genus": "Electric Pokémon",
+  "flavor": "It rotates its arms to generate electricity, but it tires easily, so it charges up only a little bit.",
+  "from": null
+ },
+ {
+  "id": 244,
+  "name": "Entei",
+  "types": [
+   "fire"
+  ],
+  "genus": "Volcano Pokémon",
+  "flavor": "Volcanoes erupt when it barks. Un able to restrain its extreme power, it races headlong around the land.",
+  "from": null
+ },
+ {
+  "id": 374,
+  "name": "Beldum",
+  "types": [
+   "steel",
+   "psychic"
+  ],
+  "genus": "Iron Ball Pokémon",
+  "flavor": "Instead of blood, a powerful magnetic force courses throughout BELDUM’s body. This POKéMON communicates with others by sending controlled pulses of magnetism.",
+  "from": null
+ },
+ {
+  "id": 375,
+  "name": "Metang",
+  "types": [
+   "steel",
+   "psychic"
+  ],
+  "genus": "Iron Claw Pokémon",
+  "flavor": "When two BELDUM fuse together, METANG is formed. The brains of the BELDUM are joined by a magnetic nervous system. By linking its brains magnetically, this POKéMON generates strong psychokinetic power.",
+  "from": "Beldum"
+ },
+ {
+  "id": 376,
+  "name": "Metagross",
+  "types": [
+   "steel",
+   "psychic"
+  ],
+  "genus": "Iron Leg Pokémon",
+  "flavor": "METAGROSS has four brains in total. Combined, the four brains can breeze through difficult calculations faster than a supercomputer. This POKéMON can float in the air by tucking in its four legs.",
+  "from": "Metang"
+ },
+ {
+  "id": 384,
+  "name": "Rayquaza",
+  "types": [
+   "dragon",
+   "flying"
+  ],
+  "genus": "Sky High Pokémon",
+  "flavor": "RAYQUAZA lived for hundreds of millions of years in the earth’s ozone layer, never descending to the ground. This POKéMON appears to feed on water and particles in the atmosphere.",
+  "from": null
+ },
+ {
+  "id": 466,
+  "name": "Electivire",
+  "types": [
+   "electric"
+  ],
+  "genus": "Thunderbolt Pokémon",
+  "flavor": "It pushes the tips of its two tails against the foe, then lets loose with over 20,000 volts of power.",
+  "from": "Electabuzz"
+ },
+ {
+  "id": 744,
+  "name": "Rockruff",
+  "types": [
+   "rock"
+  ],
+  "genus": "Puppy Pokémon",
+  "flavor": "It’s considered to be a good Pokémon for beginners because of its friendliness, but its disposition grows rougher as it grows up.",
+  "from": null
+ },
+ {
+  "id": 745,
+  "name": "Lycanroc",
+  "types": [
+   "rock"
+  ],
+  "genus": "Wolf Pokémon",
+  "flavor": "Its quick movements confuse its enemies. Well equipped with claws and fangs, it also uses the sharp rocks in its mane as weapons.",
+  "from": "Rockruff"
+ },
+ {
+  "id": 821,
+  "name": "Rookidee",
+  "types": [
+   "flying"
+  ],
+  "genus": "Tiny Bird Pokémon",
+  "flavor": "It will bravely challenge any opponent, no matter how powerful. This Pokémon benefits from every battle—even a defeat increases its strength a bit.",
+  "from": null
+ },
+ {
+  "id": 822,
+  "name": "Corvisquire",
+  "types": [
+   "flying"
+  ],
+  "genus": "Raven Pokémon",
+  "flavor": "Smart enough to use tools in battle, these Pokémon have been seen picking up rocks and flinging them or using ropes to wrap up enemies.",
+  "from": "Rookidee"
+ },
+ {
+  "id": 823,
+  "name": "Corviknight",
+  "types": [
+   "flying",
+   "steel"
+  ],
+  "genus": "Raven Pokémon",
+  "flavor": "This Pokémon reigns supreme in the skies of the Galar region. The black luster of its steel body could drive terror into the heart of any foe.",
+  "from": "Corvisquire"
+ },
+ {
+  "id": 824,
+  "name": "Blipbug",
+  "types": [
+   "bug"
+  ],
+  "genus": "Larva Pokémon",
+  "flavor": "A constant collector of information, this Pokémon is very smart. Very strong is what it isn’t.",
+  "from": null
+ },
+ {
+  "id": 825,
+  "name": "Dottler",
+  "types": [
+   "bug",
+   "psychic"
+  ],
+  "genus": "Radome Pokémon",
+  "flavor": "It barely moves, but it’s still alive. Hiding in its shell without food or water seems to have awakened its psychic powers.",
+  "from": "Blipbug"
+ },
+ {
+  "id": 826,
+  "name": "Orbeetle",
+  "types": [
+   "bug",
+   "psychic"
+  ],
+  "genus": "Seven Spot Pokémon",
+  "flavor": "It’s famous for its high level of intelligence, and the large size of its brain is proof that it also possesses immense psychic power.",
+  "from": "Dottler"
+ },
+ {
+  "id": 837,
+  "name": "Rolycoly",
+  "types": [
+   "rock"
+  ],
+  "genus": "Coal Pokémon",
+  "flavor": "Most of its body has the same composition as coal. Fittingly, this Pokémon was first discovered in coal mines about 400 years ago.",
+  "from": null
+ },
+ {
+  "id": 838,
+  "name": "Carkol",
+  "types": [
+   "rock",
+   "fire"
+  ],
+  "genus": "Coal Pokémon",
+  "flavor": "It forms coal inside its body. Coal dropped by this Pokémon once helped fuel the lives of people in the Galar region.",
+  "from": "Rolycoly"
+ },
+ {
+  "id": 839,
+  "name": "Coalossal",
+  "types": [
+   "rock",
+   "fire"
+  ],
+  "genus": "Coal Pokémon",
+  "flavor": "It’s usually peaceful, but the vandalism of mines enrages it. Offenders will be incinerated with flames that reach 2,700 degrees Fahrenheit.",
+  "from": "Carkol"
+ },
+ {
+  "id": 856,
+  "name": "Hatenna",
+  "types": [
+   "psychic"
+  ],
+  "genus": "Calm Pokémon",
+  "flavor": "Via the protrusion on its head, it senses other creatures’ emotions. If you don’t have a calm disposition, it will never warm up to you.",
+  "from": null
+ },
+ {
+  "id": 857,
+  "name": "Hattrem",
+  "types": [
+   "psychic"
+  ],
+  "genus": "Serene Pokémon",
+  "flavor": "No matter who you are, if you bring strong emotions near this Pokémon, it will silence you violently.",
+  "from": "Hatenna"
+ },
+ {
+  "id": 858,
+  "name": "Hatterene",
+  "types": [
+   "psychic",
+   "fairy"
+  ],
+  "genus": "Silent Pokémon",
+  "flavor": "It emits psychic power strong enough to cause headaches as a deterrent to the approach of others.",
+  "from": "Hattrem"
+ },
+ {
+  "id": 868,
+  "name": "Milcery",
+  "types": [
+   "fairy"
+  ],
+  "genus": "Cream Pokémon",
+  "flavor": "This Pokémon was born from sweet-smelling particles in the air. Its body is made of cream.",
+  "from": null
+ },
+ {
+  "id": 869,
+  "name": "Alcremie",
+  "types": [
+   "fairy"
+  ],
+  "genus": "Cream Pokémon",
+  "flavor": "When it trusts a Trainer, it will treat them to berries it’s decorated with cream.",
+  "from": "Milcery"
+ },
+ {
+  "id": 900,
+  "name": "Kleavor",
+  "types": [
+   "bug",
+   "rock"
+  ],
+  "genus": "Axe Pokémon",
+  "flavor": "A violent creature that fells towering trees with its crude axes and shields itself with hard stone. If one should chance upon this Pokémon in the wilds, one's only recourse is to flee.",
+  "from": "Scyther"
+ },
+ {
+  "id": 906,
+  "name": "Sprigatito",
+  "types": [
+   "grass"
+  ],
+  "genus": "Grass Cat Pokémon",
+  "flavor": "Its fluffy fur is similar in composition to plants. This Pokémon frequently washes its face to keep it from drying out.",
+  "from": null
+ },
+ {
+  "id": 907,
+  "name": "Floragato",
+  "types": [
+   "grass"
+  ],
+  "genus": "Grass Cat Pokémon",
+  "flavor": "Floragato deftly wields the vine hidden beneath its long fur, slamming the hard flower bud against its opponents.",
+  "from": "Sprigatito"
+ },
+ {
+  "id": 908,
+  "name": "Meowscarada",
+  "types": [
+   "grass",
+   "dark"
+  ],
+  "genus": "Magician Pokémon",
+  "flavor": "This Pokémon uses the reflective fur lining its cape to camouflage the stem of its flower, creating the illusion that the flower is floating.",
+  "from": "Floragato"
+ },
+ {
+  "id": 909,
+  "name": "Fuecoco",
+  "types": [
+   "fire"
+  ],
+  "genus": "Fire Croc Pokémon",
+  "flavor": "It lies on warm rocks and uses the heat absorbed by its square-shaped scales to create fire energy.",
+  "from": null
+ },
+ {
+  "id": 910,
+  "name": "Crocalor",
+  "types": [
+   "fire"
+  ],
+  "genus": "Fire Croc Pokémon",
+  "flavor": "The combination of Crocalor’s fire energy and overflowing vitality has caused an egg-shaped fireball to appear on the Pokémon’s head.",
+  "from": "Fuecoco"
+ },
+ {
+  "id": 911,
+  "name": "Skeledirge",
+  "types": [
+   "fire",
+   "ghost"
+  ],
+  "genus": "Singer Pokémon",
+  "flavor": "The fiery bird changes shape when Skeledirge sings. Rumor has it that the bird was born when the fireball on Skeledirge’s head gained a soul.",
+  "from": "Crocalor"
+ },
+ {
+  "id": 912,
+  "name": "Quaxly",
+  "types": [
+   "water"
+  ],
+  "genus": "Duckling Pokémon",
+  "flavor": "This Pokémon migrated to Paldea from distant lands long ago. The gel secreted by its feathers repels water and grime.",
+  "from": null
+ },
+ {
+  "id": 913,
+  "name": "Quaxwell",
+  "types": [
+   "water"
+  ],
+  "genus": "Practicing Pokémon",
+  "flavor": "These Pokémon constantly run through shallow waters to train their legs, then compete with each other to see which of them kicks most gracefully.",
+  "from": "Quaxly"
+ },
+ {
+  "id": 914,
+  "name": "Quaquaval",
+  "types": [
+   "water",
+   "fighting"
+  ],
+  "genus": "Dancer Pokémon",
+  "flavor": "A single kick from a Quaquaval can send a truck rolling. This Pokémon uses its powerful legs to perform striking dances from far-off lands.",
+  "from": "Quaxwell"
+ },
+ {
+  "id": 915,
+  "name": "Lechonk",
+  "types": [
+   "normal"
+  ],
+  "genus": "Hog Pokémon",
+  "flavor": "It searches for food all day. It possesses a keen sense of smell but doesn’t use it for anything other than foraging.",
+  "from": null
+ },
+ {
+  "id": 916,
+  "name": "Oinkologne",
+  "types": [
+   "normal"
+  ],
+  "genus": "Hog Pokémon",
+  "flavor": "Oinkologne is proud of its fine, glossy skin. It emits a concentrated scent from the tip of its tail.",
+  "from": "Lechonk"
+ },
+ {
+  "id": 921,
+  "name": "Pawmi",
+  "types": [
+   "electric"
+  ],
+  "genus": "Mouse Pokémon",
+  "flavor": "It has underdeveloped electric sacs on its cheeks. These sacs can produce electricity only if Pawmi rubs them furiously with the pads on its forepaws.",
+  "from": null
+ },
+ {
+  "id": 922,
+  "name": "Pawmo",
+  "types": [
+   "electric",
+   "fighting"
+  ],
+  "genus": "Mouse Pokémon",
+  "flavor": "When its group is attacked, Pawmo is the first to leap into battle, defeating enemies with a fighting technique that utilizes electric shocks.",
+  "from": "Pawmi"
+ },
+ {
+  "id": 923,
+  "name": "Pawmot",
+  "types": [
+   "electric",
+   "fighting"
+  ],
+  "genus": "Hands-On Pokémon",
+  "flavor": "This Pokémon normally is slow to react, but once it enters battle, it will strike down its enemies with lightning-fast movements.",
+  "from": "Pawmo"
+ },
+ {
+  "id": 926,
+  "name": "Fidough",
+  "types": [
+   "fairy"
+  ],
+  "genus": "Puppy Pokémon",
+  "flavor": "This Pokémon is smooth and moist to the touch. Yeast in Fidough’s breath induces fermentation in the Pokémon’s vicinity.",
+  "from": null
+ },
+ {
+  "id": 927,
+  "name": "Dachsbun",
+  "types": [
+   "fairy"
+  ],
+  "genus": "Dog Pokémon",
+  "flavor": "The pleasant aroma that emanates from this Pokémon’s body helps wheat grow, so Dachsbun has been treasured by farming villages.",
+  "from": "Fidough"
+ },
+ {
+  "id": 928,
+  "name": "Smoliv",
+  "types": [
+   "grass",
+   "normal"
+  ],
+  "genus": "Olive Pokémon",
+  "flavor": "It protects itself from enemies by emitting oil from the fruit on its head. This oil is bitter and astringent enough to make someone flinch.",
+  "from": null
+ },
+ {
+  "id": 929,
+  "name": "Dolliv",
+  "types": [
+   "grass",
+   "normal"
+  ],
+  "genus": "Olive Pokémon",
+  "flavor": "Dolliv shares its tasty, fresh-scented oil with others. This species has coexisted with humans since times long gone.",
+  "from": "Smoliv"
+ },
+ {
+  "id": 930,
+  "name": "Arboliva",
+  "types": [
+   "grass",
+   "normal"
+  ],
+  "genus": "Olive Pokémon",
+  "flavor": "This calm Pokémon is very compassionate. It will share its delicious, nutrient-rich oil with weakened Pokémon.",
+  "from": "Dolliv"
+ },
+ {
+  "id": 931,
+  "name": "Squawkabilly",
+  "types": [
+   "normal",
+   "flying"
+  ],
+  "genus": "Parrot Pokémon",
+  "flavor": "These Pokémon prefer to live in cities. They form flocks based on the color of their feathers, and they fight over territory.",
+  "from": null
+ },
+ {
+  "id": 932,
+  "name": "Nacli",
+  "types": [
+   "rock"
+  ],
+  "genus": "Rock Salt Pokémon",
+  "flavor": "It was born in a layer of rock salt deep under the earth. This species was particularly treasured in the old days, as they would share precious salt.",
+  "from": null
+ },
+ {
+  "id": 933,
+  "name": "Naclstack",
+  "types": [
+   "rock"
+  ],
+  "genus": "Rock Salt Pokémon",
+  "flavor": "This Pokémon dry cures its prey by spraying salt over them. The curing process steals away the water in the prey’s body.",
+  "from": "Nacli"
+ },
+ {
+  "id": 934,
+  "name": "Garganacl",
+  "types": [
+   "rock"
+  ],
+  "genus": "Rock Salt Pokémon",
+  "flavor": "Garganacl will rub its fingertips together and sprinkle injured Pokémon with salt. Even severe wounds will promptly heal afterward.",
+  "from": "Naclstack"
+ },
+ {
+  "id": 935,
+  "name": "Charcadet",
+  "types": [
+   "fire"
+  ],
+  "genus": "Fire Child Pokémon",
+  "flavor": "Burnt charcoal came to life and became a Pokémon. Possessing a fiery fighting spirit, Charcadet will battle even tough opponents.",
+  "from": null
+ },
+ {
+  "id": 937,
+  "name": "Ceruledge",
+  "types": [
+   "fire",
+   "ghost"
+  ],
+  "genus": "Fire Blades Pokémon",
+  "flavor": "The fiery blades on its arms burn fiercely with the lingering resentment of a sword wielder who fell before accomplishing their goal.",
+  "from": "Charcadet"
+ },
+ {
+  "id": 938,
+  "name": "Tadbulb",
+  "types": [
+   "electric"
+  ],
+  "genus": "EleTadpole Pokémon",
+  "flavor": "Tadbulb shakes its tail to generate electricity. If it senses danger, it will make its head blink on and off to alert its allies.",
+  "from": null
+ },
+ {
+  "id": 939,
+  "name": "Bellibolt",
+  "types": [
+   "electric"
+  ],
+  "genus": "EleFrog Pokémon",
+  "flavor": "When this Pokémon expands and contracts its wobbly body, the belly-button dynamo in its stomach produces a huge amount of electricity.",
+  "from": "Tadbulb"
+ },
+ {
+  "id": 940,
+  "name": "Wattrel",
+  "types": [
+   "electric",
+   "flying"
+  ],
+  "genus": "Storm Petrel Pokémon",
+  "flavor": "When its wings catch the wind, the bones within produce electricity. This Pokémon dives into the ocean, catching prey by electrocuting them.",
+  "from": null
+ },
+ {
+  "id": 941,
+  "name": "Kilowattrel",
+  "types": [
+   "electric",
+   "flying"
+  ],
+  "genus": "Frigatebird Pokémon",
+  "flavor": "Kilowattrel inflates its throat sac to amplify its electricity. By riding the wind, this Pokémon can fly over 430 miles in a day.",
+  "from": "Wattrel"
+ },
+ {
+  "id": 944,
+  "name": "Shroodle",
+  "types": [
+   "poison",
+   "normal"
+  ],
+  "genus": "Toxic Mouse Pokémon",
+  "flavor": "Though usually a mellow Pokémon, it will sink its sharp, poison-soaked front teeth into any that anger it, causing paralysis in the object of its ire.",
+  "from": null
+ },
+ {
+  "id": 945,
+  "name": "Grafaiai",
+  "types": [
+   "poison",
+   "normal"
+  ],
+  "genus": "Toxic Monkey Pokémon",
+  "flavor": "The color of the poisonous saliva depends on what the Pokémon eats. Grafaiai covers its fingers in its saliva and draws patterns on trees in forests.",
+  "from": "Shroodle"
+ },
+ {
+  "id": 960,
+  "name": "Wiglett",
+  "types": [
+   "water"
+  ],
+  "genus": "Garden Eel Pokémon",
+  "flavor": "This Pokémon can pick up the scent of a Veluza just over 65 feet away and will hide itself in the sand.",
+  "from": null
+ },
+ {
+  "id": 961,
+  "name": "Wugtrio",
+  "types": [
+   "water"
+  ],
+  "genus": "Garden Eel Pokémon",
+  "flavor": "It has a vicious temperament, contrary to what its appearance may suggest. It wraps its long bodies around prey, then drags the prey into its den.",
+  "from": "Wiglett"
+ },
+ {
+  "id": 963,
+  "name": "Finizen",
+  "types": [
+   "water"
+  ],
+  "genus": "Dolphin Pokémon",
+  "flavor": "It likes playing with others of its kind using the water ring on its tail. It uses ultrasonic waves to sense the emotions of other living creatures.",
+  "from": null
+ },
+ {
+  "id": 964,
+  "name": "Palafin",
+  "types": [
+   "water"
+  ],
+  "genus": "Dolphin Pokémon",
+  "flavor": "This Pokémon changes its appearance if it hears its allies calling for help. Palafin will never show anybody its moment of transformation.",
+  "from": "Finizen"
+ },
+ {
+  "id": 967,
+  "name": "Cyclizar",
+  "types": [
+   "dragon",
+   "normal"
+  ],
+  "genus": "Mount Pokémon",
+  "flavor": "Apparently Cyclizar has been allowing people to ride on its back since ancient times. Depictions of this have been found in 10,000-year-old murals.",
+  "from": null
+ },
+ {
+  "id": 1024,
+  "name": "Terapagos",
+  "types": [
+   "normal"
+  ],
+  "genus": "Tera Pokémon",
+  "flavor": "Terapagos protects itself using its power to transform energy into hard crystals. This Pokémon is the source of the Terastal phenomenon.",
   "from": null
  }
 ]

@@ -101,34 +101,37 @@ const el = Object.fromEntries(['q', 'huntForm', 'sugg', 'huntMsg', 'grid', 'empt
 el.pill = $('.search-pill'); el.main = $('main.wrap');
 let filter = 'all', editing = false;
 
-const RANKS = [[0, 'Początkujący'], [5, 'Trener'], [15, 'Tropiciel'], [30, 'Zdobywca odznak'], [60, 'Lider sali'], [100, 'Elitarna Czwórka'], [151, 'Mistrz Pokémon']];
+const RANKS = [[0, 'Początkujący'], [5, 'Trener'], [15, 'Tropiciel'], [30, 'Zdobywca odznak'], [60, 'Lider sali'], [100, 'Elitarna Czwórka'], [SPECIES.length, 'Mistrz Pokémon']];
 const rankFor = n => RANKS.filter(([k]) => n >= k).pop()[1];
 
 /* ================= SIATKA ================= */
 const binder = () => DB.settings.face === 'card';   // tryb kart: segregator w siatce, duża karta po dotknięciu
-const cardBack = () => `<span class="cardback">${drawBall(1)}</span>`;
+// rewers niezłapanej karty: wyraźna sylwetka w okienku, żeby dało się zgadywać
+const cardBack = sp => `<span class="cardback"><span class="win">${art(sp, 'ghost')}</span>${drawBall(1)}</span>`;
 function tileHTML(sp) {
   const got = isCaught(sp.id);
   return `<button class="tile ${got ? '' : 'ghost'}" data-id="${sp.id}">
     <span class="no">${dexNo(sp)}</span>
     <span class="rar">${'<i></i>'.repeat(sp.rarity)}</span>
-    ${binder() ? `<span class="art tcgs">${got ? `<img src="${CARD_URL(sp.id)}" alt="" loading="lazy">` : cardBack()}</span>`
+    ${binder() ? `<span class="art tcgs">${got ? `<img src="${CARD_URL(sp)}" alt="" loading="lazy">` : cardBack(sp)}</span>`
       : `<span class="art">${art(sp, got ? 'color' : 'ghost', 'small')}</span>`}
     <span class="nm">${got ? esc(sp.name) : '???'}</span>
     <span class="grp" style="background:${TYPES[sp.types[0]][2]}"></span>
     <span class="del" data-del="${sp.id}" title="Usuń z listy">✕</span></button>`;
 }
 function renderGrid(freshId) {
-  const list = LIST.filter(s => (filter === 'all' || s.types.includes(filter)) && !(el.onlyMissing.checked && isCaught(s.id)));
+  const list = LIST.filter(s => inFilter(s, filter) && !(el.onlyMissing.checked && isCaught(s.id)));
   el.grid.innerHTML = list.map(tileHTML).join('');
   el.emptyMsg.hidden = list.length > 0;
   const t = freshId && el.grid.querySelector(`[data-id="${CSS.escape(freshId)}"]`);
   if (t) { t.classList.add('fresh'); t.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
 }
+// filtr: 'all', 'hz' (widać w serialu Horyzonty) albo typ
+const inFilter = (s, k) => k === 'all' || (k === 'hz' ? s.hz : s.types.includes(k));
 function renderChips() {
-  const n = (k, got) => LIST.filter(s => (k === 'all' || s.types.includes(k)) && (!got || isCaught(s.id))).length;
+  const n = (k, got) => LIST.filter(s => inFilter(s, k) && (!got || isCaught(s.id))).length;
   const chip = (k, emo, label) => `<button class="chip ${filter === k ? 'on' : ''}" data-f="${k}"><span class="emo">${emo}</span> ${label}<b>${n(k, 1)}/${n(k)}</b></button>`;
-  el.chips.innerHTML = chip('all', '⭐', 'Wszystkie') + Object.entries(TYPES).filter(([k]) => n(k)).map(([k, t]) => chip(k, t[1], t[0])).join('');
+  el.chips.innerHTML = chip('all', '⭐', 'Wszystkie') + chip('hz', '📺', 'Horyzonty') + Object.entries(TYPES).filter(([k]) => n(k)).map(([k, t]) => chip(k, t[1], t[0])).join('');
 }
 function renderProgress() {
   const total = LIST.length, n = LIST.filter(s => isCaught(s.id)).length, pct = total ? n / total : 0;
@@ -249,7 +252,7 @@ function caughtCard(sp) {
   const evo = [pre && `z ${esc(pre.name)}`, next.length && `w ${next.map(s => isCaught(s.id) ? esc(s.name) : '???').join(' / ')}`].filter(Boolean).join(' → ');
   return `
   <div class="m-hero ${binder() ? 'card' : ''}"><button class="btn ghost icon flip" data-flip="1" title="Karta / obrazek">${binder() ? '🎨' : '🃏'}</button>
-    <div class="art" data-zoom="${ART_URL(sp.id)}">${art(sp)}</div><img class="tcg" src="${CARD_URL(sp.id, 'big')}" data-zoom="${CARD_URL(sp.id, 'big')}" alt="Karta ${esc(sp.name)}"></div>
+    <div class="art" data-zoom="${ART_URL(sp.id)}">${art(sp)}</div><img class="tcg" src="${CARD_URL(sp, 'big')}" data-zoom="${CARD_URL(sp, 'big')}" alt="Karta ${esc(sp.name)}"></div>
   <div class="m-body">
     <h2>${esc(sp.name)}</h2><p class="m-lat">${dexNo(sp)} · ${esc(sp.kind || '')}</p>
     <div class="m-tags">
@@ -441,7 +444,7 @@ function finish() {
 }
 el.btnArena.addEventListener('click', () => openArena());
 
-/* ================= KARTY: walka kartami z zestawu „151” (zasady: js/cards.js) =================
+/* ================= KARTY: walka kartami (zasady: js/cards.js) =================
    Drużyna z Pokémonów Podstawowych; ewoluować można tylko w złapane — zachęta do łapania całych linii. */
 const K = { pick: [], team: [], log: [], D: null };
 const CPU_MS = 900;
@@ -460,7 +463,7 @@ function openDuel(preId) {
   openModal(`<div class="m-body duel">
     <h2>🃏 Walka kartami</h2>
     <p class="m-lat">Wybierz do ${TEAM} Pokémonów Podstawowych. W walce ewoluują w Pokémony, które już złapałeś!</p>
-    <div class="d-pick">${list.map(s => `<button data-dpick="${s.id}" class="${K.pick.includes(s) ? 'on' : ''}"><img src="${CARD_URL(s.id)}" alt="${esc(s.name)}" loading="lazy"></button>`).join('')}</div>
+    <div class="d-pick">${list.map(s => `<button data-dpick="${s.id}" class="${K.pick.includes(s) ? 'on' : ''}"><img src="${CARD_URL(s)}" alt="${esc(s.name)}" loading="lazy"></button>`).join('')}</div>
     <div class="m-actions center"><button class="btn amber big" data-dstart="1" ${K.pick.length ? '' : 'disabled'}>🃏 Walka! (${K.pick.length}/${TEAM})</button></div>
   </div>`, 'wide');
 }
@@ -468,7 +471,7 @@ function startDuel() {
   K.team = K.pick.slice(); K.D = newDuel(K.team, cpuTeam(K.team.length)); K.log = ['Twoja tura! Dołącz energię ⚡ i atakuj.'];
   audio(); renderDuel();
 }
-const cardImg = m => `<img src="${CARD_URL(m.sp.id)}" alt="${esc(m.sp.name)}">`;
+const cardImg = m => `<img src="${CARD_URL(m.sp)}" alt="${esc(m.sp.name)}">`;
 function sideHTML(who) {
   const S = K.D[who], m = S.team[0], mine = who === 'me', myTurn = mine && K.D.who === 'me' && !K.D.winner;
   const canRetreat = myTurn && !S.did.retreat && m.en >= m.sp.card.ret;

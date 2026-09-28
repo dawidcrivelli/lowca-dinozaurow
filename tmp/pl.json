@@ -753,5 +753,315 @@
   "kind": "Pokémon Nowy Gatunek",
   "hint": "Mały, różowy, kociowaty stworek, bardzo rzadki i tajemniczy.",
   "fact": "Jest tak rzadki, że wielu ekspertów wciąż uważa go za legendę. Widziało go bardzo mało osób."
+ },
+ "197": {
+  "kind": "Pokémon Światła Księżyca",
+  "hint": "Czarny, smukły lis-kot z żółtymi pierścieniami na uszach, ogonie i nogach.",
+  "fact": "Gdy się zdenerwuje, broni się trującym potem. W serialu to partner Spinela z Odkrywców."
+ },
+ "239": {
+  "kind": "Pokémon Elektryczny",
+  "hint": "Mały, żółty z czarnymi paskami, z dwoma bolcami jak wtyczka na głowie.",
+  "fact": "Kręci ramionami, żeby wytworzyć prąd, ale szybko się męczy."
+ },
+ "244": {
+  "kind": "Pokémon Wulkan",
+  "hint": "Duży, brązowy zwierz podobny do lwa, z szarą grzywą jak dym i złotą maską.",
+  "fact": "Gdy zaszczeka, wybuchają wulkany. Jeden z Pokémonów dawnego podróżnika Lucjusza."
+ },
+ "374": {
+  "kind": "Pokémon Żelazna Kula",
+  "hint": "Niebieska metalowa kula z jednym czerwonym okiem i szponem z tyłu.",
+  "fact": "Zamiast krwi płynie w nim siła magnetyczna — rozmawia impulsami magnetyzmu."
+ },
+ "375": {
+  "kind": "Pokémon Żelazny Szpon",
+  "hint": "Niebieski, metalowy, z dwoma ramionami zakończonymi szponami i znakiem X na twarzy.",
+  "fact": "Powstaje, gdy dwa Beldumy połączą się w jeden."
+ },
+ "376": {
+  "kind": "Pokémon Żelazna Noga",
+  "hint": "Wielki niebieski metalowy pająk-czołg z czterema grubymi nogami i srebrnym X na twarzy.",
+  "fact": "Ma aż cztery mózgi i liczy szybciej niż superkomputer. W serialu to partner Orli."
+ },
+ "384": {
+  "kind": "Pokémon Podniebny",
+  "hint": "Bardzo długi zielony smok jak wąż, z żółtymi wzorami i płetwami.",
+  "fact": "Setki milionów lat żył wysoko w niebie. W serialu z Pradawnej Poké Balla Roya wylatuje czarny Rayquaza!"
+ },
+ "466": {
+  "kind": "Pokémon Piorun",
+  "hint": "Duży, żółty w czarne paski, z dwoma kablami-ogonami.",
+  "fact": "Przykłada końce ogonów do rywala i puszcza ponad 20 000 woltów."
+ },
+ "744": {
+  "kind": "Pokémon Szczeniak",
+  "hint": "Brązowy piesek z kamiennym kołnierzem na szyi i niebieskimi oczami.",
+  "fact": "Jest bardzo przyjazny, dlatego polecają go początkującym trenerom."
+ },
+ "745": {
+  "kind": "Pokémon Wilk",
+  "hint": "Brązowo-biały wilk z grzywą z ostrych kamieni.",
+  "fact": "Kamienie w grzywie są ostre jak noże i służą mu za broń."
+ },
+ "821": {
+  "kind": "Pokémon Mały Ptak",
+  "hint": "Mały, granatowy ptaszek z czerwonymi oczami i białym brzuszkiem.",
+  "fact": "Odważnie staje do walki z każdym — nawet przegrana czyni go silniejszym."
+ },
+ "822": {
+  "kind": "Pokémon Kruk",
+  "hint": "Granatowy kruk z czerwonymi oczami i białym pasem na piersi.",
+  "fact": "Jest tak mądry, że w walce rzuca kamieniami i używa sznurków."
+ },
+ "823": {
+  "kind": "Pokémon Kruk",
+  "hint": "Wielki kruk w czarnej zbroi ze stali, z czerwonymi oczami.",
+  "fact": "Króluje na niebie regionu Galar i wozi ludzi jak latająca taksówka."
+ },
+ "824": {
+  "kind": "Pokémon Larwa",
+  "hint": "Malutka niebieska larwa z antenkami i kolcami na główce.",
+  "fact": "Ciągle zbiera informacje — jest bardzo mądry, ale bardzo słaby."
+ },
+ "825": {
+  "kind": "Pokémon Kopuła",
+  "hint": "Żółta kulka z przezroczystą kopułą-oknem i nóżkami.",
+  "fact": "Prawie się nie rusza, ale w środku budzą się jego moce psychiczne."
+ },
+ "826": {
+  "kind": "Pokémon Siedem Kropek",
+  "hint": "Czerwona biedronka z siedmioma kropkami-oczkami, lewitująca w powietrzu.",
+  "fact": "Ma ogromny mózg i słynie z inteligencji."
+ },
+ "837": {
+  "kind": "Pokémon Węgiel",
+  "hint": "Czarny kamyk z jednym czerwonym okiem, toczy się na kółku.",
+  "fact": "Jego ciało jest z węgla — pierwszy raz znaleźli go w kopalni 400 lat temu."
+ },
+ "838": {
+  "kind": "Pokémon Węgiel",
+  "hint": "Czarny wózek z węgla z żarzącymi się oczami i kołami, z ogniem na głowie.",
+  "fact": "Robi węgiel w swoim ciele. W serialu mieszka na statku bohaterów."
+ },
+ "839": {
+  "kind": "Pokémon Węgiel",
+  "hint": "Olbrzym z węgla i ognia, z pomarańczowymi płomieniami na plecach i głowie.",
+  "fact": "Zwykle spokojny, ale kto niszczy kopalnie, tego spali ogniem."
+ },
+ "856": {
+  "kind": "Pokémon Spokojny",
+  "hint": "Malutki, różowo-niebieski, z główką jak kapelusik z anteną.",
+  "fact": "Wyczuwa uczucia innych czułkiem. W serialu Liko łapie go w Galarze."
+ },
+ "857": {
+  "kind": "Pokémon Pogodny",
+  "hint": "Różowy z długimi warkoczami przypominającymi szczotki.",
+  "fact": "Nie znosi silnych emocji — potrafi ostro uciszyć krzykaczy."
+ },
+ "858": {
+  "kind": "Pokémon Cichy",
+  "hint": "Wysoka, różowa czarodziejka w wielkim kapeluszu z długimi warkoczami.",
+  "fact": "Wysyła moc psychiczną tak silną, że obcy dostają bólu głowy."
+ },
+ "868": {
+  "kind": "Pokémon Krem",
+  "hint": "Mała, biała kropla śmietanki z uśmiechniętą buzią.",
+  "fact": "Narodził się ze słodkiego zapachu w powietrzu. Cały jest z kremu!"
+ },
+ "869": {
+  "kind": "Pokémon Krem",
+  "hint": "Biały Pokémon jak tort z bitą śmietaną, z truskawką na głowie.",
+  "fact": "Ufa trenerowi — częstuje go jagodami ozdobionymi kremem. W serialu gotuje z nim Murdock."
+ },
+ "900": {
+  "kind": "Pokémon Siekiera",
+  "hint": "Brązowy owad z kamiennymi toporami zamiast rąk.",
+  "fact": "Ścina wielkie drzewa kamiennymi siekierami. Kto go spotka w dziczy, powinien uciekać!"
+ },
+ "906": {
+  "kind": "Pokémon Trawiasty Kot",
+  "hint": "Mały, zielony kotek z różowym noskiem i listkiem wokół szyi.",
+  "fact": "Często myje buzię, żeby nie wyschła. To pierwszy Pokémon Liko!"
+ },
+ "907": {
+  "kind": "Pokémon Trawiasty Kot",
+  "hint": "Zielony kot na dwóch łapach z długim futrem i ukrytym pąkiem kwiatka.",
+  "fact": "Pod futrem chowa pnącze z twardym pąkiem i nim uderza."
+ },
+ "908": {
+  "kind": "Pokémon Magik",
+  "hint": "Zielony kot-magik w pelerynie, z różową maską i kwiatem.",
+  "fact": "Ukrywa łodyżkę kwiatka pod peleryną — wygląda, jakby kwiat unosił się w powietrzu."
+ },
+ "909": {
+  "kind": "Pokémon Ognisty Krokodyl",
+  "hint": "Mały, czerwony krokodylek z dużą głową i żółtą łuską na czubku.",
+  "fact": "Lubi wygrzewać się na ciepłych kamieniach. To partner Roya — uwielbia jeść!"
+ },
+ "910": {
+  "kind": "Pokémon Ognisty Krokodyl",
+  "hint": "Czerwony krokodyl z ognistym jajkiem na głowie.",
+  "fact": "Z jego energii ognia wyrosła mu na głowie ognista kula jak jajko."
+ },
+ "911": {
+  "kind": "Pokémon Śpiewak",
+  "hint": "Wielki czerwony krokodyl z czaszką na głowie i ognistym ptakiem.",
+  "fact": "Gdy śpiewa, ognisty ptak na jego głowie zmienia kształt."
+ },
+ "912": {
+  "kind": "Pokémon Kaczątko",
+  "hint": "Mała, biało-niebieska kaczuszka z niebieskim czubkiem jak fryzura.",
+  "fact": "Jego pióra są pokryte żelem, który odpycha wodę i brud. W serialu łapie go Dot."
+ },
+ "913": {
+  "kind": "Pokémon Trenujący",
+  "hint": "Niebieska kaczka z czubkiem, stojąca dumnie na długich nogach.",
+  "fact": "Biega po płytkiej wodzie, żeby trenować nogi, i ćwiczy piękne kopnięcia."
+ },
+ "914": {
+  "kind": "Pokémon Tancerz",
+  "hint": "Wysoki ptak-tancerz z kolorowym pióropuszem na głowie.",
+  "fact": "Jednym kopnięciem przewróci ciężarówkę! Tańczy tańce z dalekich krain."
+ },
+ "915": {
+  "kind": "Pokémon Świnka",
+  "hint": "Mała szara świnka z czarnymi kropkami na pyszczku.",
+  "fact": "Cały dzień szuka jedzenia — nosem wącha tylko przekąski."
+ },
+ "916": {
+  "kind": "Pokémon Świnia",
+  "hint": "Szara świnia z długim ryjkiem i lśniącą skórą.",
+  "fact": "Jest dumny ze swojej gładkiej skóry i pachnie ogonem jak perfumy."
+ },
+ "921": {
+  "kind": "Pokémon Mysz",
+  "hint": "Pomarańczowa myszka z czerwonymi policzkami i łapkami jak poduszki.",
+  "fact": "Musi mocno pocierać policzki łapkami, żeby zrobić trochę prądu."
+ },
+ "922": {
+  "kind": "Pokémon Mysz",
+  "hint": "Pomarańczowa mysz stojąca na dwóch łapach jak do walki.",
+  "fact": "Gdy jego stado jest atakowane, pierwszy rusza do boju elektrycznymi ciosami."
+ },
+ "923": {
+  "kind": "Pokémon Gotowy do Akcji",
+  "hint": "Pomarańczowa mysz z białym futrem jak czupryna i elektrycznymi łapami.",
+  "fact": "Zwykle powolny, ale w walce uderza szybko jak błyskawica."
+ },
+ "926": {
+  "kind": "Pokémon Szczeniak",
+  "hint": "Mały, jasny piesek z ciasta z brązowymi uszkami.",
+  "fact": "Jest gładki i wilgotny jak ciasto, a jego oddech sprawia, że ciasto rośnie."
+ },
+ "927": {
+  "kind": "Pokémon Pies",
+  "hint": "Pies jak bułeczka — złoto-brązowy, chrupiący na grzbiecie.",
+  "fact": "Pachnie świeżym chlebem, a jego zapach pomaga rosnąć pszenicy."
+ },
+ "928": {
+  "kind": "Pokémon Oliwka",
+  "hint": "Malutka zielona oliwka z liściem na głowie i nóżkami.",
+  "fact": "Broni się gorzkim olejkiem z owocu na głowie."
+ },
+ "929": {
+  "kind": "Pokémon Oliwka",
+  "hint": "Zielony krzaczek z oliwkami na głowie jak bukiet.",
+  "fact": "Dzieli się pachnącym olejem — od dawna żyje razem z ludźmi."
+ },
+ "930": {
+  "kind": "Pokémon Oliwka",
+  "hint": "Duże drzewko oliwne z oliwkami jak włosy i białą twarzą.",
+  "fact": "Leczy osłabione Pokémony swoim olejem. W serialu olbrzymi Arboliva to Pokémon Lucjusza."
+ },
+ "931": {
+  "kind": "Pokémon Papuga",
+  "hint": "Kolorowa papuga z czubkiem na głowie (zielona, niebieska albo żółta).",
+  "fact": "Mieszkają w miastach stadami tego samego koloru. Babcia Liko ma żółtą papugę."
+ },
+ "932": {
+  "kind": "Pokémon Sól Kamienna",
+  "hint": "Mała, różowo-brązowa kostka soli z jednym okiem.",
+  "fact": "Urodził się głęboko w warstwie soli pod ziemią."
+ },
+ "933": {
+  "kind": "Pokémon Sól Kamienna",
+  "hint": "Kanciasty stos solnych bloków z oczami.",
+  "fact": "Posypuje wrogów solą, która wysusza im wodę z ciała."
+ },
+ "934": {
+  "kind": "Pokémon Sól Kamienna",
+  "hint": "Wielki olbrzym z bloków soli z mocnymi ramionami.",
+  "fact": "Posypuje ranne Pokémony solą — nawet ciężkie rany szybko się goją."
+ },
+ "935": {
+  "kind": "Pokémon Ogniste Dziecko",
+  "hint": "Mały, czarny Pokémon z węgla z płomieniem na głowie jak świeca.",
+  "fact": "Powstał z ożywionego węgla drzewnego i odważnie walczy z silniejszymi."
+ },
+ "937": {
+  "kind": "Pokémon Ogniste Ostrza",
+  "hint": "Fioletowy rycerz w zbroi z niebieskimi ognistymi mieczami na rękach.",
+  "fact": "Jego ogniste ostrza płoną żalem dawnego szermierza. To partner Amethio."
+ },
+ "938": {
+  "kind": "Pokémon Elektrokijanka",
+  "hint": "Mała, żółto-niebieska kijanka z żarówką na głowie.",
+  "fact": "Macha ogonem, żeby zrobić prąd, a głowa miga, gdy grozi niebezpieczeństwo."
+ },
+ "939": {
+  "kind": "Pokémon Elektroropucha",
+  "hint": "Wielka, zielona, pulchna żaba z żółtymi pępkami-guzikami.",
+  "fact": "Pępek-dynamo w brzuchu robi mnóstwo prądu. To partner streamerki Iono."
+ },
+ "940": {
+  "kind": "Pokémon Burzyk",
+  "hint": "Mały, czarno-żółty ptak morski z dużymi skrzydłami.",
+  "fact": "Wiatr w skrzydłach robi prąd w kościach. W serialu to Pokémon Roya."
+ },
+ "941": {
+  "kind": "Pokémon Fregata",
+  "hint": "Duży ptak morski z żółtym workiem na gardle i skrzydłami jak błyskawice.",
+  "fact": "Nadyma worek na szyi, żeby wzmocnić prąd, i leci 700 km w jeden dzień."
+ },
+ "944": {
+  "kind": "Pokémon Trująca Mysz",
+  "hint": "Mała, szara mysz z różowym czubkiem i ostrymi ząbkami.",
+  "fact": "Zwykle spokojny, ale gdy się zezłości, gryzie trującymi zębami."
+ },
+ "945": {
+  "kind": "Pokémon Trująca Małpa",
+  "hint": "Szara małpka z kolorowymi palcami i żółtym czubkiem.",
+  "fact": "Maluje trującą śliną wzory na drzewach — każdy Grafaiai ma własny styl."
+ },
+ "960": {
+  "kind": "Pokémon Węgorz Ogrodowy",
+  "hint": "Biały, cienki węgorz wystający z piasku, z czarnymi oczkami.",
+  "fact": "Wyczuwa wroga z 20 metrów i chowa się w piasek."
+ },
+ "961": {
+  "kind": "Pokémon Węgorz Ogrodowy",
+  "hint": "Trzy białe węgorze z piasku z czerwono-żółtymi grzywkami.",
+  "fact": "Wygląda słodko, ale owija ofiarę i ciągnie ją do nory."
+ },
+ "963": {
+  "kind": "Pokémon Delfin",
+  "hint": "Mały niebiesko-biały delfinek z pierścieniem wody na ogonie.",
+  "fact": "Bawi się z innymi wodnym kółkiem na ogonie i wyczuwa uczucia ultradźwiękami."
+ },
+ "964": {
+  "kind": "Pokémon Delfin",
+  "hint": "Niebiesko-biały delfin — gdy przyjaciele wołają o pomoc, staje się superbohaterem w pelerynie.",
+  "fact": "Nikt nigdy nie widział, jak zmienia się w bohatera!"
+ },
+ "967": {
+  "kind": "Pokémon Wierzchowiec",
+  "hint": "Zielono-czarna jaszczurka jak motocykl, z płaskim siodłem na grzbiecie.",
+  "fact": "Od 10 000 lat pozwala ludziom jeździć na swoim grzbiecie jak na motorze."
+ },
+ "1024": {
+  "kind": "Pokémon Tera",
+  "hint": "Mały, niebieski żółwik z kolorowymi kryształami na skorupie.",
+  "fact": "Zamienia energię w twarde kryształy. To tajemniczy Pokémon z wisiorka Liko!"
  }
 }
