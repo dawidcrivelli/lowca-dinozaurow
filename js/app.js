@@ -97,7 +97,7 @@ function crack() {
 const $ = s => document.querySelector(s);
 const el = Object.fromEntries(['q', 'huntForm', 'sugg', 'huntMsg', 'grid', 'emptyMsg', 'chips', 'onlyMissing', 'pcCount', 'pcRank', 'pcBall',
   'rockFill', 'rockMarks', 'brandBall', 'scene', 'sceneTarget', 'sceneBall', 'sceneFlash', 'sceneName', 'confetti', 'modal', 'modalBody',
-  'modalClose', 'btnArena', 'btnEdit'].map(id => [id, document.getElementById(id)]));
+  'modalClose', 'btnArena', 'btnCards', 'btnEdit', 'binder'].map(id => [id, document.getElementById(id)]));
 el.pill = $('.search-pill'); el.main = $('main.wrap');
 let filter = 'all', editing = false;
 
@@ -105,12 +105,15 @@ const RANKS = [[0, 'Początkujący'], [5, 'Trener'], [15, 'Tropiciel'], [30, 'Zd
 const rankFor = n => RANKS.filter(([k]) => n >= k).pop()[1];
 
 /* ================= SIATKA ================= */
+const binder = () => DB.settings.binder;   // widok segregatora: karty zamiast obrazków
+const cardBack = () => `<span class="cardback">${drawBall(1)}</span>`;
 function tileHTML(sp) {
   const got = isCaught(sp.id);
   return `<button class="tile ${got ? '' : 'ghost'}" data-id="${sp.id}">
     <span class="no">${dexNo(sp)}</span>
     <span class="rar">${'<i></i>'.repeat(sp.rarity)}</span>
-    <span class="art">${art(sp, got ? 'color' : 'ghost', 'small')}</span>
+    ${binder() ? `<span class="art tcgs">${got ? `<img src="${CARD_URL(sp.id)}" alt="" loading="lazy">` : cardBack()}</span>`
+      : `<span class="art">${art(sp, got ? 'color' : 'ghost', 'small')}</span>`}
     <span class="nm">${got ? esc(sp.name) : '???'}</span>
     <span class="grp" style="background:${TYPES[sp.types[0]][2]}"></span>
     <span class="del" data-del="${sp.id}" title="Usuń z listy">✕</span></button>`;
@@ -147,6 +150,8 @@ el.grid.addEventListener('click', e => {
 });
 el.chips.addEventListener('click', e => { const c = e.target.closest('[data-f]'); if (c) { filter = c.dataset.f; renderChips(); renderGrid(); } });
 el.onlyMissing.addEventListener('change', () => renderGrid());
+el.binder.checked = !!binder();
+el.binder.addEventListener('change', () => { DB.settings.binder = el.binder.checked; save(); renderGrid(); });
 
 /* ================= ŁOWY ================= */
 function showSugg() {
@@ -237,7 +242,8 @@ function caughtCard(sp) {
   const st = statsOf(sp), r = record(sp.id), pre = byId(sp.from), next = evolutions(sp);
   const evo = [pre && `z ${esc(pre.name)}`, next.length && `w ${next.map(s => isCaught(s.id) ? esc(s.name) : '???').join(' / ')}`].filter(Boolean).join(' → ');
   return `
-  <div class="m-hero"><div class="art">${art(sp)}</div></div>
+  <div class="m-hero ${DB.settings.face === 'card' ? 'card' : ''}"><button class="btn ghost icon flip" data-flip="1" title="Karta / obrazek">🃏</button>
+    <div class="art">${art(sp)}</div><img class="tcg" src="${CARD_URL(sp.id, 'big')}" alt="Karta ${esc(sp.name)}" loading="lazy"></div>
   <div class="m-body">
     <h2>${esc(sp.name)}</h2><p class="m-lat">${dexNo(sp)} · ${esc(sp.kind || '')}</p>
     <div class="m-tags">
@@ -255,6 +261,7 @@ function caughtCard(sp) {
     <p class="traits"><span class="record">⚔️ ${r.w} wygranych · ${r.l} przegranych</span></p>
     <div class="m-actions">
       <button class="btn amber big" data-arena="${sp.id}">⚔️ Do areny</button>
+      <button class="btn" data-duel="${sp.id}">🃏 Karty</button>
       <button class="btn ghost" data-close="1">Zamknij</button>
       ${editing ? `<button class="btn danger" data-release="${sp.id}">Wypuść</button>` : ''}
     </div>
@@ -284,6 +291,8 @@ el.modalBody.addEventListener('click', e => {
   if (d.release) { delete DB.caught[d.release]; save(); closeModal(); renderAll(); }
   if (d.del) { closeModal(); removeSpecies(d.del); }
   if (d.arena) openArena(d.arena);
+  if (d.duel) openDuel(d.duel);
+  if (d.flip) { const h = b.closest('.m-hero'); DB.settings.face = h.classList.toggle('card') ? 'card' : 'art'; save(); }
   if (d.letter) {
     const sp = byId(d.letter);
     b.outerHTML = `<span class="tag light letter">Zaczyna się na <b>${esc(sp.name[0])}</b>, ma ${sp.name.length} liter</span>`;
@@ -425,6 +434,112 @@ function finish() {
   cry(w.s, 'call'); navigator.vibrate?.([35, 45, 70]);
 }
 el.btnArena.addEventListener('click', () => openArena());
+
+/* ================= KARTY: walka kartami z zestawu „151” (zasady: js/cards.js) =================
+   Drużyna z Pokémonów Podstawowych; ewoluować można tylko w złapane — zachęta do łapania całych linii. */
+const K = { pick: [], team: [], log: [], D: null };
+const CPU_MS = 900;
+const basicsCaught = () => roster().filter(s => s.card.st === 0);
+const cpuTeam = n => { const p = SPECIES.filter(s => s.card.st === 0 && !s.card.ex && !s.legend); return Array.from({ length: n }, () => p[Math.floor(Math.random() * p.length)]); };
+const cost = c => [...c].map(e => ENERGY_ICON[e]).join('');
+function openDuel(preId) {
+  stopBattle();
+  const pre = byId(preId);
+  if (pre?.card.st === 0 && !K.pick.includes(pre)) K.pick = [pre, ...K.pick].slice(0, TEAM);
+  K.pick = K.pick.filter(s => isCaught(s.id));
+  const list = basicsCaught();
+  if (!list.length) return openModal(`<div class="m-body"><h2>🃏 Karty</h2>
+    <p class="m-lat">Złap najpierw Pokémona Podstawowego, np. Pikachu, Bulbasaura albo Charmandera.</p>
+    <div class="m-actions"><button class="btn ghost" data-close="1">Rozumiem</button></div></div>`);
+  openModal(`<div class="m-body duel">
+    <h2>🃏 Walka kartami</h2>
+    <p class="m-lat">Wybierz do ${TEAM} Pokémonów Podstawowych. W walce ewoluują w Pokémony, które już złapałeś!</p>
+    <div class="d-pick">${list.map(s => `<button data-dpick="${s.id}" class="${K.pick.includes(s) ? 'on' : ''}"><img src="${CARD_URL(s.id)}" alt="${esc(s.name)}" loading="lazy"></button>`).join('')}</div>
+    <div class="m-actions center"><button class="btn amber big" data-dstart="1" ${K.pick.length ? '' : 'disabled'}>🃏 Walka! (${K.pick.length}/${TEAM})</button></div>
+  </div>`, 'wide');
+}
+function startDuel() {
+  K.team = K.pick.slice(); K.D = newDuel(K.team, cpuTeam(K.team.length)); K.log = ['Twoja tura! Dołącz energię ⚡ i atakuj.'];
+  audio(); renderDuel();
+}
+const cardImg = m => `<img src="${CARD_URL(m.sp.id)}" alt="${esc(m.sp.name)}">`;
+function sideHTML(who) {
+  const S = K.D[who], m = S.team[0], mine = who === 'me', myTurn = mine && K.D.who === 'me' && !K.D.winner;
+  const canRetreat = myTurn && !S.did.retreat && m.en >= m.sp.card.ret;
+  const left = Math.max(0, m.sp.card.hp - m.dmg), pct = 100 * left / m.sp.card.hp;
+  return `<div class="d-active" id="da-${who}">${cardImg(m)}
+      <div class="d-hp"><i style="width:${pct}%;background-position:${pct}% 0"></i></div>
+      <div class="d-info"><span>❤️ ${left}/${m.sp.card.hp}</span><span>${ENERGY_ICON[m.sp.card.t].repeat(m.en) || '—'}</span></div></div>
+    <div class="d-side">
+      <div class="d-prizes">${mine ? '🙂 Ty' : '🤖 Komputer'} · 🎴 ${S.prizes}/${PRIZES}</div>
+      <div class="d-bench">${S.team.slice(1).map((b, i) => `<button ${mine ? `data-dretreat="${i + 1}"` : 'disabled'} class="${mine && canRetreat ? 'can' : ''}" title="Odwrót">${cardImg(b)}${b.en ? `<small>${ENERGY_ICON[b.sp.card.t].repeat(b.en)}</small>` : ''}</button>`).join('')}</div>
+      ${mine && canRetreat && S.team.length > 1 ? `<small>↩️ Dotknij karty na ławce: odwrót za ${m.sp.card.ret} ⚪</small>` : ''}
+    </div>`;
+}
+function actsHTML() {
+  const D = K.D, S = D.me, m = S.team[0];
+  if (D.winner) return `<div class="battle-result"><div class="winner">${D.winner === 'me' ? '🏆 Wygrywasz!' : '🤖 Wygrywa komputer'}</div>
+    <div class="m-actions center"><button class="btn amber big" data-drematch="1">🔁 Rewanż</button><button class="btn ghost" data-dnew="1">🔄 Zmień drużynę</button></div></div>`;
+  if (D.who !== 'me') return '<p class="m-lat">🤖 Komputer myśli…</p>';
+  const evo = evolutionsOf(D, s => isCaught(s.id)), missing = SPECIES.filter(s => s.from === m.sp.id && !isCaught(s.id));
+  return `<button class="btn" data-denergy="1" ${S.did.energy ? 'disabled' : ''}>${ENERGY_ICON[m.sp.card.t]} Energia</button>
+    ${evo.map(s => `<button class="btn" data-devolve="${s.id}">🧬 ${esc(s.name)}</button>`).join('')}
+    ${m.sp.card.atk.map(([n, c, dmg, kind], k) => `<button class="btn amber" data-dattack="${k}" ${canPay(m, c) ? '' : 'disabled'}>${esc(n)} ${dmg}${kind}<small>${cost(c)}</small></button>`).join('')}
+    <button class="btn ghost" data-dend="1">⏭️ Koniec tury</button>
+    ${missing.length && !evo.length && !S.did.evolve ? `<p class="m-lat">🧬 Złap ${missing.map(s => s.name).join(' / ')}, żeby ewoluować!</p>` : ''}`;
+}
+function renderDuel() {
+  openModal(`<div class="m-body duel">
+    <div class="dz cpu">${sideHTML('cpu')}</div>
+    <div class="d-log">${K.log.slice(-3).map(l => `<div>${esc(l)}</div>`).join('')}</div>
+    <div class="dz me">${sideHTML('me')}</div>
+    <div class="d-acts">${actsHTML()}</div>
+  </div>`, 'wide');
+}
+/* zdarzenie: dziennik, dźwięk, animacja (wypad atakującego, wstrząs trafionego) */
+function duelEvent(ev, who) {
+  if (!ev) return false;
+  K.log.push(ev.text); renderDuel();
+  const att = K.D[who].team[0];
+  if (ev.evolve) cry(att.sp, 'call');
+  if (ev.attack) {
+    cry(att.sp, 'attack'); $(`#da-${who}`)?.classList.add('go');
+    const other = who === 'me' ? 'cpu' : 'me';
+    if (ev.dmg) { later(150, () => fx('hit')); $(`#da-${other}`)?.classList.add('hit'); navigator.vibrate?.(18); }
+    if (ev.ko) later(300, () => cry(ev.ko, 'ko'));
+  }
+  return true;
+}
+function cpuPlays() {
+  const evs = cpuTurn(K.D);
+  evs.forEach((ev, i) => later(CPU_MS * (i + 1), () => duelEvent(ev, 'cpu')));
+  later(CPU_MS * (evs.length + 1), () => { if (!K.D.winner) K.log.push('Twoja tura!'); renderDuel(); finishDuel(); });
+}
+function finishDuel() {
+  if (!K.D.winner) return;
+  if (K.D.winner === 'me') { cry(K.D.me.team[0].sp, 'call'); navigator.vibrate?.([35, 45, 70]); }
+}
+function playerDuel(d) {
+  const D = K.D; if (!D || D.who !== 'me' || D.winner) return;
+  if (d.denergy) duelEvent(attachEnergy(D), 'me');
+  if (d.devolve) duelEvent(evolve(D, byId(d.devolve)), 'me');
+  if (d.dretreat) duelEvent(retreat(D, +d.dretreat), 'me');
+  if (d.dattack && duelEvent(cardAttack(D, +d.dattack), 'me') || d.dend) {
+    endTurn(D);
+    if (D.winner) return later(600, () => { renderDuel(); finishDuel(); });
+    later(700, () => { renderDuel(); cpuPlays(); });
+  }
+}
+el.modalBody.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b || !el.modalBody.querySelector('.duel')) return;
+  const d = b.dataset;
+  if (d.dpick) { const sp = byId(d.dpick); K.pick = K.pick.includes(sp) ? K.pick.filter(s => s !== sp) : [...K.pick, sp].slice(-TEAM); blip(500, .05); openDuel(); }
+  if (d.dstart && K.pick.length) startDuel();
+  if (d.drematch) { K.pick = K.team; startDuel(); }
+  if (d.dnew) openDuel();
+  playerDuel(d);
+});
+el.btnCards.addEventListener('click', () => openDuel());
 
 /* ================= TRYB RODZICA =================
    Otwiera się przytrzymaniem przycisku przez 1 s – dzieci nie wejdą tam przypadkiem. */

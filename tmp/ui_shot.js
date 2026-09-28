@@ -34,7 +34,7 @@ function get(p) {
   const steps = JSON.parse(fs.readFileSync(path.join(__dirname, process.argv[2] || 'ui_steps.json'), 'utf8'));   // użycie: node tmp/ui_shot.js [plik kroków]
   await ws.send('Page.enable');
   await ws.send('Runtime.enable');
-  await ws.send('Page.addScriptToEvaluateOnNewDocument', { source: "window.__errs=[];addEventListener('error',e=>__errs.push(e.message||String(e.target?.src)),true)" });
+  await ws.send('Page.addScriptToEvaluateOnNewDocument', { source: "window.__errs=[];addEventListener('error',e=>__errs.push((e.message||String(e.target?.src))+' @'+e.filename+':'+e.lineno),true)" });
   await ws.send('Emulation.setDeviceMetricsOverride', { width: 430, height: 2600, deviceScaleFactor: 1, mobile: true });
   await ws.send('Page.navigate', { url: 'file://' + path.join(root, 'index.html') });
   await sleep(2200);
