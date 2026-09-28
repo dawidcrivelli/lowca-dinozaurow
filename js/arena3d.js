@@ -13,6 +13,8 @@ window.Arena3D = (() => {
   const ok = (() => { try { return !!document.createElement('canvas').getContext('webgl'); } catch { return false; } })();
   const GAP = 2.2, YAW = 0.35;                    // połowa dystansu między zawodnikami; obrót 3/4 do kamery
   const H_MAX = 2.4, RATIO_MIN = 0.5, LEN_K = 0.65; // wysokość większego; najmniejszy ułamek; ile długości liczy się jak wysokość
+  const SHIELD = { color: 0x2FA8FF, alpha: .38, pad: .62, flashMs: 500 };  // bańka obrony: kolor, przezroczystość, zapas wokół ciała
+  const DODGE = { back: .9, up: 1.1 };  // unik: odskok do tyłu i w górę z obrotem
   const ANIM_MS = 440, HIT_DELAY = 170, BIG_HIT = 24, SHAKE = 0.22, LUNGE = 0.9;
   const ORBIT = 0.32, ORBIT_MS = 9000, CAM_Y = 2.7, CAM_D = 7.8, LOOK_Y = 1.3;
   const PIXEL_RATIO_MAX = 2, SHADOW_MAP = 1024, PROP_SEED = 7;
@@ -180,7 +182,11 @@ window.Arena3D = (() => {
     const shadow = new THREE.Mesh(new THREE.CircleGeometry(H * .45, 16), new THREE.MeshBasicMaterial({ color: 0, transparent: true, opacity: .18, depthWrite: false }));
     shadow.rotation.x = -Math.PI / 2; shadow.position.set(-dir * GAP, .02, 0); S.scene.add(shadow, root);
     const mats = []; root.traverse(c => c.material && mats.push(c.material));
-    return { root, inner, shadow, kind, dir, lift, ...parts, mats, x0: -dir * GAP, anim: null, ko: false, won: false, phase: Math.random() * 6, swim: water || fly };
+    root.updateMatrixWorld(true);   // bańka obrony: elipsoida wokół ciała, poza `mats` (nie miga przy trafieniu)
+    const bb = new THREE.Box3().setFromObject(inner), bz = bb.getSize(V(0, 0)), w = Math.max(bz.x, bz.z) * SHIELD.pad;
+    const shield = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), new THREE.MeshBasicMaterial({ color: SHIELD.color, transparent: true, opacity: 0, depthWrite: false }));
+    shield.position.copy(root.worldToLocal(bb.getCenter(V(0, 0)))); shield.scale.set(w, bz.y * SHIELD.pad, w); root.add(shield);
+    return { root, inner, shadow, shield, kind, dir, lift, ...parts, mats, x0: -dir * GAP, anim: null, ko: false, won: false, phase: Math.random() * 6, swim: water || fly };
   }
 
   /* ---------- teren ---------- */
@@ -250,12 +256,12 @@ window.Arena3D = (() => {
   }
   function animate(f, now, dt) {
     const a = f.anim, t = a ? Math.min(1, (now - a.t0) / a.ms) : 1, s = Math.sin(Math.PI * t);
-    let dx = 0, dy = 0, dz = 0, rz = 0, sy = 1, flash = 0, glow = 0;
+    let dx = 0, dy = 0, dz = 0, rz = 0, ry = 0, sy = 1, flash = 0, glow = 0;
     const lean = f.kind === 'bill' ? f.dir : 1;
     if (a) ({
       lunge: () => { dx = f.dir * LUNGE * s; rz = -lean * .18 * s; if (f.jaw) f.jaw.rotation.z = -.5 * s; },
       hit: () => { dx = -f.dir * .35 * s; flash = 1 - t; },
-      dodge: () => { dz = -1.1 * s; dy = .5 * s; },
+      dodge: () => { dx = -f.dir * DODGE.back * s; dy = DODGE.up * s; ry = 2 * Math.PI * t; },
       guard: () => { sy = 1 - .16 * s; glow = s; },
       ko: () => { rz = lean * Math.PI / 2 * t; dy = -f.lift * t; flash = 1 - t; },
     })[a.k]();
@@ -269,7 +275,10 @@ window.Arena3D = (() => {
     if (f.tail) f.tail.rotation.x = .08 * Math.sin(tm * 2);
     f.root.position.set(f.x0 + dx, f.lift + dy, dz); f.shadow.position.set(f.x0 + dx, .02, dz);
     if (f.kind === 'bill') f.inner.rotation.z = rz; else [f.inner.rotation.x, f.inner.rotation.z] = a?.k === 'ko' || f.ko ? [rz, 0] : [0, rz];
-    f.inner.scale.y = sy;
+    f.inner.scale.y = sy; f.inner.rotation.y = ry;
+    const blk = Math.max(0, 1 - (now - (f.blockT || 0)) / SHIELD.flashMs);   // błysk bańki przy zablokowanym ciosie
+    f.shield.material.opacity = f.ko ? 0 : f.guarding ? SHIELD.alpha * (1 + .2 * Math.sin(tm * 6)) : blk * .8;
+    f.shield.visible = f.shield.material.opacity > .01;
     for (const m of f.mats) m.emissive ? m.emissive.setRGB(flash * .8, glow * .35, 0) : m.color.setRGB(1, 1 - flash * .6, 1 - flash * .6);
     if (f.kind === 'bill') f.root.quaternion.copy(S.camera.quaternion);
     if (a?.k === 'ko' || f.ko) {   // przewrócony obraca się wokół stóp → podnieś, żeby leżał NA ziemi, nie pod nią
@@ -299,9 +308,10 @@ window.Arena3D = (() => {
     const a = S?.byId[ev.att], d = S?.byId[ev.def];
     if (!a || !d) return;
     const dust = S.theme.water || S.theme.under ? 0xE8F6FF : S.theme.ground;
-    if (ev.move === 'guard') return play(a, 'guard', ANIM_MS * 1.5);
+    if (ev.move === 'guard') { a.guarding = true; return play(a, 'guard', ANIM_MS * 1.5); }
     play(a, 'lunge');
-    if (ev.dodge) soon(HIT_DELAY / 2, () => play(d, 'dodge'));
+    if (ev.dodge) soon(HIT_DELAY / 2, () => { play(d, 'dodge', ANIM_MS * 1.4); burst(d, 8, 0xFFFFFF); });
+    if (ev.guarded) soon(HIT_DELAY, () => { d.guarding = false; d.blockT = performance.now(); burst(d, 12, SHIELD.color); });
     else if (ev.damage) soon(HIT_DELAY, () => { play(d, ev.hpDef === 0 ? 'ko' : 'hit', ev.hpDef === 0 ? ANIM_MS * 2 : ANIM_MS);
       burst(d, ev.damage >= BIG_HIT ? 14 : 7, dust); if (ev.damage >= BIG_HIT) S.shake = SHAKE; });
   }

@@ -131,7 +131,7 @@ function attack(B, att, def, move) {
   let dmg = (14 + (att.attack + am.attack) * .34 - (def.defense + dm.defense) * .17) * mult;
   if (def.armored) { dmg *= .84; if (rnd() < .45) notes.push('🛡️ pancerz osłabił cios'); }
   if (def.fortressReady) { dmg *= .60; def.fortressReady = false; notes.push('🏔️ żywa forteca'); }
-  if (def.guard) { dmg *= def.guard; def.guard = 0; notes.push('🛡️ obrona'); }
+  if (def.guard) { dmg *= def.guard; def.guard = 0; notes.push('🛡️ obrona'); ev.guarded = true; }
   dmg = clampN(Math.round(dmg), 5, 58);
   def.hp = Math.max(0, def.hp - dmg);
   return { ...ev, damage: dmg, hpDef: def.hp, text: `${notes.length ? notes.join(' + ') + ' — ' : ''}${att.name} zadaje ${dmg} obrażeń.` };
