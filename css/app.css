@@ -453,3 +453,10 @@ body.editing .rar{display:none}
 @media (prefers-reduced-motion: reduce){
   *{animation-duration:.01ms !important;transition-duration:.01ms !important}
 }
+/* arena 3D (js/arena3d.js): scena pod spodem, karty zawodników jako półprzezroczysta nakładka z paskami życia */
+.stage3d{position:relative;height:clamp(290px,70vw,420px);border-radius:16px;overflow:hidden;border:2px solid var(--line);margin-bottom:10px}
+.stage3d canvas{position:absolute;inset:0;display:block}
+.v3d .fight-grid{position:absolute;top:6px;left:6px;right:6px;pointer-events:none}
+.v3d .fighter{background:rgba(255,255,255,.82);padding:4px 8px;border-width:2px}
+.v3d .fighter .art,.v3d .ar-vs{visibility:hidden;height:0}
+.v3d .dmg{top:120%}

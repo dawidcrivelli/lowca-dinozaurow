@@ -29,6 +29,7 @@ Otwórz `index.html` w przeglądarce — bez budowania i zależności. `node bui
 | `js/battle.js` | statystyki z prawdziwych danych + silnik walki, bez DOM |
 | `js/art.js`, `js/artspec.js` | proceduralne rysunki SVG; `artspec.js` przypisuje rysunek do gatunku |
 | `js/app.js` | interfejs: łowy, kolekcja, karty, arena, tryb rodzica, zapis |
+| `js/arena3d.js`, `vendor/three.min.js` | opcjonalny widok walki 3D (przełącznik 🖼️/🧊 w arenie); usunięcie = skasuj oba pliki i linie z `Arena3D` |
 | `sw.js` | pamięć podręczna offline |
 
 ## Strojenie walki

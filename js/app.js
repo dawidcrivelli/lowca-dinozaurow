@@ -305,7 +305,7 @@ el.modalBody.addEventListener('click', e => {
 /* ================= ARENA =================
    Wybór zawodników obrazkami (młodszy nie musi czytać), tryb ▶️ oglądam / 👆 walczę. */
 const A = { a: null, b: null, slot: 'a', B: null, timers: [], token: 0 };
-function stopBattle() { A.timers.forEach(clearTimeout); A.timers = []; A.token++; }
+function stopBattle() { A.timers.forEach(clearTimeout); A.timers = []; A.token++; window.Arena3D?.stop(); }
 const later = (ms, fn) => { const t = A.token; A.timers.push(setTimeout(() => t === A.token && fn(), ms)); };
 const roster = () => LIST.filter(s => isCaught(s.id));
 const randomOther = id => { const p = roster().filter(s => s.id !== id); return p[Math.floor(Math.random() * p.length)]; };
@@ -335,6 +335,8 @@ function renderSetup() {
         <button class="${mode === 'auto' ? 'on' : ''}" data-mode="auto" title="Oglądam walkę">▶️<small>Oglądam</small></button>
         <button class="${mode === 'play' ? 'on' : ''}" data-mode="play" title="Sam wybieram ruchy">👆<small>Walczę</small></button>
       </div>
+      ${window.Arena3D?.ok ? `<div class="seg" role="group" aria-label="Widok">${[['2d', '🖼️'], ['3d', '🧊']].map(([v, i]) =>
+        `<button class="${(DB.settings.view || '2d') === v ? 'on' : ''}" data-view="${v}">${i}<small>${v.toUpperCase()}</small></button>`).join('')}</div>` : ''}
       <button class="btn ghost icon" data-random="1" title="Losuj rywala">🎲</button>
       <button class="btn amber big" data-fight="1">⚔️ Walka!</button>
     </div>
@@ -353,6 +355,7 @@ function onArenaClick(e) {
   }
   if (d.random) { A.b = randomOther(A.a.id); blip(700, .06); renderSetup(); }
   if (d.mode) { DB.settings.mode = d.mode; save(); renderSetup(); }
+  if (d.view) { DB.settings.view = d.view; save(); renderSetup(); }
   if (d.fight || d.rematch) startFight();
   if (d.newfoe) { A.b = randomOther(A.a.id); startFight(); }
   if (d.change) renderSetup();
@@ -376,6 +379,7 @@ function startFight() {
     <div class="battle-log" id="log"><div><strong>Runda 1.</strong> Walka się zaczyna!</div></div>
     <div class="battle-result" id="result" hidden></div>
   </div>`, 'wide');
+  if (DB.settings.view === '3d' && window.Arena3D?.ok) Arena3D.start($('.fight-grid'), B);
   thud();
   play ? later(500, askMove) : later(500, autoStep);
 }
@@ -390,6 +394,7 @@ function playerMove(move) {
 function showEvents(evs, done) {
   const B = A.B, side = id => id === B.a.id ? 'a' : 'b';
   evs.forEach((ev, i) => later(i * 560, () => {
+    window.Arena3D?.event(ev);
     if (ev.att) {
       const as = side(ev.att), ds = as === 'a' ? 'b' : 'a', f = $(`#f-${as}`), g = $(`#f-${ds}`);
       f.classList.remove('attacking'); void f.offsetWidth; f.classList.add('attacking');
@@ -413,7 +418,7 @@ function showEvents(evs, done) {
 function finish() {
   const { winner: w, a, b } = A.B, l = w === a ? b : a;
   (DB.rec[w.id] = record(w.id)).w++; (DB.rec[l.id] = record(l.id)).l++; save();
-  $(`#f-${w === a ? 'a' : 'b'}`).classList.add('won');
+  $(`#f-${w === a ? 'a' : 'b'}`).classList.add('won'); window.Arena3D?.win(w.id);
   const r = $('#result');
   r.innerHTML = `<div class="winner">🏆 ${esc(w.name)}!</div>
     <small>${w === a ? '🙂 Wygrywasz!' : '🎯 Wygrywa rywal'} · zostało ${w.hp}/${w.hp0} ❤️ · bilans ${DB.rec[w.id].w}–${DB.rec[w.id].l}</small>
