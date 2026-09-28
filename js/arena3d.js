@@ -15,6 +15,9 @@ window.Arena3D = (() => {
   const H_MAX = 2.4, RATIO_MIN = 0.5, LEN_K = 0.65; // wysokość większego; najmniejszy ułamek; ile długości liczy się jak wysokość
   const SHIELD = { color: 0x2FA8FF, alpha: .38, pad: .62, flashMs: 500 };  // bańka obrony: kolor, przezroczystość, zapas wokół ciała
   const DODGE = { back: .9, up: 1.1 };  // unik: odskok do tyłu i w górę z obrotem
+  const CV_W = 400, CV_H = 280;  // płótno rysunku (proporcje SVG 200×140)
+  const SLAB = { depth: .035, cell: 4, inset: 3, shade: .62 };  // wytłoczony rysunek: grubość × wysokość, komórka konturu [px], próbka koloru w głąb [komórki], jasność boków
+  const GROUND_EPS = .03;  // leżący nad gruntem, nie w nim (inaczej migocze)
   const ANIM_MS = 440, HIT_DELAY = 170, BIG_HIT = 24, SHAKE = 0.22, LUNGE = 0.9;
   const ORBIT = 0.32, ORBIT_MS = 9000, CAM_Y = 2.7, CAM_D = 7.8, LOOK_Y = 1.3;
   const PIXEL_RATIO_MAX = 2, SHADOW_MAP = 1024;
@@ -181,15 +184,35 @@ window.Arena3D = (() => {
     return { jaw: H.jaw, head: H.h, tail };
   }
 
-  /* ---------- rysunek SVG jako płaska tablica (pozostałe archetypy) ---------- */
-  function billboard(g, sp, H) {
-    const cv = Object.assign(document.createElement('canvas'), { width: 400, height: 280 }), img = new Image(), tex = new THREE.CanvasTexture(cv);
-    img.onload = () => { cv.getContext('2d').drawImage(img, 0, 0, 400, 280); tex.needsUpdate = true; };
+  /* ---------- rysunek SVG: płaska tablica, albo (depth > 0) bryła: rysunek z przodu i z tyłu + ścianki wzdłuż konturu ---------- */
+  function billboard(g, sp, H, depth = 0) {
+    const cv = Object.assign(document.createElement('canvas'), { width: CV_W, height: CV_H }), img = new Image(), tex = new THREE.CanvasTexture(cv);
+    const W = H * CV_W / CV_H, d = depth / 2, walls = new THREE.BufferGeometry();
+    const face = new THREE.MeshBasicMaterial({ map: tex, transparent: !depth, alphaTest: .4, side: THREE.DoubleSide });
+    for (const z of depth ? [-d, d] : [0]) mesh(g, new THREE.PlaneGeometry(W, H), face, V(0, H * .5, z)).castShadow = false;
+    if (depth) mesh(g, walls, new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide }), V(0, 0)).castShadow = false;
+    img.onload = () => {
+      const c = cv.getContext('2d'); c.drawImage(img, 0, 0, CV_W, CV_H); tex.needsUpdate = true;
+      if (depth) extrude(c.getImageData(0, 0, CV_W, CV_H).data, walls, W, H, d);
+    };
     img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
-      (sp.custom ? drawCustom(sp.arch, sp.opts, 'color') : drawSpecies(sp.id, 'color')).replace('<svg ', '<svg width="400" height="280" '));
-    const m = new THREE.MeshBasicMaterial({ map: tex, transparent: true, alphaTest: .4, side: THREE.DoubleSide });
-    const o = mesh(g, new THREE.PlaneGeometry(H * 200 / 140, H), m, V(0, H * .5)); o.castShadow = false;
-    return { plane: o };
+      (sp.custom ? drawCustom(sp.arch, sp.opts, 'color') : drawSpecies(sp.id, 'color')).replace('<svg ', `<svg width="${CV_W}" height="${CV_H}" `));
+    return {};
+  }
+  /* ścianki boczne: siatka komórek maski alfa; tam, gdzie pełna komórka graniczy z pustą, stawiamy prostokąt w kolorze rysunku
+     (brany kilka komórek w głąb, żeby nie był czarnym konturem), przyciemniony — jak wytłoczone przedmioty w Minecrafcie */
+  function extrude(px, geo, W, H, d) {
+    const C = SLAB.cell, nx = CV_W / C, ny = CV_H / C, k = (i, j) => ((j * C + C / 2) * CV_W + i * C + C / 2) * 4;
+    const full = (i, j) => i >= 0 && j >= 0 && i < nx && j < ny && px[k(i, j) + 3] > 100;
+    const X = u => (u / nx - .5) * W, Y = v => (1 - v / ny) * H, pos = [], col = [];
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) if (full(i, j))
+      for (const [di, dj, x0, y0, x1, y1] of [[1, 0, i + 1, j, i + 1, j + 1], [-1, 0, i, j, i, j + 1], [0, 1, i, j + 1, i + 1, j + 1], [0, -1, i, j, i + 1, j]]) {
+        if (full(i + di, j + dj)) continue;
+        const [si, sj] = full(i - di * SLAB.inset, j - dj * SLAB.inset) ? [i - di * SLAB.inset, j - dj * SLAB.inset] : [i, j];
+        const [a, b] = [[X(x0), Y(y0)], [X(x1), Y(y1)]], rgb = [0, 1, 2].map(n => px[k(si, sj) + n] / 255 * SLAB.shade);
+        for (const [p, z] of [[a, -d], [b, -d], [b, d], [a, -d], [b, d], [a, d]]) { pos.push(p[0], p[1], z); col.push(...rgb); }
+      }
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
   }
 
   /* ---------- zawodnik ---------- */
@@ -199,16 +222,16 @@ window.Arena3D = (() => {
     const M = { skin: phong(P[0]), belly: phong(P[1]), dark: phong(P[2]), ivory: phong(0xF4ECD8) };
     const root = new THREE.Group(), inner = new THREE.Group(), body = new THREE.Group(), carn = sp.diet === 'M' || sp.diet === 'Ry';
     root.add(inner); inner.add(body);
-    const kind = figures === 'bill' ? 'bill' : BIPED.includes(base) ? 'biped' : QUAD.includes(base) ? 'quad' : 'bill';
+    const kind = figures === 'bill' ? 'slab' : BIPED.includes(base) ? 'biped' : QUAD.includes(base) ? 'quad' : 'slab';
     const water = sp.cat === 'marine' || sp.loco === 'swim', fly = sp.loco === 'fly';
-    const parts = kind === 'biped' ? biped(body, M, o, carn) : kind === 'quad' ? quad(body, M, base, o, carn) : billboard(body, sp, H);
-    if (kind !== 'bill') {   // wyśrodkuj i przeskaluj bryłę do docelowej wysokości
+    const parts = kind === 'biped' ? biped(body, M, o, carn) : kind === 'quad' ? quad(body, M, base, o, carn) : billboard(body, sp, H, H * SLAB.depth);
+    if (kind !== 'slab') {   // wyśrodkuj i przeskaluj bryłę do docelowej wysokości
       const box = new THREE.Box3().setFromObject(body), sz = box.getSize(V(0, 0)), s = H / Math.max(sz.y, sz.x * LEN_K);
       body.position.set(-(box.min.x + box.max.x) / 2 * s, -box.min.y * s, 0); body.scale.setScalar(s);
     }
     const dir = side === 'a' ? 1 : -1, lift = fly ? 1.2 : water && theme.under ? .5 : water ? .15 : 0;
     root.position.set(-dir * GAP, lift, 0);
-    if (kind === 'bill') body.scale.x = dir; else root.rotation.y = side === 'a' ? -YAW : Math.PI + YAW;
+    root.rotation.y = side === 'a' ? -YAW : Math.PI + YAW;
     const shadow = new THREE.Mesh(new THREE.CircleGeometry(H * .45, 16), new THREE.MeshBasicMaterial({ color: 0, transparent: true, opacity: .18, depthWrite: false }));
     shadow.rotation.x = -Math.PI / 2; shadow.position.set(-dir * GAP, .02, 0); S.scene.add(shadow, root);
     const mats = []; root.traverse(c => c.material && mats.push(c.material));
@@ -300,7 +323,7 @@ window.Arena3D = (() => {
     for (const [name, n] of Object.entries(theme.props)) for (let i = 0; i < n; i++) PROPS[name](spot(), .7 + rnd());
     // rysunek gatunku jako daleka tablica (stado, latające, pływające); obracana do kamery w loop()
     const of = test => SPECIES.filter(test), body = l => of(s => l.includes(s.body));
-    const cutout = (pool, p, H, dir) => { const g = new THREE.Group(); g.position.copy(p); sc.add(g); S.faces.push(g); billboard(g, pick(pool), H).plane.scale.x = dir; return g; };
+    const cutout = (pool, p, H, dir) => { const g = new THREE.Group(); g.position.copy(p); g.scale.x = dir; sc.add(g); S.faces.push(g); billboard(g, pick(pool), H); return g; };
     const across = (pool, n, y, H, speed, bob) => { for (let i = 0; i < n; i++) { const dir = rnd() < .5 ? 1 : -1, y0 = y + rnd() * 2, g = cutout(pool, V((rnd() - .5) * 24, y0, -6 - rnd() * 8), H * (1 + rnd() * .6), dir);
       S.anims.push((dt, now) => { g.position.x += dir * dt * speed; g.position.y = y0 + bob * Math.sin(now / 600 + i); if (Math.abs(g.position.x) > 16) g.position.x = -dir * 16; }); } };
     const peak = (x, z, r, h, c) => { add(cone(r, h, 5), c, V(x, h / 2 - .5, z), null, rnd() * 6); add(cone(r * .32, h * .3, 5), SNOW, V(x, h * .85 - .5, z)); };
@@ -346,7 +369,7 @@ window.Arena3D = (() => {
   }
 
   /* ---------- start / stop ---------- */
-  // figures: 'model' bryły 3D | 'bill' rysunki 2D na scenie 3D; look: numer wyglądu terenu (testy), domyślnie losowy
+  // figures: 'model' bryły 3D | 'bill' wytłoczone rysunki 2D; look: numer wyglądu terenu (testy), domyślnie losowy
   async function start(grid, B, figures = 'model', look) {
     const host = grid.closest('.arena'), stage = Object.assign(document.createElement('div'), { className: 'stage3d' });
     host.classList.add('v3d'); grid.before(stage); stage.append(grid);
@@ -398,33 +421,31 @@ window.Arena3D = (() => {
   function animate(f, now, dt) {
     const a = f.anim, t = a ? Math.min(1, (now - a.t0) / a.ms) : 1, s = Math.sin(Math.PI * t);
     let dx = 0, dy = 0, dz = 0, rz = 0, ry = 0, sy = 1, flash = 0, glow = 0;
-    const lean = f.kind === 'bill' ? f.dir : 1;
     if (a) ({
-      lunge: () => { dx = f.dir * LUNGE * s; rz = -lean * .18 * s; if (f.jaw) f.jaw.rotation.z = -.5 * s; },
+      lunge: () => { dx = f.dir * LUNGE * s; rz = -.18 * s; if (f.jaw) f.jaw.rotation.z = -.5 * s; },
       hit: () => { dx = -f.dir * .35 * s; flash = 1 - t; },
       dodge: () => { dx = -f.dir * DODGE.back * s; dy = DODGE.up * s; ry = 2 * Math.PI * t; },
       guard: () => { sy = 1 - .16 * s; glow = s; },
-      ko: () => { rz = lean * Math.PI / 2 * t; dy = -f.lift * t; flash = 1 - t; },
+      ko: () => { rz = Math.PI / 2 * t; dy = -f.lift * t; flash = 1 - t; },
     })[a.k]();
     if (a && t >= 1 && a.k !== 'ko') f.anim = null;
     f.ko = f.ko || (a && a.k === 'ko' && t >= 1);
-    if (f.ko) { rz = lean * Math.PI / 2; dy = -f.lift; }
+    if (f.ko) { rz = Math.PI / 2; dy = -f.lift; }
     const tm = now / 1000 + f.phase;
     if (!f.ko) sy *= 1 + .025 * Math.sin(tm * 3);
     if (f.swim && !f.ko) dy += .12 * Math.sin(tm * 2);
     if (f.won) dy += Math.abs(Math.sin(tm * 5)) * .25;
     if (f.tail) f.tail.rotation.x = .08 * Math.sin(tm * 2);
     f.root.position.set(f.x0 + dx, f.lift + dy, dz); f.shadow.position.set(f.x0 + dx, .02, dz);
-    if (f.kind === 'bill') f.inner.rotation.z = rz; else [f.inner.rotation.x, f.inner.rotation.z] = a?.k === 'ko' || f.ko ? [rz, 0] : [0, rz];
+    [f.inner.rotation.x, f.inner.rotation.z] = a?.k === 'ko' || f.ko ? [rz, 0] : [0, rz];
     f.inner.scale.y = sy; f.inner.rotation.y = ry;
     const blk = Math.max(0, 1 - (now - (f.blockT || 0)) / SHIELD.flashMs);   // błysk bańki przy zablokowanym ciosie
     f.shield.material.opacity = f.ko ? 0 : f.guarding ? SHIELD.alpha * (1 + .2 * Math.sin(tm * 6)) : blk * .8;
     f.shield.visible = f.shield.material.opacity > .01;
     for (const m of f.mats) m.emissive ? m.emissive.setRGB(flash * .8, glow * .35, 0) : m.color.setRGB(1, 1 - flash * .6, 1 - flash * .6);
-    if (f.kind === 'bill') f.root.quaternion.copy(S.camera.quaternion);
     if (a?.k === 'ko' || f.ko) {   // przewrócony obraca się wokół stóp → podnieś, żeby leżał NA ziemi, nie pod nią
       f.root.updateMatrixWorld(true);
-      f.root.position.y -= Math.min(0, new THREE.Box3().setFromObject(f.inner).min.y);
+      f.root.position.y -= Math.min(0, new THREE.Box3().setFromObject(f.inner).min.y - GROUND_EPS);
     }
   }
   function loop(now) {

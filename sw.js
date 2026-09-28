@@ -1,7 +1,7 @@
 /* Offline: pliki aplikacji z pamięci podręcznej, w tle odświeżane z sieci (stale-while-revalidate).
    Zmień VERSION przy wydaniu, żeby wyczyścić stare pliki. */
 importScripts('js/voices.js');   // SOUNDS: lista nagrań do pamięci offline
-const VERSION = 'dino-v5';
+const VERSION = 'dino-v6';
 const CORE = ['./', 'index.html', 'css/app.css', 'js/species.js', 'js/artspec.js', 'js/art.js', 'js/battle.js', 'js/voices.js', 'js/arena3d.js', 'vendor/three.min.js', 'js/app.js', 'manifest.json', 'icon.svg',
   ...Object.entries(SOUNDS).flatMap(([k, [n]]) => Array.from({ length: n }, (_, i) => `${SOUND_DIR}${k}_${i}.mp3`))];
 self.addEventListener('install', e => e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting())));
