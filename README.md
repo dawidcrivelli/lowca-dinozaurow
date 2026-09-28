@@ -20,6 +20,7 @@ Wersja Pokémon [Łowcy Dinozaurów](https://dawidcrivelli.github.io/lowca-dinoz
   (siatka i karta Pokémona); dotknij karty lub obrazka → pełny ekran.
 - **Walka kartami** (🃏 w nagłówku) — uproszczone zasady Battle Academy: drużyna 3 Pokémonów Podstawowych, co turę
   energia, ewolucja (tylko w złapane!), odwrót, ataki z prawdziwym kosztem i obrażeniami, słabość ×2, 3 nagrody (ex daje 2).
+  Efekty z opisu ataku: stany (☠️ 🔥 💤 ⚡ 💫, jak w grze), leczenie, obrażenia na ławce i w siebie, zrzut energii.
 - **Oryginalne okrzyki** z Red/Blue.
 - **Tryb rodzica** — przytrzymaj ⚙️ przez sekundę: ukrywanie Pokémonów, zapis/odczyt pliku, reset.
 

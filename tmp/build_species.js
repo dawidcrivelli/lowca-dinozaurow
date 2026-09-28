@@ -13,13 +13,26 @@ const clean = s => s.replace(/[\f\n­]+/g, ' ').replace(/\s+/g, ' ').trim();
 const rarity = (sp, bst) => sp.is_legendary || sp.is_mythical ? 4 : bst >= 480 ? 3 : bst >= 380 ? 2 : 1;
 
 /* karta z zestawu „151” (numer karty = numer w Pokédexie), dla reszty z tmp/pick_cards.js: tylko to, czego używa js/cards.js
-   img obrazek spoza „151” · t typ energii · st etap 0/1/2 · ex (2 nagrody) · weak/res typ · ret koszt odwrotu · atk [nazwa, koszt „LLC”, obrażenia, „”|„+”|„×”] */
+   img obrazek spoza „151” · t typ energii · st etap 0/1/2 · ex (2 nagrody) · weak/res typ · ret koszt odwrotu · atk [nazwa, koszt „LLC”, obrażenia, „”|„+”|„×”, fx?]
+   fx: efekty z opisu ataku, których używa js/cards.js: cond stan rywala (coin: tylko przy orle) · fail reszka = nic · heal · bench obrażenia na ławce · self w siebie · disc zrzut energii
+   Reszta opisów (talia, ręka, stadion…) pomijana. */
+const COND = { Poisoned: 'poison', Burned: 'burn', Paralyzed: 'paralyze', Asleep: 'sleep', Confused: 'confuse' };
+function cardFx(t = '') {
+  const num = re => +(t.match(re)?.[1]) || undefined, c = t.match(/(?:opponent's Active Pokémon|Defending Pokémon) is now (\w+)/)?.[1];
+  const fx = { cond: COND[c], coin: COND[c] && /^Flip a coin\. If heads, (your opponent's Active|the Defending) Pokémon is now/.test(t) ? 1 : 0,
+    fail: /^Flip a coin\. If tails, this attack does nothing\.?$/.test(t) ? 1 : 0, heal: num(/Heal (\d+) damage from this Pokémon/),
+    bench: num(/(\d+) damage to 1 of your opponent's Benched Pokémon/), self: num(/does (\d+) damage to itself/),
+    disc: /Discard all Energy from this Pokémon/.test(t) ? 99 : num(/Discard (\d+) (?:\w+ )?Energy from this Pokémon/) || (/Discard an? (?:\w+ )?Energy from this Pokémon/.test(t) ? 1 : 0) };
+  const out = Object.fromEntries(Object.entries(fx).filter(([, v]) => v));
+  return Object.keys(out).length ? out : undefined;
+}
 const ENERGY = { Grass: 'G', Fire: 'R', Water: 'W', Lightning: 'L', Psychic: 'P', Fighting: 'F', Darkness: 'D', Metal: 'M', Colorless: 'C', Dragon: 'N' };
 const ATK_PL = (f => fs.existsSync(f) ? JSON.parse(fs.readFileSync(f)) : {})(path.join(__dirname, 'attacks_pl.json'));
 const TCG = Object.fromEntries(load('tcg_sv3pt5').map(c => [c.number, c]));
 function card(i, name) {
   const c = i <= LAST ? TCG[i] : pick(i, name), hp = +c.hp;
-  let atk = (c.attacks || []).filter(a => a.damage).map(a => [ATK_PL[a.name] || a.name, a.cost.map(e => ENERGY[e]).join(''), +a.damage.match(/\d+/)[0], a.damage.replace(/\d+/, '')]);
+  let atk = (c.attacks || []).filter(a => a.damage || cardFx(a.text)?.cond || cardFx(a.text)?.heal)   // bez obrażeń: tylko ze stanem albo leczeniem
+    .map(a => [ATK_PL[a.name] || a.name, a.cost.map(e => ENERGY[e]).join(''), +(a.damage.match(/\d+/)?.[0] || 0), a.damage.replace(/\d+/, ''), cardFx(a.text)].filter(x => x !== undefined));
   if (!atk.length) atk = [[ATK_PL.Tackle || 'Tackle', 'CC', Math.max(10, Math.round(hp / 40) * 10), '']];   // same zdolności (Magikarp, Mew ex…) → prosty atak
   return { img: i <= LAST ? undefined : c.images.small, hp, t: ENERGY[c.types[0]], st: ['Basic', 'Stage 1', 'Stage 2'].findIndex(s => c.subtypes.includes(s)), ex: c.subtypes.includes('ex') || undefined,
     weak: ENERGY[c.weaknesses?.[0]?.type], res: ENERGY[c.resistances?.[0]?.type], ret: c.convertedRetreatCost || 0, atk };

@@ -471,6 +471,7 @@ const CPU_MS = 900;
 const basicsCaught = () => roster().filter(s => s.card.st === 0);
 const cpuTeam = n => { const p = SPECIES.filter(s => s.card.st === 0 && !s.card.ex && !s.legend); return Array.from({ length: n }, () => p[Math.floor(Math.random() * p.length)]); };
 const cost = c => [...c].map(e => ENERGY_ICON[e]).join('');
+const fxIcons = fx => [fx.cond && COND_ICON[fx.cond], fx.heal && '💚', fx.bench && '🎯', fx.self && '💢'].filter(Boolean).join('');   // efekty ataku na przycisku
 function openDuel(preId) {
   stopBattle();
   const pre = byId(preId);
@@ -494,11 +495,11 @@ function startDuel() {
 const cardImg = m => `<img src="${CARD_URL(m.sp)}" alt="${esc(m.sp.name)}">`;
 function sideHTML(who) {
   const S = K.D[who], m = S.team[0], mine = who === 'me', myTurn = mine && K.D.who === 'me' && !K.D.winner;
-  const canRetreat = myTurn && !S.did.retreat && m.en >= m.sp.card.ret;
+  const canRetreat = myTurn && !S.did.retreat && m.en >= m.sp.card.ret && canAct(m);
   const left = Math.max(0, m.sp.card.hp - m.dmg), pct = 100 * left / m.sp.card.hp;
   return `<div class="d-active" id="da-${who}">${cardImg(m)}
       <div class="d-hp"><i style="width:${pct}%;background-position:${pct}% 0"></i></div>
-      <div class="d-info"><span>❤️ ${left}/${m.sp.card.hp}</span><span>${ENERGY_ICON[m.sp.card.t].repeat(m.en) || '—'}</span></div></div>
+      <div class="d-info"><span>❤️ ${left}/${m.sp.card.hp} ${conds(m).map(c => COND_ICON[c]).join('')}</span><span>${ENERGY_ICON[m.sp.card.t].repeat(m.en) || '—'}</span></div></div>
     <div class="d-side">
       <div class="d-prizes">${mine ? '🙂 Ty' : '🤖 Komputer'} · 🎴 ${S.prizes}/${PRIZES}</div>
       <div class="d-bench">${S.team.slice(1).map((b, i) => `<button ${mine ? `data-dretreat="${i + 1}"` : 'disabled'} class="${mine && canRetreat ? 'can' : ''}" title="Odwrót">${cardImg(b)}${b.en ? `<small>${ENERGY_ICON[b.sp.card.t].repeat(b.en)}</small>` : ''}</button>`).join('')}</div>
@@ -513,7 +514,8 @@ function actsHTML() {
   const evo = evolutionsOf(D, s => isCaught(s.id)), missing = SPECIES.filter(s => s.from === m.sp.id && !isCaught(s.id));
   return `<button class="btn" data-denergy="1" ${S.did.energy ? 'disabled' : ''}>${ENERGY_ICON[m.sp.card.t]} Energia</button>
     ${evo.map(s => `<button class="btn" data-devolve="${s.id}">🧬 ${esc(s.name)}</button>`).join('')}
-    ${m.sp.card.atk.map(([n, c, dmg, kind], k) => `<button class="btn amber" data-dattack="${k}" ${canPay(m, c) ? '' : 'disabled'}>${esc(n)} ${dmg}${kind}<small>${cost(c)}</small></button>`).join('')}
+    ${m.sp.card.atk.map(([n, c, dmg, kind, fx = {}], k) => `<button class="btn amber" data-dattack="${k}" ${canPay(m, c) && canAct(m) ? '' : 'disabled'}>${esc(n)} ${dmg || ''}${kind} ${fxIcons(fx)}<small>${cost(c)}</small></button>`).join('')}
+    ${canAct(m) ? '' : `<p class="m-lat">${COND_ICON[m.cond]} ${esc(m.sp.name)} nie może atakować ani uciekać.</p>`}
     <button class="btn ghost" data-dend="1">⏭️ Koniec tury</button>
     ${missing.length && !evo.length && !S.did.evolve ? `<p class="m-lat">🧬 Złap ${missing.map(s => s.name).join(' / ')}, żeby ewoluować!</p>` : ''}`;
 }
@@ -531,12 +533,9 @@ function duelEvent(ev, who) {
   K.log.push(ev.text); renderDuel();
   const att = K.D[who].team[0];
   if (ev.evolve) cry(att.sp, 'call');
-  if (ev.attack) {
-    cry(att.sp, 'attack'); $(`#da-${who}`)?.classList.add('go');
-    const other = who === 'me' ? 'cpu' : 'me';
-    if (ev.dmg) { later(150, () => fx('hit')); $(`#da-${other}`)?.classList.add('hit'); navigator.vibrate?.(18); }
-    if (ev.ko) later(300, () => cry(ev.ko, 'ko'));
-  }
+  if (ev.attack) { cry(att.sp, 'attack'); $(`#da-${who}`)?.classList.add('go'); }
+  if (ev.dmg || ev.self) { later(150, () => fx('hit')); $(`#da-${ev.self ? who : ev.on}`)?.classList.add('hit'); navigator.vibrate?.(18); }
+  ev.ko?.forEach((sp, i) => later(300 + 400 * i, () => cry(sp, 'ko')));
   return true;
 }
 function cpuPlays() {
@@ -554,9 +553,11 @@ function playerDuel(d) {
   if (d.devolve) duelEvent(evolve(D, byId(d.devolve)), 'me');
   if (d.dretreat) duelEvent(retreat(D, +d.dretreat), 'me');
   if (d.dattack && duelEvent(cardAttack(D, +d.dattack), 'me') || d.dend) {
-    endTurn(D);
-    if (D.winner) return later(600, () => { renderDuel(); finishDuel(); });
-    later(700, () => { renderDuel(); cpuPlays(); });
+    const evs = endTurn(D);   // między turami: trucizna, oparzenie, sen…
+    evs.forEach((ev, i) => later(CPU_MS * (i + 1), () => duelEvent(ev, ev.on)));
+    const t = CPU_MS * evs.length + 700;
+    if (D.winner) return later(t, () => { renderDuel(); finishDuel(); });
+    later(t, () => { renderDuel(); cpuPlays(); });
   }
 }
 el.modalBody.addEventListener('click', e => {
