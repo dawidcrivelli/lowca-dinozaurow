@@ -74,5 +74,11 @@
  },
  {
   "js": "JSON.stringify(Object.keys(JSON.parse(localStorage.getItem('dinoTracker.v2')).caught))"
+ },
+ {
+  "js": "document.getElementById(\"ebName\").value=\"Ultrazaur\";document.getElementById(\"ebArch\").value=\"cerat\";document.querySelector(\"[data-eb=add]\").click()",
+  "wait": 500,
+  "shot": "custom.png",
+  "h": 1100
  }
 ]

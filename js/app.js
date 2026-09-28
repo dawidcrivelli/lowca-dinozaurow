@@ -62,7 +62,7 @@ const refreshList = () => { const rm = new Set(DB.removed); LIST = SPECIES.conca
 refreshList();
 const byId = id => LIST.find(s => s.id === id);
 const isCaught = id => !!DB.caught[id];
-const art = (sp, mode = 'color') => sp.custom ? drawCustom(sp.arch, {}, mode) : drawSpecies(sp.id, mode);
+const art = (sp, mode = 'color') => sp.custom ? drawCustom(sp.arch, sp.opts, mode) : drawSpecies(sp.id, mode);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const DIETS = { M: 'Mięsożerca', R: 'Roślinożerca', W: 'Wszystkożerca', Ry: 'Rybożerca', P: 'Planktonożerca', O: 'Owadożerca' };
 const EPOCHS = [[0.0117, 'Holocen'], [2.58, 'Plejstocen'], [5.33, 'Pliocen'], [23.03, 'Miocen'], [33.9, 'Oligocen'], [56, 'Eocen'], [66, 'Paleocen'],
@@ -442,16 +442,23 @@ function removeSpecies(id) {
 }
 /* własny zwierzak: archetyp rysunku → ciało do walki, ruch, dieta, broń */
 const ARCH_BODY = {
-  thero: ['theropod', 'biped', 'M', { bite: 2 }], sauro: ['sauropod', 'quad', 'R', { tail: 1 }], cerat: ['ceratopsian', 'quad', 'R', { horn: 2 }],
-  armor: ['ankylosaur', 'quad', 'R', { tail: 2, armor: 3 }], stego: ['stegosaur', 'quad', 'R', { tail: 2, armor: 1 }], hadro: ['hadrosaur', 'quad', 'R', {}],
-  dome: ['pachy', 'biped', 'R', { ram: 2 }], ptero: ['pterosaur', 'fly', 'Ry', { bite: 1 }], plesio: ['marine-long', 'swim', 'Ry', { bite: 1 }],
-  mosa: ['marine', 'swim', 'M', { bite: 2 }], ichthyo: ['marine', 'swim', 'Ry', { bite: 1 }], croc: ['croc', 'amphib', 'M', { bite: 2, armor: 1 }],
-  mammal: ['mammal', 'quad', 'W', { bite: 1 }], fish: ['fish', 'swim', 'M', { bite: 1 }], bug: ['bug', 'crawl', 'M', { claw: 1 }], turtle: ['turtle', 'swim', 'W', { armor: 3 }],
+  thero: ['theropod', 'biped', 'M', { bite: 2 }], raptor: ['smalltheropod', 'biped', 'M', { claw: 2, bite: 1 }], ornimim: ['smalltheropod', 'biped', 'W', {}],
+  tbird: ['theropod', 'biped', 'M', { bite: 2 }], dragon: ['theropod', 'biped', 'M', { bite: 2, claw: 1 }], prosauro: ['sauropod', 'biped', 'R', { claw: 1 }],
+  sauro: ['sauropod', 'quad', 'R', { tail: 1 }], cerat: ['ceratopsian', 'quad', 'R', { horn: 2 }], armor: ['ankylosaur', 'quad', 'R', { tail: 2, armor: 3 }],
+  stego: ['stegosaur', 'quad', 'R', { tail: 2, armor: 1 }], hadro: ['hadrosaur', 'quad', 'R', {}], orni: ['hadrosaur', 'biped', 'R', {}],
+  dome: ['pachy', 'biped', 'R', { ram: 2 }], ptero: ['pterosaur', 'fly', 'Ry', { bite: 1 }], bird: ['pterosaur', 'fly', 'W', { claw: 1 }],
+  plesio: ['marine-long', 'swim', 'Ry', { bite: 1 }], mosa: ['marine', 'swim', 'M', { bite: 2 }], ichthyo: ['marine', 'swim', 'Ry', { bite: 1 }],
+  shark: ['marine', 'swim', 'M', { bite: 3 }], whale: ['marine', 'swim', 'M', { bite: 2 }], fish: ['fish', 'swim', 'M', { bite: 1 }],
+  croc: ['croc', 'amphib', 'M', { bite: 2, armor: 1 }], lizard: ['reptile', 'quad', 'M', { bite: 1 }], snake: ['reptile', 'crawl', 'M', { squeeze: 2 }],
+  turtle: ['turtle', 'swim', 'W', { armor: 3 }], sail: ['synapsid', 'quad', 'M', { bite: 1 }], synap: ['synapsid', 'quad', 'M', { bite: 1 }],
+  amphib: ['reptile', 'amphib', 'M', { bite: 1 }], bug: ['bug', 'crawl', 'W', {}], ammo: ['bug', 'swim', 'M', {}], scorp: ['bug', 'swim', 'M', { claw: 2 }],
+  mammal: ['mammal', 'quad', 'M', { bite: 2 }], cat: ['mammal', 'quad', 'M', { bite: 2, claw: 1 }], ele: ['mammal', 'quad', 'R', { horn: 2 }],
+  sloth: ['mammal', 'quad', 'R', { claw: 2 }],
 };
 const SIZES = [['Mały jak kura', 3], ['Jak człowiek', 80], ['Jak słoń', 5000], ['Olbrzym', 30000]];
 function addSpecies(name, latin, arch, cat, kg) {
   const [body, loco, diet, weapons] = ARCH_BODY[arch] || ['reptile', 'quad', 'W', {}];
-  const sp = { id: 'own-' + norm(name) + '-' + Date.now().toString(36), name, latin, arch, cat, group: 'own', body, loco, diet, weapons, kg: +kg,
+  const sp = { id: 'own-' + norm(name) + '-' + Date.now().toString(36), name, latin, arch, opts: { p: Math.floor(Math.random() * PAL.length) }, cat, group: 'own', body, loco, diet, weapons, kg: +kg,
     kmh: 20, social: 'solo', rarity: 2, custom: true, hint: 'Ten zwierzak został dodany przez rodzica', fact: 'Dopisaliście go sami — wymyślcie o nim własną ciekawostkę!' };
   DB.added.push(sp); save(); refreshList(); renderAll();
   return sp;

@@ -15,7 +15,7 @@ html = html.replace(/<link rel="stylesheet" href="css\/app\.css">/,
   '<style>\n' + read('css/app.css') + '\n</style>');
 
 // JS (kolejność jak w index.html)
-html = html.replace(/[ \t]*<script src="js\/(data|art|app)\.js"><\/script>\n?/g,
+html = html.replace(/[ \t]*<script src="js\/(\w+)\.js"><\/script>\n?/g,
   (_, name) => '<script>\n' + read('js/' + name + '.js') + '\n</script>\n');
 
 if (noFonts) {
