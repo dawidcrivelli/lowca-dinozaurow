@@ -248,7 +248,7 @@ el.modalBody.addEventListener('click', e => { const z = e.target.closest('[data-
 const openCard = sp => openModal(isCaught(sp.id) ? caughtCard(sp) : hintCard(sp));
 
 /* paski statystyk z ikonami – czytelne bez umiejętności czytania */
-const STAT_ICONS = [['hp', '❤️', 'Życie', 250], ['attack', '👊', 'Atak', 160], ['defense', '🛡️', 'Obrona', 160], ['speed', '💨', 'Szybkość', 150]];
+const STAT_ICONS = [['hp', '❤️', 'Życie', 700], ['attack', '👊', 'Atak', 200], ['defense', '🛡️', 'Obrona', 200], ['speed', '💨', 'Szybkość', 200]];   // statystyki na poziomie 50 (js/battle.js)
 const statBars = st => `<div class="sbars">${STAT_ICONS.map(([k, ico, lbl, max]) =>
   `<div class="sbar" title="${lbl}"><span>${ico}</span><i><b style="width:${Math.round(100 * st[k] / max)}%"></b></i><em>${st[k]}</em></div>`).join('')}</div>`;
 const record = id => DB.rec[id] || { w: 0, l: 0 };
@@ -382,7 +382,7 @@ function fighterHTML(p, side) {
   return `<div class="fighter side-${side}" id="f-${side}">
     <div class="art">${art(p.s)}</div><div class="nm">${esc(p.name)}</div>
     <div class="hp"><i id="hp-${side}"></i></div><div class="hpn" id="hpn-${side}">${p.hp}/${p.hp0}</div>
-    <span class="dmg" id="dmg-${side}"></span></div>`;
+    <span class="stb" id="st-${side}"></span><span class="dmg" id="dmg-${side}"></span></div>`;
 }
 function startFight() {
   stopBattle(); audio();
@@ -390,7 +390,7 @@ function startFight() {
   openModal(`<div class="m-body arena">
     <div class="arena-banner">${B.arena.icon} ${esc(B.arena.name)}<small>${esc(B.arena.desc)}</small></div>
     <div class="fight-grid">${fighterHTML(B.a, 'a')}<div class="ar-vs">VS</div>${fighterHTML(B.b, 'b')}</div>
-    <div class="moves" id="moves" hidden>${Object.entries(MOVES).map(([k, m]) => `<button class="move" data-move="${k}">${m.icon}<small>${m.label}</small></button>`).join('')}</div>
+    <div class="moves" id="moves" hidden></div>
     <div class="battle-log" id="log"><div><strong>Runda 1.</strong> Walka się zaczyna!</div></div>
     <div class="battle-result" id="result" hidden></div>
   </div>`, 'wide');
@@ -399,39 +399,53 @@ function startFight() {
   play ? later(500, askMove) : later(500, autoStep);
 }
 function autoStep() { showEvents(playRound(A.B), () => A.B.winner ? finish() : autoStep()); }
-function askMove() { $('#moves').hidden = false; }
+/* 4 ruchy gracza w kolorach typów, z PP; w turze ładowania / odpoczynku nie ma wyboru */
+function askMove() {
+  const me = A.B.a;
+  if (me.charging || me.recharge) return playerMove(0);
+  const box = $('#moves'); box.hidden = false;
+  box.innerHTML = me.moves.map(({ m, pp }, i) => `<button class="move" data-move="${i}" style="--tc:${TYPES[m.t][2]}" ${pp ? '' : 'disabled'}>
+    <b>${TYPES[m.t][1]} ${esc(m.n)}</b><small>${m.p ? `moc ${m.p}` : 'efekt'} · PP ${pp}/${m.pp}</small></button>`).join('');
+}
 function playerMove(move) {
   if (!A.B || A.B.winner) return;
   $('#moves').hidden = true;
-  showEvents(playRound(A.B, move), () => A.B.winner ? finish() : askMove());
+  showEvents(playRound(A.B, +move), () => A.B.winner ? finish() : askMove());
 }
-/* odtwarza zdarzenia rundy z animacją: wypad atakującego, wstrząs trafionego, pasek życia, liczba obrażeń */
+/* odtwarza zdarzenia rundy: dźwięk, wypad atakującego, wstrząs trafionego, napis nad głową, paski życia i stany z ev.hp / ev.st */
+const STEP_MS = 620;
+function floatText(side, text, cls = '') {
+  const d = $(`#dmg-${side}`); d.textContent = text; d.className = 'dmg ' + cls; void d.offsetWidth; d.classList.add('show');
+}
 function showEvents(evs, done) {
-  const B = A.B, side = id => id === B.a.id ? 'a' : 'b';
-  evs.forEach((ev, i) => later(i * 560, () => {
+  const B = A.B, who = k => B[k].s, wet = B.arena === ARENAS.deep;   // pod wodą: plusk i bąble zamiast uderzeń i świstu
+  evs.forEach((ev, i) => later(i * STEP_MS, () => {
     window.Arena3D?.event(ev);
-    if (ev.att) {
-      const as = side(ev.att), ds = as === 'a' ? 'b' : 'a', f = $(`#f-${as}`), g = $(`#f-${ds}`), who = id => (id === B.a.id ? B.a : B.b).s;
-      const wet = B.arena === ARENAS.deep;   // pod wodą: plusk i bąble zamiast uderzeń i świstu
-      if (ev.move !== 'guard') cry(who(ev.att), 'attack');
-      if (ev.hpDef === 0) later(250, () => cry(who(ev.def), 'ko'));
-      f.classList.remove('attacking'); void f.offsetWidth; f.classList.add('attacking');
-      if (ev.damage) { g.classList.remove('hit'); void g.offsetWidth; g.classList.add('hit'); later(150, () => fx(wet ? 'splash' : 'hit')); navigator.vibrate?.(18); }
-      else if (ev.heal) blip(880, .08); else fx(wet ? 'bubble' : 'whoosh');
-      const dmg = $(`#dmg-${ev.heal ? as : ds}`);
-      dmg.textContent = ev.damage ? `−${ev.damage}` : ev.heal ? `+${ev.heal}` : ev.dodge ? 'unik!' : 'pudło';
-      dmg.className = 'dmg show ' + (ev.heal ? 'heal' : ''); void dmg.offsetWidth;
-      for (const p of [B.a, B.b]) {
-        const s = side(p.id), pct = 100 * p.hp / p.hp0;
-        Object.assign($(`#hp-${s}`).style, { width: pct + '%', backgroundPosition: `${pct}% 0` });
-        $(`#hpn-${s}`).textContent = `${p.hp}/${p.hp0}`;
+    if (ev.as) {
+      const { as, ds } = ev, f = $(`#f-${as}`), g = $(`#f-${ev.tick || ev.selfHit ? as : ds}`), on = ev.on || ds;
+      if (ev.m && !ev.charge) { cry(who(as), 'attack'); f.classList.remove('attacking'); void f.offsetWidth; f.classList.add('attacking'); }
+      if (ev.damage) { g.classList.remove('hit'); void g.offsetWidth; g.classList.add('hit'); later(150, () => fx(wet ? 'splash' : 'hit')); navigator.vibrate?.(18);
+        floatText(ev.tick || ev.selfHit ? as : ds, `−${ev.damage}`); }
+      else if (ev.heal || ev.drain) { floatText(as, `+${ev.heal || ev.drain}`, 'heal'); blip(880, .08); }
+      else if (ev.recoil) floatText(as, `−${ev.recoil}`);
+      else if (ev.miss) { floatText(as, 'pudło'); fx(wet ? 'bubble' : 'whoosh'); }
+      else if (ev.status) floatText(on, STATUS[ev.status][0], 'icon');
+      else if (ev.stat) floatText(on, ev.n > 0 ? '⬆️' : ev.n < 0 ? '⬇️' : '·', 'icon');
+      else if (ev.skip) floatText(as, { sleep: '💤', freeze: '🧊', paralysis: '⚡', flinch: '😖', recharge: '😮‍💨' }[ev.skip], 'icon');
+      else if (ev.charge) { floatText(as, '✨', 'icon'); blip(700, .06); }
+      for (const k of ['a', 'b']) {
+        const p = B[k], hp = ev.hp[k], pct = 100 * hp / p.hp0;
+        if (hp === 0 && $(`#hpn-${k}`).textContent !== `0/${p.hp0}`) later(250, () => cry(who(k), 'ko'));
+        Object.assign($(`#hp-${k}`).style, { width: pct + '%', backgroundPosition: `${pct}% 0` });
+        $(`#hpn-${k}`).textContent = `${hp}/${p.hp0}`;
+        $(`#st-${k}`).textContent = ev.st[k] ? STATUS[ev.st[k]][0] : '';
       }
     }
     const log = $('#log');
     log.insertAdjacentHTML('beforeend', `<div><strong>Runda ${ev.round}.</strong> ${esc(ev.text)}</div>`);
     log.scrollTop = log.scrollHeight;
   }));
-  later(evs.length * 560 + 150, done);
+  later(evs.length * STEP_MS + 150, done);
 }
 function finish() {
   const { winner: w, a, b } = A.B, l = w === a ? b : a;

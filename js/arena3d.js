@@ -13,12 +13,12 @@ window.Arena3D = (() => {
   const ok = (() => { try { return !!document.createElement('canvas').getContext('webgl'); } catch { return false; } })();
   const GAP = 2.2, YAW = 0.35;                    // połowa dystansu między zawodnikami; obrót 3/4 do kamery
   const H_MAX = 2.4, RATIO_MIN = 0.5;              // wysokość większego; najmniejszy ułamek
-  const SHIELD = { color: 0x2FA8FF, alpha: .38, pad: .62, flashMs: 500 };  // bańka obrony: kolor, przezroczystość, zapas wokół ciała
   const DODGE = { back: .9, up: 1.1 };  // unik: odskok do tyłu i w górę z obrotem
   const CV_W = 400, CV_H = 400;  // płótno obrazka (grafiki są kwadratowe)
   const SLAB = { depth: .035, cell: 4, inset: 3, shade: .62 };  // wytłoczony rysunek: grubość × wysokość, komórka konturu [px], próbka koloru w głąb [komórki], jasność boków
   const GROUND_EPS = .03;  // leżący nad gruntem, nie w nim (inaczej migocze)
-  const ANIM_MS = 440, HIT_DELAY = 170, BIG_HIT = 24, SHAKE = 0.22, LUNGE = 0.9;
+  const ANIM_MS = 440, HIT_DELAY = 170, BIG_HIT = 60, SHAKE = 0.22, LUNGE = 0.9;
+  const SHOT_MS = 380, BOLT_TOP = 7, BADGE = .55;   // lot pocisku; wysokość, z której spada piorun; wielkość ikony stanu
   const ORBIT = 0.32, ORBIT_MS = 9000, CAM_Y = 2.7, CAM_D = 7.8, LOOK_Y = 1.3;
   const PIXEL_RATIO_MAX = 2, SHADOW_MAP = 1024;
   /* Każdy teren z battle.js ma kilka wyglądów (biomów), losowanych na walkę.
@@ -116,11 +116,8 @@ window.Arena3D = (() => {
     const shadow = new THREE.Mesh(new THREE.CircleGeometry(H * .45, 16), new THREE.MeshBasicMaterial({ color: 0, transparent: true, opacity: .18, depthWrite: false }));
     shadow.rotation.x = -Math.PI / 2; shadow.position.set(-dir * GAP, .02, 0); S.scene.add(shadow, root);
     const mats = []; root.traverse(c => c.material && mats.push(c.material));
-    root.updateMatrixWorld(true);   // bańka obrony: elipsoida wokół ciała, poza `mats` (nie miga przy trafieniu)
-    const bb = new THREE.Box3().setFromObject(inner), bz = bb.getSize(V(0, 0)), w = Math.max(bz.x, bz.z) * SHIELD.pad;
-    const shield = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), new THREE.MeshBasicMaterial({ color: SHIELD.color, transparent: true, opacity: 0, depthWrite: false }));
-    shield.position.copy(root.worldToLocal(bb.getCenter(V(0, 0)))); shield.scale.set(w, bz.y * SHIELD.pad, w); root.add(shield);
-    return { root, inner, shadow, shield, dir, lift, mats, x0: -dir * GAP, anim: null, ko: false, won: false, phase: Math.random() * 6, swim: water || fly };
+    const badge = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthTest: false })); badge.scale.setScalar(BADGE); badge.visible = false; S.scene.add(badge);
+    return { root, inner, shadow, badge, H, dir, lift, mats, x0: -dir * GAP, anim: null, ko: false, won: false, phase: Math.random() * 6, swim: water || fly };
   }
 
   /* ---------- teren ---------- */
@@ -274,7 +271,8 @@ window.Arena3D = (() => {
     let seed = 1 + Math.floor(Math.random() * 2147483646); const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
     const cube = s => Math.cbrt(s.kg || 100), big = Math.max(cube(B.a.s), cube(B.b.s));
     const Hof = s => H_MAX * Math.max(RATIO_MIN, cube(s) / big);
-    S.byId = { [B.a.id]: fighter(B.a.s, 'a', Hof(B.a.s), theme), [B.b.id]: fighter(B.b.s, 'b', Hof(B.b.s), theme) };
+    S.side = { a: fighter(B.a.s, 'a', Hof(B.a.s), theme), b: fighter(B.b.s, 'b', Hof(B.b.s), theme) };
+    S.byId = { [B.a.id]: S.side.a, [B.b.id]: S.side.b };
     const sea = [B.a, B.b].map((p, i) => p.s.types.includes('water') ? (i ? 1 : -1) : 0).find(Boolean) || 0;
     terrain(theme, rnd, key === 'coast' ? sea : 0);
     S.ro = new ResizeObserver(() => { const { clientWidth: w, clientHeight: h } = stage; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); });
@@ -291,12 +289,53 @@ window.Arena3D = (() => {
   /* ---------- animacje ---------- */
   const play = (f, k, ms = ANIM_MS) => { if (!f.ko) f.anim = { k, t0: performance.now(), ms }; };
   const soon = (ms, fn) => S.todo.push([performance.now() + ms, fn]);
-  function burst(f, n, color) {
-    const m = new THREE.MeshBasicMaterial({ color }), geo = new THREE.IcosahedronGeometry(.09, 0), p = f.root.position;
+  const rn = (k = 1) => (Math.random() - .5) * k;
+  const mid = f => V(f.root.position.x, f.lift + f.H * .45, 0);   // środek ciała
+  // chmura cząstek wokół f; g: grawitacja (ujemna = unoszą się, np. ogień, leczenie), up: prędkość w górę, life: [s]
+  function burst(f, n, color, { g = 6, up = 1, life = .6, size = .09 } = {}) {
+    const m = new THREE.MeshBasicMaterial({ color }), geo = new THREE.IcosahedronGeometry(size, 0), c = mid(f);
     for (let i = 0; i < n; i++) {
-      const o = new THREE.Mesh(geo, m); o.position.set(p.x + (Math.random() - .5) * .8, .2 + p.y + Math.random() * .8, (Math.random() - .5) * .8);
-      S.scene.add(o); S.parts.push({ o, v: V((Math.random() - .5) * 3, 1 + Math.random() * 2.5, (Math.random() - .5) * 2), t: 0 });
+      const o = new THREE.Mesh(geo, m); o.position.set(c.x + rn(.8), c.y + rn(f.H * .8), rn(.8));
+      S.scene.add(o); S.parts.push({ o, v: V(rn(3), up * (1 + Math.random() * 2.5), rn(2)), t: 0, g, life });
     }
+  }
+  // pocisk od a do b (łuk), po dolocie → done(); z ogonem cząstek
+  function shoot(a, b, color, done, { size = .22, ms = SHOT_MS, arc = .6, from } = {}) {
+    const o = new THREE.Mesh(new THREE.IcosahedronGeometry(size, 1), new THREE.MeshBasicMaterial({ color })), p0 = from || mid(a), p1 = mid(b), t0 = performance.now();
+    S.scene.add(o);
+    S.anims.push(function fly(dt, now) {
+      const t = Math.min(1, (now - t0) / ms); o.position.lerpVectors(p0, p1, t).y += arc * Math.sin(Math.PI * t);
+      if (Math.random() < .6) { const q = new THREE.Mesh(o.geometry, o.material); q.position.copy(o.position); q.scale.setScalar(.5); S.scene.add(q); S.parts.push({ o: q, v: V(rn(.5), rn(.5), rn(.5)), t: 0, g: 0, life: .25 }); }
+      if (t < 1) return;
+      S.scene.remove(o); S.anims.splice(S.anims.indexOf(fly), 1); done();
+    });
+  }
+  // krótkotrwały obiekt: znika po ms, co klatkę step(t 0…1)
+  function flashObj(o, ms, step) {
+    const t0 = performance.now(); S.scene.add(o);
+    S.anims.push(function f(dt, now) { const t = Math.min(1, (now - t0) / ms); step?.(t); if (t >= 1) { S.scene.remove(o); S.anims.splice(S.anims.indexOf(f), 1); } });
+  }
+  // piorun z nieba: łamana z walców
+  function bolt(f, color) {
+    const g = new THREE.Group(), m = new THREE.MeshBasicMaterial({ color, transparent: true }), c = mid(f);
+    let p = V(c.x + rn(), BOLT_TOP, 0);
+    for (let i = 1; i <= 6; i++) { const q = i === 6 ? c.clone() : V(c.x + rn(1.2), BOLT_TOP - (BOLT_TOP - c.y) * i / 6, rn(.4)); limb(g, m, p, q, .07); p = q; }
+    flashObj(g, 260, t => { m.opacity = 1 - t; });
+  }
+  // fala psychiczna: rozszerzający się pierścień
+  function ring(f, color) {
+    const m = new THREE.MeshBasicMaterial({ color, transparent: true, side: THREE.DoubleSide }), o = new THREE.Mesh(new THREE.TorusGeometry(.5, .06, 6, 24), m);
+    o.position.copy(mid(f)); o.rotation.y = Math.PI / 2;
+    flashObj(o, 500, t => { o.scale.setScalar(.4 + 1.8 * t); m.opacity = 1 - t; });
+  }
+  // ikona stanu (emoji) jako tekstura sprite'a
+  const EMOJI = {};
+  function setBadge(f, icon) {
+    f.badge.visible = !!icon && !f.ko; if (!icon || f.badgeIcon === icon) return;
+    f.badgeIcon = icon;
+    f.badge.material.map = EMOJI[icon] ||= (() => { const cv = Object.assign(document.createElement('canvas'), { width: 128, height: 128 }), c = cv.getContext('2d');
+      c.font = '100px serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(icon, 64, 72); return new THREE.CanvasTexture(cv); })();
+    f.badge.material.needsUpdate = true;
   }
   function animate(f, now, dt) {
     const a = f.anim, t = a ? Math.min(1, (now - a.t0) / a.ms) : 1, s = Math.sin(Math.PI * t);
@@ -305,7 +344,7 @@ window.Arena3D = (() => {
       lunge: () => { dx = f.dir * LUNGE * s; rz = -.18 * s; },
       hit: () => { dx = -f.dir * .35 * s; flash = 1 - t; },
       dodge: () => { dx = -f.dir * DODGE.back * s; dy = DODGE.up * s; ry = 2 * Math.PI * t; },
-      guard: () => { sy = 1 - .16 * s; glow = s; },
+      cast: () => { sy = 1 - .16 * s; glow = s; },
       ko: () => { rz = Math.PI / 2 * t; dy = -f.lift * t; flash = 1 - t; },
     })[a.k]();
     if (a && t >= 1 && a.k !== 'ko') f.anim = null;
@@ -318,9 +357,7 @@ window.Arena3D = (() => {
     f.root.position.set(f.x0 + dx, f.lift + dy, dz); f.shadow.position.set(f.x0 + dx, .02, dz);
     [f.inner.rotation.x, f.inner.rotation.z] = a?.k === 'ko' || f.ko ? [rz, 0] : [0, rz];
     f.inner.scale.y = sy; f.inner.rotation.y = ry;
-    const blk = Math.max(0, 1 - (now - (f.blockT || 0)) / SHIELD.flashMs);   // błysk bańki przy zablokowanym ciosie
-    f.shield.material.opacity = f.ko ? 0 : f.guarding ? SHIELD.alpha * (1 + .2 * Math.sin(tm * 6)) : blk * .8;
-    f.shield.visible = f.shield.material.opacity > .01;
+    f.badge.position.set(f.x0 + dx, f.lift + dy + f.H + BADGE * (.7 + .08 * Math.sin(tm * 4)), dz);   // ikona stanu nad głową
     for (const m of f.mats) m.emissive ? m.emissive.setRGB(flash * .8, glow * .35, 0) : m.color.setRGB(1, 1 - flash * .6, 1 - flash * .6);
     if (a?.k === 'ko' || f.ko) {   // przewrócony obraca się wokół stóp → podnieś, żeby leżał NA ziemi, nie pod nią
       f.root.updateMatrixWorld(true);
@@ -338,24 +375,49 @@ window.Arena3D = (() => {
     c.position.set(d * Math.sin(th) + (Math.random() - .5) * S.shake, CAM_Y + (Math.random() - .5) * S.shake, d * Math.cos(th));
     c.lookAt(0, LOOK_Y, 0); S.shake *= .88;
     for (const f of Object.values(S.byId)) animate(f, now, dt);
-    S.parts = S.parts.filter(p => { p.t += dt; p.v.y -= 6 * dt; p.o.position.addScaledVector(p.v, dt); p.o.scale.setScalar(Math.max(.01, 1 - p.t * 1.6));
-      return p.t < .6 || void S.scene.remove(p.o); });
-    for (const fn of S.anims) fn(dt, now);
+    S.parts = S.parts.filter(p => { p.t += dt; p.v.y -= p.g * dt; p.o.position.addScaledVector(p.v, dt); p.o.scale.setScalar(Math.max(.01, 1 - p.t / p.life));
+      return p.t < p.life || void S.scene.remove(p.o); });
+    for (const fn of [...S.anims]) fn(dt, now);
     for (const g of S.faces) g.quaternion.copy(c.quaternion);   // dalekie rysunki zawsze przodem do kamery
     S.renderer.render(S.scene, c);
   }
 
-  /* ---------- zdarzenia z silnika walki ---------- */
-  function event(ev) {
-    const a = S?.byId[ev.att], d = S?.byId[ev.def];
-    if (!a || !d) return;
+  /* ---------- zdarzenia z silnika walki (js/battle.js) ----------
+     ruch: fizyczny = wypad + wybuch w kolorze typu; specjalny / stan = „rzucenie” + pocisk; ⚡ piorun z nieba, 🔮 pierścienie, 🪨 głazy z góry, 🏜️ wstrząs
+     stan: ikona nad głową (z ev.st), trucizna i oparzenie = cząstki co turę; statystyki: cząstki w górę (czerwone) / w dół (niebieskie) */
+  const col = t => new THREE.Color(TYPES[t]?.[2] || '#FFFFFF').getHex();
+  const STATUS_COL = { poison: 0xA33EA1, burn: 0xEE8130, paralysis: 0xF7D02C, sleep: 0xC8D0FF, freeze: 0x96D9D6, confusion: 0xF95587 };
+  function impact(ev, d) {
     const dust = S.theme.water || S.theme.under ? 0xE8F6FF : S.theme.ground;
-    if (ev.move === 'guard') { a.guarding = true; return play(a, 'guard', ANIM_MS * 1.5); }
-    play(a, 'lunge');
-    if (ev.dodge) soon(HIT_DELAY / 2, () => { play(d, 'dodge', ANIM_MS * 1.4); burst(d, 8, 0xFFFFFF); });
-    if (ev.guarded) soon(HIT_DELAY, () => { d.guarding = false; d.blockT = performance.now(); burst(d, 12, SHIELD.color); });
-    else if (ev.damage) soon(HIT_DELAY, () => { play(d, ev.hpDef === 0 ? 'ko' : 'hit', ev.hpDef === 0 ? ANIM_MS * 2 : ANIM_MS);
-      burst(d, ev.damage >= BIG_HIT ? 14 : 7, dust); if (ev.damage >= BIG_HIT) S.shake = SHAKE; });
+    if (ev.damage) { play(d, 'hit'); burst(d, ev.damage >= BIG_HIT ? 14 : 7, dust); burst(d, 8, col(ev.m.t)); if (ev.eff >= 2 || ev.crit) S.shake = SHAKE; }
+  }
+  function event(ev) {
+    if (!S) return;
+    const a = S.side[ev.as], d = S.side[ev.ds], m = ev.m, t = m?.t;
+    if (ev.tick) burst(a, 12, STATUS_COL[ev.tick], { g: -2, up: .3, life: .8 }), play(a, 'hit');
+    else if (ev.charge) { play(a, 'cast', ANIM_MS * 2); burst(a, 16, col(t), { g: -3, up: .2, life: 1 }); }
+    else if (ev.heal || ev.drain) burst(a, 14, 0x6EE07A, { g: -3, up: .3, life: .9 });
+    else if (ev.stat) burst(S.side[ev.on], 12, ev.n > 0 ? 0xFF6A5A : 0x5A8CFF, { g: ev.n > 0 ? -4 : 6, up: ev.n > 0 ? .2 : -.2, life: .8 });
+    else if (ev.status) burst(S.side[ev.on], 16, STATUS_COL[ev.status], { g: -1, up: .4, life: 1 });
+    else if (ev.skip) burst(a, 6, STATUS_COL[ev.skip] || 0xFFFFFF, { g: -1, up: .3 });
+    else if (ev.selfHit) play(a, 'hit');
+    else if (m && ev.miss) { play(a, m.c === 'p' ? 'lunge' : 'cast'); soon(HIT_DELAY, () => play(d, 'dodge', ANIM_MS * 1.4)); }
+    else if (m) {
+      const hit = () => impact(ev, d);
+      if (m.c === 'p') { play(a, 'lunge'); soon(HIT_DELAY, hit); }
+      else play(a, 'cast');
+      if (m.c === 'x' && !m.ail) burst(m.self ? a : d, 10, col(t), { g: -2, up: .3 });   // np. Agility, Growl
+      else if (t === 'electric') soon(HIT_DELAY, () => { bolt(d, 0xFFF27A); if (m.c !== 'p') hit(); });
+      else if (t === 'psychic') [0, 150, 300].forEach(ms => soon(ms, () => ring(d, col(t)))), m.c !== 'p' && soon(HIT_DELAY * 2, hit);
+      else if (t === 'rock' && m.c !== 'p') shoot(a, d, 0x8C7B5A, hit, { size: .35, from: mid(d).add(V(rn(), 4, 0)), arc: 0 });
+      else if (t === 'ground') { S.shake = SHAKE; burst(d, 16, 0xA07845, { up: .6 }); if (m.c !== 'p') soon(HIT_DELAY, hit); }
+      else if (m.c !== 'p') shoot(a, d, col(t), hit);
+    }
+    for (const k of ['a', 'b']) {
+      const f = S.side[k];
+      if (ev.hp && ev.hp[k] === 0 && !f.ko && f.anim?.k !== 'ko') soon(HIT_DELAY * 2, () => play(f, 'ko', ANIM_MS * 2));
+      if (ev.st) setBadge(f, ev.hp?.[k] === 0 ? null : ev.st[k] && STATUS[ev.st[k]][0]);
+    }
   }
   function win(id) {
     if (!S) return;

@@ -424,8 +424,12 @@ body.editing .rar{display:none}
 .dmg.heal{color:#3F7A3A}
 .dmg.show{animation:dmgUp .8s ease-out}
 @keyframes dmgUp{0%{opacity:0;transform:translateY(10px) scale(.6)}20%{opacity:1;transform:scale(1.15)}100%{opacity:0;transform:translateY(-30px)}}
-.moves{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-.move{background:var(--amber);color:#3A2405;box-shadow:0 4px 0 var(--amber-dk);font-size:34px;padding:10px 6px;animation:pop .3s}
+.moves{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+.move{background:var(--tc);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.45);box-shadow:0 4px 0 rgba(0,0,0,.25);padding:10px 6px;animation:pop .3s;display:flex;flex-direction:column;gap:2px}
+.move b{font:800 15px var(--font-b)}
+.move:disabled{filter:grayscale(1);opacity:.5}
+.stb{position:absolute;top:4px;right:6px;font-size:20px}
+.dmg.icon{font-size:40px}
 .move:active{transform:translateY(3px);box-shadow:none}
 .battle-log{margin-top:10px;background:var(--ink);color:#EAF4EF;border-radius:14px;padding:10px 12px;max-height:170px;overflow:auto;font-size:13px;line-height:1.45}
 .battle-log div{padding:3px 0;border-bottom:1px solid rgba(255,255,255,.08)}
