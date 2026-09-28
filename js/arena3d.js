@@ -480,7 +480,7 @@ window.Arena3D = (() => {
   }
   function win(id) {
     if (!S) return;
-    for (const [k, f] of Object.entries(S.byId)) k === id ? f.won = true : f.ko || play(f, 'ko', ANIM_MS * 2);
+    for (const [k, f] of Object.entries(S.byId)) k === String(id) ? f.won = true : f.ko || play(f, 'ko', ANIM_MS * 2);   // klucze obiektu to napisy, id Pokémona to liczba
   }
   return { ok, start, stop, event, win, get S() { return S; } };   // S: stan sceny dla testów (tmp/steps_ko.js)
 })();
