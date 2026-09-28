@@ -34,4 +34,5 @@ Otwórz `index.html` w przeglądarce — bez budowania i zależności. `node bui
 ## Strojenie walki
 
 Zmień `TUNE` w `js/battle.js`, potem `node tmp/sim.js` — pokazuje wyniki kontrolnych pojedynków (np. tyranozaur vs triceratops)
-i średnią skuteczność kategorii na tym samym silniku, którego używa gra. Arkusz wszystkich rysunków: `node tmp/art/sheet.js`.
+i średnią skuteczność kategorii i diet na tym samym silniku, którego używa gra.
+Ulubieńcy z ręcznie wpisanymi statystykami: `STARS` w `js/battle.js` (np. Albertozaur). Arkusz wszystkich rysunków: `node tmp/art/sheet.js`.

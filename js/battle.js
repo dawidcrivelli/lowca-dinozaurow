@@ -7,13 +7,17 @@ const TUNE = {
   hp: [60, 160, 2.2],                        // hp  = a + b·m^c
   atk: [10, 70, 7, 0.25, 1.5],               // atk = a + b·m^e + c·W,  W = najlepsza broń + d·Σ pozostałych
   wt: { bite: 1, claw: 0.8, squeeze: 0.9, horn: 0.8, tail: 0.8, ram: 0.7 },
-  atkDiet: { M: 6, Ry: 3, W: 1, P: -20 },    // łowcy umieją walczyć, filtratorzy nie
+  atkDiet: { M: 10, Ry: 5, W: 1, P: -20 },   // łowcy umieją walczyć, filtratorzy nie
   def: [14, 40, 8],                          // def = a + b·m + c·pancerz
   spd: [18, 0.75, 16], spdFly: 5,            // spd = a + b·km/h + c·(1-m)   (mały = zwinny)
   evade: [0.14, 0.04],                       // unik = a·(1-m)² + b·lotnik
   pack: { pack: 0.45, 'pack?': 0.25 },       // tylko mięsożercy
   fortressKg: 20000,
   sizeKg: [30, 500, 5000, 25000],            // progi klas rozmiaru 1..5
+};
+// ulubieńcy: statystyki wpisane ręcznie, nadpisują wyliczone (reszta pól bez zmian)
+const STARS = {
+  'albertosaurus-sarcophagus': { tag: '⭐ Dinozaur Alberta', hp: 160, attack: 86, speed: 60, evade: .07 }, // zwinny jak raptor, gryzie jak T. rex
 };
 const ROUNDS = 8;
 const clampN = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -59,10 +63,11 @@ function statsOf(s) {
     size: 1 + K.sizeKg.filter(t => s.kg >= t).length,
     armored: armor >= 2,
     fortress: s.kg >= K.fortressKg && s.diet === 'R' && s.loco === 'quad',
+    ...STARS[s.id],
   };
 }
 function traitsOf(st, s) {
-  const t = [];
+  const t = st.tag ? [st.tag] : [];
   if (st.pack) t.push(`🐾 Atak grupowy ${Math.round(st.pack * 100)}%`);
   if (st.fortress) t.push('🏔️ Żywa forteca');
   if (st.armored) t.push('🛡️ Pancerz');
@@ -156,4 +161,4 @@ function autoBattle(sa, sb, rnd) {
   return B;
 }
 
-if (typeof module !== 'undefined') module.exports = { TUNE, ARENAS, MOVES, statsOf, traitsOf, newBattle, playRound, autoBattle };
+if (typeof module !== 'undefined') module.exports = { TUNE, STARS, ARENAS, MOVES, statsOf, traitsOf, newBattle, playRound, autoBattle };
