@@ -29,7 +29,11 @@ const ARENAS = {
   coast: { name: 'Płytkie wybrzeże', icon: '🏝️', desc: 'Równe szanse dla zwierząt lądowych i wodnych.' },
   deep: { name: 'Głębokie morze', icon: '🌊', desc: 'Wodne drapieżniki mogą wykorzystać pełnię szybkości.' },
   cliffs: { name: 'Skaliste urwiska', icon: '⛰️', desc: 'Latające gady zyskują przestrzeń do pikowania.' },
+  desert: { name: 'Gorąca pustynia', icon: '🏜️', desc: 'Upał męczy olbrzymy – małe i szybkie zwierzęta mają przewagę.' },
+  volcano: { name: 'Wulkaniczna dolina', icon: '🌋', desc: 'Lecą kamienie! Pancerz chroni lepiej niż zwykle.' },
+  tundra: { name: 'Mroźna tundra', icon: '❄️', desc: 'Zimno! Ssaki w grubym futrze czują się tu jak w domu.' },
 };
+const LAND = ['plains', 'forest', 'swamp', 'desert', 'volcano', 'tundra'];
 // body → [nazwa, mnożnik, szansa]
 const SPECIALS = {
   ankylosaur: ['🔨 Młot ogonowy', 1.30, .20], stegosaur: ['🦔 Kolczasty ogon', 1.27, .19], ceratopsian: ['📯 Szarża rogami', 1.25, .18],
@@ -82,7 +86,7 @@ function pickArena(a, b, rnd = Math.random) {
   if (sea === 2) return ARENAS.deep;
   if (sea === 1) return ARENAS.coast;
   if (a.s.loco === 'fly' || b.s.loco === 'fly') return ARENAS.cliffs;
-  return [ARENAS.plains, ARENAS.forest, ARENAS.swamp][Math.floor(rnd() * 3)];
+  return ARENAS[LAND[Math.floor(rnd() * LAND.length)]];
 }
 function arenaMods(p, arena) {
   const m = { attack: 0, defense: 0, speed: 0, dodge: 0 }, body = p.s.body;
@@ -92,6 +96,9 @@ function arenaMods(p, arena) {
   if (arena === ARENAS.forest) { if (p.size <= 2) { m.speed += 7; m.dodge += .05; } else if (p.size >= 5) m.speed -= 5; }
   if (arena === ARENAS.plains) { if (body === 'sauropod') m.defense += 8; if (/theropod/.test(body)) m.speed += 4; }
   if (arena === ARENAS.swamp && (body === 'croc' || body === 'synapsid')) { m.attack += 9; m.defense += 7; }
+  if (arena === ARENAS.desert) { if (p.size <= 2) m.speed += 6; else if (p.size >= 5) m.speed -= 6; }
+  if (arena === ARENAS.volcano && p.armored) m.defense += 8;
+  if (arena === ARENAS.tundra && p.s.cat === 'mammal') { m.attack += 5; m.defense += 6; }
   return m;
 }
 

@@ -306,6 +306,8 @@ el.modalBody.addEventListener('click', e => {
 /* ================= ARENA =================
    Wybór zawodników obrazkami (młodszy nie musi czytać), tryb ▶️ oglądam / 👆 walczę. */
 const A = { a: null, b: null, slot: 'a', B: null, timers: [], token: 0 };
+/* widok areny: 'mix' rysunki na scenie 3D (domyślny) | '3d' bryły 3D */
+const view3d = () => DB.settings.view === '3d' ? '3d' : 'mix';
 function stopBattle() { A.timers.forEach(clearTimeout); A.timers = []; A.token++; window.Arena3D?.stop(); }
 const later = (ms, fn) => { const t = A.token; A.timers.push(setTimeout(() => t === A.token && fn(), ms)); };
 const roster = () => LIST.filter(s => isCaught(s.id));
@@ -336,8 +338,8 @@ function renderSetup() {
         <button class="${mode === 'auto' ? 'on' : ''}" data-mode="auto" title="Oglądam walkę">▶️<small>Oglądam</small></button>
         <button class="${mode === 'play' ? 'on' : ''}" data-mode="play" title="Sam wybieram ruchy">👆<small>Walczę</small></button>
       </div>
-      ${window.Arena3D?.ok ? `<div class="seg" role="group" aria-label="Widok">${[['2d', '🖼️'], ['mix', '🏞️'], ['3d', '🧊']].map(([v, i]) =>
-        `<button class="${(DB.settings.view || '2d') === v ? 'on' : ''}" data-view="${v}">${i}<small>${v.toUpperCase()}</small></button>`).join('')}</div>` : ''}
+      ${window.Arena3D?.ok ? `<div class="seg" role="group" aria-label="Widok">${[['mix', '🏞️'], ['3d', '🧊']].map(([v, i]) =>
+        `<button class="${view3d() === v ? 'on' : ''}" data-view="${v}">${i}<small>${v === 'mix' ? 'rysunki' : '3D'}</small></button>`).join('')}</div>` : ''}
       <button class="btn ghost icon" data-random="1" title="Losuj rywala">🎲</button>
       <button class="btn amber big" data-fight="1">⚔️ Walka!</button>
     </div>
@@ -380,8 +382,7 @@ function startFight() {
     <div class="battle-log" id="log"><div><strong>Runda 1.</strong> Walka się zaczyna!</div></div>
     <div class="battle-result" id="result" hidden></div>
   </div>`, 'wide');
-  const view = DB.settings.view || '2d';   // mix: rysunki 2D na scenie 3D
-  if (view !== '2d' && window.Arena3D?.ok) Arena3D.start($('.fight-grid'), B, view === 'mix' ? 'bill' : 'model');
+  if (window.Arena3D?.ok) Arena3D.start($('.fight-grid'), B, view3d() === 'mix' ? 'bill' : 'model');   // bez WebGL zostaje widok 2D
   thud();
   play ? later(500, askMove) : later(500, autoStep);
 }
