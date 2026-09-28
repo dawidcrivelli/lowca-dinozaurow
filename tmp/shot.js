@@ -1,6 +1,6 @@
 /* Headless Chrome (CDP) screenshot runner for the app.
    usage: node tmp/review/opus_shot.js <steps.json> <url> [width]
-   steps: [{js?, wait?, shot?, h?('full'|px), w?}] ; shots -> tmp/review/shots/ */
+   steps: [{js?, out?, wait?, shot?, h?('full'|px), w?}] ; shots -> tmp/review/shots/ */
 const { spawn } = require('child_process');
 const http = require('http'), fs = require('fs'), path = require('path');
 const WS = require('./ws.js');
@@ -24,7 +24,8 @@ const get = p => new Promise((res, rej) => http.get({ host: '127.0.0.1', port: P
   await ws.send('Page.navigate', { url }); await sleep(2000);
   for (const s of JSON.parse(fs.readFileSync(stepsFile, 'utf8'))) {
     if (s.js) { const r = await ws.send('Runtime.evaluate', { expression: s.js, awaitPromise: true });
-      if (r.exceptionDetails) console.log('JS ERR', s.shot || s.js.slice(0, 40), r.exceptionDetails.exception?.description); }
+      if (r.exceptionDetails) console.log('JS ERR', s.shot || s.js.slice(0, 40), r.exceptionDetails.exception?.description);
+      if (s.out) fs.writeFileSync(path.join(__dirname, s.out), String(r.result.value)); }   // wynik js → plik
     if (s.wait) await sleep(s.wait);
     if (s.shot) {
       let h = s.h;

@@ -90,7 +90,7 @@ function tone(type, f0, f1, dur, vol, filter) {
   n.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + dur + 0.02);
 }
 const blip = (f, d = .1) => tone('triangle', f, f, d, .13);
-const roar = r => { const b = 150 - r * 18; tone('sawtooth', b * 1.7, b * .55, .85, .28, 1200); tone('square', b * .85, b * .34, .85, .12, 900); };
+const cry = (sp, mode) => { const ac = audio(); if (ac) voice(ac, sp, mode); };   // głos gatunku: js/voices.js
 const thud = () => tone('sine', 140, 50, .18, .3);
 function crack() {
   const ac = audio(); if (!ac) return;
@@ -211,7 +211,7 @@ function runCatch(sp) {
     [2320, () => {
       el.sceneTarget.innerHTML = art(sp); el.sceneTarget.className = 'scene-target show';
       el.sceneName.textContent = sp.name; el.sceneName.className = 'scene-name show';
-      roar(sp.rarity); confettiBurst();
+      cry(sp, 'call'); confettiBurst();
       DB.caught[sp.id] = { t: Date.now() }; save();
     }],
     [3900, () => { el.scene.hidden = true; busy = false; renderAll(sp.id); say(`Złapany! <b>${esc(sp.name)}</b> dołącza do kolekcji.`, 'good'); openCard(sp); }],
@@ -351,9 +351,9 @@ function onArenaClick(e) {
   if (d.pick) {
     const sp = byId(d.pick), other = A.slot === 'a' ? 'b' : 'a';
     if (A[other] === sp) A[other] = A[A.slot];
-    A[A.slot] = sp; A.slot = other; blip(560, .06); renderSetup();
+    A[A.slot] = sp; A.slot = other; cry(sp, 'attack'); renderSetup();
   }
-  if (d.random) { A.b = randomOther(A.a.id); blip(700, .06); renderSetup(); }
+  if (d.random) { A.b = randomOther(A.a.id); cry(A.b, 'attack'); renderSetup(); }
   if (d.mode) { DB.settings.mode = d.mode; save(); renderSetup(); }
   if (d.view) { DB.settings.view = d.view; save(); renderSetup(); }
   if (d.fight || d.rematch) startFight();
@@ -396,7 +396,9 @@ function showEvents(evs, done) {
   evs.forEach((ev, i) => later(i * 560, () => {
     window.Arena3D?.event(ev);
     if (ev.att) {
-      const as = side(ev.att), ds = as === 'a' ? 'b' : 'a', f = $(`#f-${as}`), g = $(`#f-${ds}`);
+      const as = side(ev.att), ds = as === 'a' ? 'b' : 'a', f = $(`#f-${as}`), g = $(`#f-${ds}`), who = id => (id === B.a.id ? B.a : B.b).s;
+      if (ev.move !== 'guard') cry(who(ev.att), 'attack');
+      if (ev.hpDef === 0) later(250, () => cry(who(ev.def), 'ko'));
       f.classList.remove('attacking'); void f.offsetWidth; f.classList.add('attacking');
       if (ev.damage) { g.classList.remove('hit'); void g.offsetWidth; g.classList.add('hit'); tone('square', 220, 90, .15, .12); navigator.vibrate?.(18); }
       else blip(ev.heal ? 880 : 760, .08);
@@ -428,7 +430,7 @@ function finish() {
       <button class="btn ghost" data-change="1">🔄 Zmień</button>
     </div>`;
   r.hidden = false; r.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  roar(w.s.rarity || 2); navigator.vibrate?.([35, 45, 70]);
+  cry(w.s, 'call'); navigator.vibrate?.([35, 45, 70]);
 }
 el.btnArena.addEventListener('click', () => openArena());
 
