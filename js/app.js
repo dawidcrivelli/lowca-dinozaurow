@@ -336,7 +336,7 @@ function renderSetup() {
         <button class="${mode === 'auto' ? 'on' : ''}" data-mode="auto" title="Oglądam walkę">▶️<small>Oglądam</small></button>
         <button class="${mode === 'play' ? 'on' : ''}" data-mode="play" title="Sam wybieram ruchy">👆<small>Walczę</small></button>
       </div>
-      ${window.Arena3D?.ok ? `<div class="seg" role="group" aria-label="Widok">${[['2d', '🖼️'], ['3d', '🧊']].map(([v, i]) =>
+      ${window.Arena3D?.ok ? `<div class="seg" role="group" aria-label="Widok">${[['2d', '🖼️'], ['mix', '🏞️'], ['3d', '🧊']].map(([v, i]) =>
         `<button class="${(DB.settings.view || '2d') === v ? 'on' : ''}" data-view="${v}">${i}<small>${v.toUpperCase()}</small></button>`).join('')}</div>` : ''}
       <button class="btn ghost icon" data-random="1" title="Losuj rywala">🎲</button>
       <button class="btn amber big" data-fight="1">⚔️ Walka!</button>
@@ -380,7 +380,8 @@ function startFight() {
     <div class="battle-log" id="log"><div><strong>Runda 1.</strong> Walka się zaczyna!</div></div>
     <div class="battle-result" id="result" hidden></div>
   </div>`, 'wide');
-  if (DB.settings.view === '3d' && window.Arena3D?.ok) Arena3D.start($('.fight-grid'), B);
+  const view = DB.settings.view || '2d';   // mix: rysunki 2D na scenie 3D
+  if (view !== '2d' && window.Arena3D?.ok) Arena3D.start($('.fight-grid'), B, view === 'mix' ? 'bill' : 'model');
   thud();
   play ? later(500, askMove) : later(500, autoStep);
 }

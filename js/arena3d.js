@@ -17,15 +17,18 @@ window.Arena3D = (() => {
   const DODGE = { back: .9, up: 1.1 };  // unik: odskok do tyłu i w górę z obrotem
   const ANIM_MS = 440, HIT_DELAY = 170, BIG_HIT = 24, SHAKE = 0.22, LUNGE = 0.9;
   const ORBIT = 0.32, ORBIT_MS = 9000, CAM_Y = 2.7, CAM_D = 7.8, LOOK_Y = 1.3;
-  const PIXEL_RATIO_MAX = 2, SHADOW_MAP = 1024, PROP_SEED = 7;
+  const PIXEL_RATIO_MAX = 2, SHADOW_MAP = 1024;
+  // props: element tła → ile sztuk; far: dalekie tło → szansa pojawienia się (każda walka losuje układ)
   const THEMES = {
-    plains: { sky: 0xCFE8F7, ground: 0xC9B56E, props: 'hills' },
-    forest: { sky: 0xB9DCC0, ground: 0x5E8A45, props: 'trees' },
-    swamp: { sky: 0xBCCBA8, ground: 0x6C7447, water: 0x4F7466, props: 'reeds' },
-    coast: { sky: 0xBDE7F7, ground: 0xE6D39C, water: 0x3F9FCB, props: 'rocks' },
-    deep: { sky: 0x0E4A6E, ground: 0x2A4F63, props: 'weed', under: 1 },
-    cliffs: { sky: 0xE3CFAE, ground: 0x9A8670, props: 'cliffs' },
+    plains: { sky: 0xCFE8F7, ground: 0xC9B56E, props: { hill: 7, grass: 16, boulder: 5, cycad: 4, leafy: 3 }, far: { volcano: .5, herd: .7, flyer: .4, clouds: 1 } },
+    forest: { sky: 0xB9DCC0, ground: 0x5E8A45, props: { pine: 9, leafy: 7, fern: 10, log: 3, cycad: 3 }, far: { mountains: 1, clouds: .5, flyer: .2 } },
+    swamp: { sky: 0xBCCBA8, ground: 0x6C7447, props: { pool: 5, reed: 16, dead: 4, fern: 6, cycad: 3 }, far: { volcano: .35, herd: .5, clouds: .6 } },
+    coast: { sky: 0xBDE7F7, ground: 0xE6D39C, water: 0x3F9FCB, props: { palm: 6, rock: 7, grass: 6 }, far: { flyer: .8, clouds: 1, waves: 1 } },
+    deep: { sky: 0x0E4A6E, ground: 0x2A4F63, props: { weed: 16 }, far: { bubbles: 1 }, under: 1 },
+    cliffs: { sky: 0xE3CFAE, ground: 0x9A8670, props: { spire: 9, boulder: 7, grass: 5 }, far: { mountains: 1, flyer: .9, volcano: .3, clouds: .7 } },
   };
+  const SKY_TINTS = [0, 0, 0xF6B183, 0xDDE3EA], TINT_MIX = .45;   // zwykły dzień ×2, zachód słońca, pochmurno
+  const HERD = ['sauropod', 'hadrosaur', 'ceratopsian'], FLYERS = ['pterosaur'];   // dalekie tło: stado, latające
   const BIPED = ['thero'], QUAD = ['sauro', 'cerat', 'armor', 'stego', 'mammal', 'sloth'];
   // typ głowy (jak w art.js) → [długość, wysokość]
   const HEADS = { rex: [.95, .5], tyr: [.8, .42], allo: [.8, .38], long: [.9, .36], croc: [1, .26], slim: [.7, .3], short: [.55, .42],
@@ -163,13 +166,13 @@ window.Arena3D = (() => {
   }
 
   /* ---------- zawodnik ---------- */
-  function fighter(sp, side, H, theme) {
+  function fighter(sp, side, H, theme, figures) {
     const spec = sp.custom ? [sp.arch, sp.opts] : ART[sp.id] || ['thero', {}], [key, own] = spec;
     const [base, def] = PRESET[key] || [key, {}], o = { ...def, ...own }, P = PAL[o.p ?? hash(String(key)) % PAL.length] || PAL[0];
     const M = { skin: phong(P[0]), belly: phong(P[1]), dark: phong(P[2]), ivory: phong(0xF4ECD8) };
     const root = new THREE.Group(), inner = new THREE.Group(), body = new THREE.Group(), carn = sp.diet === 'M' || sp.diet === 'Ry';
     root.add(inner); inner.add(body);
-    const kind = BIPED.includes(base) ? 'biped' : QUAD.includes(base) ? 'quad' : 'bill';
+    const kind = figures === 'bill' ? 'bill' : BIPED.includes(base) ? 'biped' : QUAD.includes(base) ? 'quad' : 'bill';
     const water = sp.cat === 'marine' || sp.loco === 'swim', fly = sp.loco === 'fly';
     const parts = kind === 'biped' ? biped(body, M, o, carn) : kind === 'quad' ? quad(body, M, base, o, carn) : billboard(body, sp, H);
     if (kind !== 'bill') {   // wyśrodkuj i przeskaluj bryłę do docelowej wysokości
@@ -191,24 +194,64 @@ window.Arena3D = (() => {
 
   /* ---------- teren ---------- */
   function terrain(theme, rnd, marineSide) {
-    const sc = S.scene, add = (geo, c, p, s, r = 0) => { const o = new THREE.Mesh(geo, phong(c)); o.position.copy(p); if (s) o.scale.set(...s); o.rotation.y = r; o.castShadow = o.receiveShadow = true; sc.add(o); return o; };
-    const ground = add(new THREE.CircleGeometry(40, 24), theme.ground, V(0, 0)); ground.rotation.x = -Math.PI / 2; ground.castShadow = false;
-    if (theme.water) { const w = add(new THREE.PlaneGeometry(marineSide ? 40 : 3.5, marineSide ? 30 : 2.2), theme.water, V(marineSide * 20.5 || -1.5, .03, marineSide ? 0 : -3.5));
-      w.rotation.x = -Math.PI / 2; w.material.transparent = true; w.material.opacity = .85; w.castShadow = false; }
-    const spot = () => V((rnd() - .5) * 26, 0, -4 - rnd() * 12), SPH = new THREE.IcosahedronGeometry(1, 1);
-    for (let i = 0; i < 16; i++) {
-      const p = spot(), k = .7 + rnd();
-      if (theme.props === 'trees') { add(new THREE.CylinderGeometry(.12, .18, 1.4, 5), 0x6E4B33, p.clone().setY(.7), [k, k, k]); add(new THREE.ConeGeometry(.9, 2.2, 6), 0x3F6E3A, p.clone().setY(1.4 + k), [k, k, k]); }
-      if (theme.props === 'hills') add(SPH, 0x9DB36A, p.clone().setZ(p.z - 8), [3.5 * k, 1.1 * k, 2.5 * k]);
-      if (theme.props === 'reeds') add(new THREE.ConeGeometry(.06, 1.4, 4), 0x7C8A4A, p.clone().setY(.7), [k, k, k]);
-      if (theme.props === 'rocks' || theme.props === 'cliffs') add(SPH, theme.props === 'cliffs' ? 0x8C7A66 : 0xA89A80, theme.props === 'cliffs' ? p.setZ(p.z - 4) : p, theme.props === 'cliffs' ? [2.2 * k, 2.6 * k, 2 * k] : [.6 * k, .45 * k, .6 * k], rnd() * 6);
-      if (theme.props === 'weed') add(new THREE.ConeGeometry(.12, 2.4, 4), 0x2F7A5A, p.clone().setY(1.2), [k, k, k]);
-    }
-    if (theme.under) S.bubbles = Array.from({ length: 24 }, () => add(SPH, 0xDDF3FF, V((rnd() - .5) * 12, rnd() * 6, (rnd() - .5) * 6 - 1), [.05, .05, .05]));
+    const sc = S.scene, pick = l => l[Math.floor(rnd() * l.length)];
+    const add = (geo, c, p, s, r = 0, g = sc) => { const o = new THREE.Mesh(geo, phong(c)); o.position.copy(p); if (s) o.scale.set(...s); o.rotation.y = r; o.castShadow = o.receiveShadow = true; g.add(o); return o; };
+    const cone = (r, h, n = 6) => new THREE.ConeGeometry(r, h, n), cyl = (r0, r1, h) => new THREE.CylinderGeometry(r1, r0, h, 6);
+    const ICO = new THREE.IcosahedronGeometry(1, 0), BLOB = new THREE.IcosahedronGeometry(1, 1), GREENS = [0x3F6E3A, 0x4E7F3C, 0x5F8F45, 0x6E9A3A];
+    const flat = (geo, c, p, opacity = 1) => { const o = add(geo, c, p); o.rotation.x = -Math.PI / 2; o.castShadow = false; if (opacity < 1) Object.assign(o.material, { transparent: true, opacity }); return o; };
+    flat(new THREE.CircleGeometry(40, 24), theme.ground, V(0, 0));
+    if (theme.water) flat(new THREE.PlaneGeometry(marineSide ? 40 : 3.5, marineSide ? 30 : 2.2), theme.water, V(marineSide * 20.5 || -1.5, .03, marineSide ? 0 : -3.5), .85);
+    // wachlarz liści/paproci: stożki odchylone od pionu dookoła p
+    const fronds = (p, n, len, tilt, c) => { const g = new THREE.Group(); g.position.copy(p); sc.add(g);
+      for (let i = 0; i < n; i++) { const a = i / n * 2 * Math.PI + rnd(), f = add(cone(.1 * len, len, 4), c, V(Math.cos(a) * len * .45, 0, Math.sin(a) * len * .45), [1, 1, .35], 0, g);
+        f.rotation.set(0, -a, 0); f.rotateZ(-tilt); } };
+    const PROPS = {
+      hill: (p, k) => add(BLOB, pick([0x9DB36A, 0xAFBF6E, 0x8DA85E]), p.setZ(p.z - 8), [3.5 * k, 1.1 * k, 2.5 * k]),
+      grass: (p, k) => { for (let i = 0; i < 3; i++) add(cone(.05, .55 * k, 4), pick(GREENS), V(p.x + rnd() * .3, .27 * k, p.z + rnd() * .3)); },
+      boulder: (p, k) => add(ICO, pick([0xA89A80, 0x9A9186, 0xB3A58C]), p.setY(.3 * k), [.8 * k, .55 * k, .7 * k], rnd() * 6),
+      rock: (p, k) => add(ICO, pick([0x8E8A80, 0xA59D8E]), p.setY(.2 * k), [.5 * k, .4 * k, .5 * k], rnd() * 6),
+      spire: (p, k) => add(cone(1.1 * k, 5 * k, 5), pick([0x8C7A66, 0x9C8670, 0x7E6E5E]), p.setZ(p.z - 4).setY(2.5 * k), null, rnd() * 6),
+      pine: (p, k) => { add(cyl(.18, .12, 1.4), 0x6E4B33, p.clone().setY(.7), [k, k, k]); add(cone(.9, 2.2), pick(GREENS), p.clone().setY(1.5 + k), [k, k, k]); add(cone(.6, 1.6), pick(GREENS), p.clone().setY(2.3 + 1.4 * k), [k, k, k]); },
+      leafy: (p, k) => { add(cyl(.22, .14, 1.8), 0x6E4B33, p.clone().setY(.9 * k), [k, k, k]); for (let i = 0; i < 3; i++) add(BLOB, pick(GREENS), V(p.x + (rnd() - .5) * k, 2 * k + rnd() * .6 * k, p.z + (rnd() - .5) * k), [.9 * k, .75 * k, .9 * k]); },
+      cycad: (p, k) => { add(cyl(.3, .25, .9), 0x7A5A3A, p.clone().setY(.45 * k), [k, k, k]); fronds(p.clone().setY(.9 * k), 7, 1.3 * k, 1.1, pick(GREENS)); },
+      fern: (p, k) => fronds(p.clone().setY(.05), 6, .8 * k, 1.2, pick(GREENS)),
+      palm: (p, k) => { const lean = (rnd() - .5) * .8, top = V(p.x + lean * 1.5 * k, 2.3 * k, p.z); limb(sc, phong(0x8A6A48), p.clone(), top, .16, .1);
+        fronds(top, 7, 1.6 * k, 1.9, pick(GREENS)); },
+      log: (p, k) => { const o = add(cyl(.22, .22, 2 * k), 0x6B4A30, p.setY(.2)); o.rotation.set(0, rnd() * 3, Math.PI / 2); },
+      dead: (p, k) => { const c = phong(0x6D6457), top = p.clone().setY(2.6 * k); limb(sc, c, p.clone(), top, .16, .08);
+        for (const s of [-1, 1]) limb(sc, c, top.clone().setY(top.y - .8 * k), V(p.x + s * .8 * k, top.y + .1, p.z + (rnd() - .5)), .07, .03); },
+      reed: (p, k) => { for (let i = 0; i < 4; i++) add(cone(.05, 1.3 * k, 4), pick([0x7C8A4A, 0x8C9A52]), V(p.x + rnd() * .4, .65 * k, p.z + rnd() * .4)); },
+      pool: (p, k) => { flat(new THREE.CircleGeometry(1.6 * k, 10), 0x4F7466, p.clone().setY(.03), .85);
+        for (let i = 0; i < 3; i++) flat(new THREE.CircleGeometry(.25, 7), 0x5E9A4A, V(p.x + (rnd() - .5) * 1.8 * k, .05, p.z + (rnd() - .5) * 1.2 * k)); },
+      weed: (p, k) => add(cone(.12, 2.4, 4), 0x2F7A5A, p.clone().setY(1.2), [k, k, k]),
+    };
+    const spot = () => { const x = (rnd() - .5) * 26; return V(marineSide ? -marineSide * Math.abs(x) : x, 0, -4 - rnd() * 12); };   // wybrzeże: tylko po stronie lądu
+    for (const [name, n] of Object.entries(theme.props)) for (let i = 0; i < n; i++) PROPS[name](spot(), .7 + rnd());
+    // rysunek gatunku jako daleka tablica (stado, latające); obracana do kamery w loop()
+    const cutout = (bodies, p, H, dir) => { const l = SPECIES.filter(s => bodies.includes(s.body)), g = new THREE.Group(); g.position.copy(p); sc.add(g); S.faces.push(g);
+      billboard(g, pick(l), H).plane.scale.x = dir; return g; };
+    const FAR = {
+      volcano: () => { const x = (rnd() - .5) * 24, top = V(x, 7, -27); add(cone(6, 7, 8), 0x5A4A42, V(x, 3.5, -27)); add(cone(1.3, 1.5, 8), 0xD8572A, top.clone().setY(6.4));
+        const puffs = Array.from({ length: 6 }, (_, i) => add(BLOB, 0x8A8580, top.clone().setY(7 + i), [.8, .8, .8]));
+        S.anims.push(dt => puffs.forEach(o => { o.position.y += dt * .7; o.position.x += dt * .25; o.scale.addScalar(dt * .3); if (o.position.y > 13) { o.position.set(x, 7, -27); o.scale.setScalar(.8); } })); },
+      mountains: () => { for (let i = 0; i < 5; i++) add(cone(5 + rnd() * 4, 7 + rnd() * 5, 5), pick([0x7C8A9A, 0x8C96A2, 0x9AA3AA]), V((i - 2) * 9 + rnd() * 4, 3, -30 - rnd() * 4), null, rnd() * 6); },
+      clouds: () => { for (let i = 0; i < 5; i++) { const g = new THREE.Group(); g.position.set((rnd() - .5) * 40, 8 + rnd() * 3, -14 - rnd() * 10); sc.add(g);
+        for (let j = 0; j < 4; j++) add(BLOB, 0xFFFFFF, V(j * 1.1, rnd() * .6, rnd()), [1.2, .8, .9], 0, g).castShadow = false;
+        S.anims.push(dt => { g.position.x += dt * .35; if (g.position.x > 24) g.position.x = -24; }); } },
+      herd: () => { const dir = rnd() < .5 ? 1 : -1; for (let i = 0; i < 2 + rnd() * 3; i++) { const g = cutout(HERD, V((rnd() - .5) * 16, 0, -13 - rnd() * 5), 1.4 + rnd(), dir);
+        S.anims.push(dt => { g.position.x += dir * dt * .12; }); } },
+      flyer: () => { for (let i = 0; i < 1 + rnd() * 2; i++) { const dir = rnd() < .5 ? 1 : -1, y = 5 + rnd() * 2, g = cutout(FLYERS, V((rnd() - .5) * 24, y, -8 - rnd() * 8), 1 + rnd() * .6, dir);
+        S.anims.push((dt, now) => { g.position.x += dir * dt * 1.4; g.position.y = y + .4 * Math.sin(now / 600 + i); if (Math.abs(g.position.x) > 16) g.position.x = -dir * 16; }); } },
+      waves: () => { if (!marineSide) return; for (let i = 0; i < 3; i++) { const o = flat(new THREE.PlaneGeometry(.18, 30), 0xFFFFFF, V(marineSide * (.8 + i * 1.2), .05, 0), .7);
+        S.anims.push((dt, now) => { const t = now / 1400 + i * 2.1; o.position.x = marineSide * (.8 + i * 1.2 + .4 * Math.sin(t)); o.material.opacity = .35 + .35 * Math.sin(t); }); } },
+      bubbles: () => { const b = Array.from({ length: 24 }, () => add(BLOB, 0xDDF3FF, V((rnd() - .5) * 12, rnd() * 6, (rnd() - .5) * 6 - 1), [.05, .05, .05]));
+        S.anims.push(dt => b.forEach(o => { o.position.y += dt * .8; if (o.position.y > 6) o.position.y = 0; })); },
+    };
+    for (const [name, p] of Object.entries(theme.far || {})) if (rnd() < p) FAR[name]();
   }
 
   /* ---------- start / stop ---------- */
-  async function start(grid, B) {
+  async function start(grid, B, figures = 'model') {   // figures: 'model' bryły 3D | 'bill' rysunki 2D na scenie 3D
     const host = grid.closest('.arena'), stage = Object.assign(document.createElement('div'), { className: 'stage3d' });
     host.classList.add('v3d'); grid.before(stage); stage.append(grid);
     try { await load(); } catch { host.classList.remove('v3d'); stage.before(grid); stage.remove(); return; } // brak pliku → 2D
@@ -219,18 +262,20 @@ window.Arena3D = (() => {
     renderer.setPixelRatio(Math.min(PIXEL_RATIO_MAX, devicePixelRatio || 1));
     renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     stage.prepend(renderer.domElement);
-    const scene = new THREE.Scene(); scene.background = new THREE.Color(theme.sky); scene.fog = new THREE.Fog(theme.sky, theme.under ? 6 : 10, theme.under ? 20 : 30);
+    const tint = theme.under ? 0 : SKY_TINTS[Math.floor(Math.random() * SKY_TINTS.length)], sky = new THREE.Color(theme.sky);
+    if (tint) sky.lerp(new THREE.Color(tint), TINT_MIX);
+    const scene = new THREE.Scene(); scene.background = sky; scene.fog = new THREE.Fog(sky, theme.under ? 6 : 10, theme.under ? 20 : 34);
     const camera = new THREE.PerspectiveCamera(38, 1, .1, 80);
-    S = { renderer, scene, camera, stage, theme, parts: [], todo: [], shake: 0, t0: performance.now() };
+    S = { renderer, scene, camera, stage, theme, parts: [], todo: [], anims: [], faces: [], shake: 0, t0: performance.now() };
     SPH = new THREE.SphereGeometry(1, 8, 6);
     scene.add(new THREE.HemisphereLight(0xFFFFFF, theme.ground, theme.under ? .6 : .75));
-    const sun = new THREE.DirectionalLight(0xFFFFFF, theme.under ? .45 : .7); sun.position.set(4, 9, 6); sun.castShadow = true;
+    const sun = new THREE.DirectionalLight(0xFFFFFF, theme.under ? .45 : .7); sun.position.set(4, 9, 6); sun.castShadow = true; if (tint) sun.color.lerp(new THREE.Color(tint), TINT_MIX);
     Object.assign(sun.shadow.camera, { left: -7, right: 7, top: 7, bottom: -3 }); sun.shadow.mapSize.set(SHADOW_MAP, SHADOW_MAP); sun.shadow.radius = 4;
     scene.add(sun);
-    let seed = PROP_SEED; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    let seed = 1 + Math.floor(Math.random() * 2147483646); const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
     const cube = s => Math.cbrt(s.kg || 100), big = Math.max(cube(B.a.s), cube(B.b.s));
     const Hof = s => H_MAX * Math.max(RATIO_MIN, cube(s) / big);
-    S.byId = { [B.a.id]: fighter(B.a.s, 'a', Hof(B.a.s), theme), [B.b.id]: fighter(B.b.s, 'b', Hof(B.b.s), theme) };
+    S.byId = { [B.a.id]: fighter(B.a.s, 'a', Hof(B.a.s), theme, figures), [B.b.id]: fighter(B.b.s, 'b', Hof(B.b.s), theme, figures) };
     const sea = [B.a, B.b].map((p, i) => p.s.cat === 'marine' ? (i ? 1 : -1) : 0).find(Boolean) || 0;
     terrain(theme, rnd, key === 'coast' ? sea : 0);
     S.ro = new ResizeObserver(() => { const { clientWidth: w, clientHeight: h } = stage; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); });
@@ -299,7 +344,8 @@ window.Arena3D = (() => {
     for (const f of Object.values(S.byId)) animate(f, now, dt);
     S.parts = S.parts.filter(p => { p.t += dt; p.v.y -= 6 * dt; p.o.position.addScaledVector(p.v, dt); p.o.scale.setScalar(Math.max(.01, 1 - p.t * 1.6));
       return p.t < .6 || void S.scene.remove(p.o); });
-    for (const b of S.bubbles || []) { b.position.y += dt * .8; if (b.position.y > 6) b.position.y = 0; }
+    for (const fn of S.anims) fn(dt, now);
+    for (const g of S.faces) g.quaternion.copy(c.quaternion);   // dalekie rysunki zawsze przodem do kamery
     S.renderer.render(S.scene, c);
   }
 
