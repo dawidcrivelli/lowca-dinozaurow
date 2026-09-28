@@ -1,32 +1,23 @@
-/* Test głosów: każdy przepis renderowany offline w Chrome (OfflineAudioContext) → nie może być cisza ani przester.
-   Zapisuje tmp/voices/<głos>_<gatunek>.wav do odsłuchu.
-   użycie: node tmp/voices_test.js  (uruchamia tmp/shot.js) */
+/* Test głosów: (1) każdy gatunek ma głos z istniejącym plikiem, sw.js cache'uje wszystkie nagrania;
+   (2) walka z włączonym dźwiękiem w Chrome odtwarza głosy obu zawodników + uderzenia, bez błędów.
+   użycie: node tmp/voices_test.js */
 const fs = require('fs'), path = require('path'), { execFileSync } = require('child_process');
-const { SPECIES } = require('../js/species.js'), { VOICES, voiceOf } = require('../js/voices.js');
-global.ART = require('../js/artspec.js').ART;
-const RATE = 22050, SECS = 2.5, MIN_PEAK = .05, MAX_PEAK = 1;
-// po jednym (najlżejszym i najcięższym) gatunku na głos – słychać zakres wysokości
-const pick = {};
-for (const s of [...SPECIES].sort((a, b) => a.kg - b.kg)) (pick[voiceOf(s)] = pick[voiceOf(s)] || []).push(s.id);
-const ids = Object.values(pick).flatMap(l => [...new Set([l[0], l.at(-1)])]);
-const miss = Object.keys(VOICES).filter(v => !pick[v]);
-if (miss.length) console.log('głosy bez gatunku:', miss.join(', '));
-const js = `(async () => { const out = {};
-  for (const id of ${JSON.stringify(ids)}) { const sp = SPECIES.find(s => s.id === id);
-    const ac = new OfflineAudioContext(1, ${RATE * SECS}, ${RATE}); voice(ac, sp, 'call');
-    const d = (await ac.startRendering()).getChannelData(0); let pk = 0; for (const x of d) pk = Math.max(pk, Math.abs(x));
-    out[voiceOf(sp) + '_' + id] = { pk, pcm: Array.from(d, x => Math.round(Math.max(-1, Math.min(1, x)) * 32767)) }; }
-  return JSON.stringify(out); })()`;
-const steps = path.join(__dirname, 'voices', 'steps.json');
-fs.writeFileSync(steps, JSON.stringify([{ js, out: 'voices/out.json' }]));
-execFileSync('node', [path.join(__dirname, 'shot.js'), steps, 'file://' + path.join(__dirname, '../index.html')], { stdio: 'inherit' });
-let bad = 0;
-for (const [name, { pk, pcm }] of Object.entries(JSON.parse(fs.readFileSync(path.join(__dirname, 'voices/out.json'))))) {
-  const ok = pk >= MIN_PEAK && pk <= MAX_PEAK; bad += !ok;
-  console.log(`${ok ? 'OK ' : 'BAD'} ${name.padEnd(45)} peak ${pk.toFixed(2)}`);
-  const h = Buffer.alloc(44), n = pcm.length * 2;   // nagłówek WAV PCM 16-bit mono
-  h.write('RIFF', 0); h.writeUInt32LE(36 + n, 4); h.write('WAVEfmt ', 8); h.writeUInt32LE(16, 16); h.writeUInt16LE(1, 20); h.writeUInt16LE(1, 22);
-  h.writeUInt32LE(RATE, 24); h.writeUInt32LE(RATE * 2, 28); h.writeUInt16LE(2, 32); h.writeUInt16LE(16, 34); h.write('data', 36); h.writeUInt32LE(n, 40);
-  fs.writeFileSync(path.join(__dirname, 'voices', name + '.wav'), Buffer.concat([h, Buffer.from(Int16Array.from(pcm).buffer)]));
-}
-process.exit(bad ? 1 : 0);
+const ROOT = path.join(__dirname, '..'), { SPECIES } = require('../js/species.js');
+Object.assign(global, require('../js/voices.js'), { ART: require('../js/artspec.js').ART });
+const bad = SPECIES.filter(s => !fs.existsSync(path.join(ROOT, SOUND_DIR, voiceOf(s) + '_0.mp3'))).map(s => s.id);
+const sw = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
+if (!sw.includes('SOUNDS')) bad.push('sw.js bez SOUNDS');
+const [a, b] = ['tyrannosaurus-rex', 'velociraptor-mongoliensis'];
+const state = `localStorage.setItem('dinoTracker.v2',${JSON.stringify(JSON.stringify(
+  { caught: { [a]: { t: 1 }, [b]: { t: 1 } }, rec: {}, added: [], removed: [], settings: { sound: true, mode: 'auto', view: '2d' } }))});location.reload()`;
+const steps = path.join(__dirname, 'voices', 'steps_fight.json');
+fs.writeFileSync(steps, JSON.stringify([{ js: state, wait: 1200 },
+  { js: "window.played = []; const p = Audio.prototype.play; Audio.prototype.play = function () { played.push(this.src.split('/').pop() + '@' + this.playbackRate.toFixed(2)); return p.call(this); }" },
+  { js: 'btnArena.click()', wait: 300 }, { js: "document.querySelector('[data-fight]').click()", wait: 12000 },
+  { js: 'JSON.stringify(played)', out: 'voices/played.json' }]));
+execFileSync('node', [path.join(__dirname, 'shot.js'), steps, 'file://' + path.join(ROOT, 'index.html')], { stdio: 'inherit' });
+const played = JSON.parse(fs.readFileSync(path.join(__dirname, 'voices/played.json')));
+console.log('odtworzone:', played.join(' '));
+for (const need of ['bigroar_', 'screech_', 'hit_']) if (!played.some(p => p.startsWith(need))) bad.push('brak ' + need);
+console.log(bad.length ? 'FAIL ' + bad.join(', ') : 'OK');
+process.exit(bad.length ? 1 : 0);

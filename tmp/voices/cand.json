@@ -1,0 +1,692 @@
+{
+ "roar": [
+  {
+   "q": "lion roar",
+   "id": "469123",
+   "author": "Manim8",
+   "url": "https://freesound.org/people/Manim8/sounds/469123/",
+   "title": "Demon_Lion_Monster_Growl_Roar",
+   "mp3": "https://cdn.freesound.org/previews/469/469123_4996003-hq.mp3",
+   "dur": 8.2761,
+   "dl": 3186,
+   "rating": 4.6,
+   "file": "cand/roar_0.mp3"
+  },
+  {
+   "q": "lion roar",
+   "id": "263115",
+   "author": "lauramellis",
+   "url": "https://freesound.org/people/lauramellis/sounds/263115/",
+   "title": "Tiger Roar",
+   "mp3": "https://cdn.freesound.org/previews/263/263115_672090-hq.mp3",
+   "dur": 11.3546,
+   "dl": 3695,
+   "rating": 3.6,
+   "file": "cand/roar_1.mp3"
+  },
+  {
+   "q": "lion roar",
+   "id": "567803",
+   "author": "iut_Paris8",
+   "url": "https://freesound.org/people/iut_Paris8/sounds/567803/",
+   "title": "poujade_eva_2020_2021_RoarOfLion(son2).wav",
+   "mp3": "https://cdn.freesound.org/previews/567/567803_907124-hq.mp3",
+   "dur": 2.05497,
+   "dl": 2614,
+   "rating": 4.6,
+   "file": "cand/roar_2.mp3"
+  },
+  {
+   "q": "tiger roar",
+   "id": "571288",
+   "author": "Vaporpup",
+   "url": "https://freesound.org/people/Vaporpup/sounds/571288/",
+   "title": "tiger_roar.wav",
+   "mp3": "https://cdn.freesound.org/previews/571/571288_11058236-hq.mp3",
+   "dur": 1.24773,
+   "dl": 1899,
+   "rating": 4.6,
+   "file": "cand/roar_3.mp3"
+  }
+ ],
+ "growl": [
+  {
+   "q": "bear growl",
+   "id": "445983",
+   "author": "Breviceps",
+   "url": "https://freesound.org/people/Breviceps/sounds/445983/",
+   "title": "Zombie gargles",
+   "mp3": "https://cdn.freesound.org/previews/445/445983_9159316-hq.mp3",
+   "dur": 0.866871,
+   "dl": 6257,
+   "rating": 4.9,
+   "file": "cand/growl_0.mp3"
+  },
+  {
+   "q": "bear growl",
+   "id": "342204",
+   "author": "Christopherderp",
+   "url": "https://freesound.org/people/Christopherderp/sounds/342204/",
+   "title": "Beast Snarling",
+   "mp3": "https://cdn.freesound.org/previews/342/342204_3908740-hq.mp3",
+   "dur": 3.22104,
+   "dl": 3273,
+   "rating": 4.5,
+   "file": "cand/growl_1.mp3"
+  },
+  {
+   "q": "tiger growl",
+   "id": "263115",
+   "author": "lauramellis",
+   "url": "https://freesound.org/people/lauramellis/sounds/263115/",
+   "title": "Tiger Roar",
+   "mp3": "https://cdn.freesound.org/previews/263/263115_672090-hq.mp3",
+   "dur": 11.3546,
+   "dl": 3695,
+   "rating": 3.6,
+   "file": "cand/growl_2.mp3"
+  },
+  {
+   "q": "tiger growl",
+   "id": "410343",
+   "author": "waxsocks",
+   "url": "https://freesound.org/people/waxsocks/sounds/410343/",
+   "title": "Roar.wav",
+   "mp3": "https://cdn.freesound.org/previews/410/410343_1766049-hq.mp3",
+   "dur": 5.9,
+   "dl": 2016,
+   "rating": 4.7,
+   "file": "cand/growl_3.mp3"
+  }
+ ],
+ "screech": [
+  {
+   "q": "hawk screech",
+   "id": "333832",
+   "author": "nick121087",
+   "url": "https://freesound.org/people/nick121087/sounds/333832/",
+   "title": "Demonic Woman Scream.wav",
+   "mp3": "https://cdn.freesound.org/previews/333/333832_3840537-hq.mp3",
+   "dur": 4.45833,
+   "dl": 29461,
+   "rating": 4.7,
+   "file": "cand/screech_0.mp3"
+  },
+  {
+   "q": "eagle scream",
+   "id": "583615",
+   "author": "Johnnie_Holiday",
+   "url": "https://freesound.org/people/Johnnie_Holiday/sounds/583615/",
+   "title": "Eagle.wav",
+   "mp3": "https://cdn.freesound.org/previews/583/583615_4819210-hq.mp3",
+   "dur": 7.21249,
+   "dl": 2555,
+   "rating": 4.8,
+   "file": "cand/screech_1.mp3"
+  },
+  {
+   "q": "eagle scream",
+   "id": "697363",
+   "author": "GrayEpic",
+   "url": "https://freesound.org/people/GrayEpic/sounds/697363/",
+   "title": "Eagle s.mp3",
+   "mp3": "https://cdn.freesound.org/previews/697/697363_4501195-hq.mp3",
+   "dur": 2.05902,
+   "dl": 1050,
+   "rating": 4.7,
+   "file": "cand/screech_2.mp3"
+  },
+  {
+   "q": "eagle scream",
+   "id": "528330",
+   "author": "magnuswaker",
+   "url": "https://freesound.org/people/magnuswaker/sounds/528330/",
+   "title": "Target Acquired",
+   "mp3": "https://cdn.freesound.org/previews/528/528330_11537497-hq.mp3",
+   "dur": 9.53973,
+   "dl": 272,
+   "rating": 4.3,
+   "file": "cand/screech_3.mp3"
+  }
+ ],
+ "shriek": [
+  {
+   "q": "crow caw",
+   "id": "75162",
+   "author": "nigelcoop",
+   "url": "https://freesound.org/people/nigelcoop/sounds/75162/",
+   "title": "crow.wav",
+   "mp3": "https://cdn.freesound.org/previews/75/75162_1088850-hq.mp3",
+   "dur": 4.08113,
+   "dl": 7074,
+   "rating": 4.5,
+   "file": "cand/shriek_0.mp3"
+  },
+  {
+   "q": "crow caw",
+   "id": "536732",
+   "author": "egomassive",
+   "url": "https://freesound.org/people/egomassive/sounds/536732/",
+   "title": "Caw.ogg",
+   "mp3": "https://cdn.freesound.org/previews/536/536732_1415754-hq.mp3",
+   "dur": 1.9025,
+   "dl": 1903,
+   "rating": 4.6,
+   "file": "cand/shriek_1.mp3"
+  },
+  {
+   "q": "crow caw",
+   "id": "515290",
+   "author": "Breviceps",
+   "url": "https://freesound.org/people/Breviceps/sounds/515290/",
+   "title": "Crows and other birds",
+   "mp3": "https://cdn.freesound.org/previews/515/515290_9159316-hq.mp3",
+   "dur": 10.6508,
+   "dl": 1665,
+   "rating": 4.9,
+   "file": "cand/shriek_2.mp3"
+  },
+  {
+   "q": "crow caw",
+   "id": "741366",
+   "author": "Mish7913",
+   "url": "https://freesound.org/people/Mish7913/sounds/741366/",
+   "title": "Hooded Crow: Cawing",
+   "mp3": "https://cdn.freesound.org/previews/741/741366_16104671-hq.mp3",
+   "dur": 4.79099,
+   "dl": 994,
+   "rating": 4.7,
+   "file": "cand/shriek_3.mp3"
+  }
+ ],
+ "bellow": [
+  {
+   "q": "bull bellow",
+   "id": "827111",
+   "author": "TheKingOfGeeks360",
+   "url": "https://freesound.org/people/TheKingOfGeeks360/sounds/827111/",
+   "title": "Bovines - Cattle; Loud Bellow from Hereford Bull",
+   "mp3": "https://cdn.freesound.org/previews/827/827111_15895934-hq.mp3",
+   "dur": 2.88,
+   "dl": 106,
+   "rating": 4.0,
+   "file": "cand/bellow_0.mp3"
+  }
+ ],
+ "honk": [
+  {
+   "q": "goose honk",
+   "id": "515408",
+   "author": "Tabby+Gus.",
+   "url": "https://freesound.org/people/Tabby+Gus./sounds/515408/",
+   "title": "Duck Quack - Sound Effect (HD).mp3",
+   "mp3": "https://cdn.freesound.org/previews/515/515408_10319640-hq.mp3",
+   "dur": 3.06503,
+   "dl": 3014,
+   "rating": 4.5,
+   "file": "cand/honk_0.mp3"
+  },
+  {
+   "q": "goose honk",
+   "id": "160686",
+   "author": "antique98",
+   "url": "https://freesound.org/people/antique98/sounds/160686/",
+   "title": "A squeaking goose",
+   "mp3": "https://cdn.freesound.org/previews/160/160686_2369092-hq.mp3",
+   "dur": 3.96778,
+   "dl": 875,
+   "rating": 4.4,
+   "file": "cand/honk_1.mp3"
+  },
+  {
+   "q": "goose honk",
+   "id": "740196",
+   "author": "el_boss",
+   "url": "https://freesound.org/people/el_boss/sounds/740196/",
+   "title": "Goose Honks - Multiple",
+   "mp3": "https://cdn.freesound.org/previews/740/740196_9129912-hq.mp3",
+   "dur": 2.51474,
+   "dl": 45,
+   "rating": 3,
+   "file": "cand/honk_2.mp3"
+  },
+  {
+   "q": "goose honk",
+   "id": "864291",
+   "author": "TheKingOfGeeks360",
+   "url": "https://freesound.org/people/TheKingOfGeeks360/sounds/864291/",
+   "title": "Waterfowl - Egyptian Goose, Soft Honks",
+   "mp3": "https://cdn.freesound.org/previews/864/864291_15895934-hq.mp3",
+   "dur": 1.36735,
+   "dl": 7,
+   "rating": 3,
+   "file": "cand/honk_3.mp3"
+  }
+ ],
+ "grunt": [
+  {
+   "q": "rhino",
+   "id": "350425",
+   "author": "bevibeldesign",
+   "url": "https://freesound.org/people/bevibeldesign/sounds/350425/",
+   "title": "Stampede",
+   "mp3": "https://cdn.freesound.org/previews/350/350425_4557960-hq.mp3",
+   "dur": 8.18504,
+   "dl": 10987,
+   "rating": 4.8,
+   "file": "cand/grunt_0.mp3"
+  },
+  {
+   "q": "rhino",
+   "id": "535810",
+   "author": "Breviceps",
+   "url": "https://freesound.org/people/Breviceps/sounds/535810/",
+   "title": "Indian rhinoceros (Rhinoceros unicornis)",
+   "mp3": "https://cdn.freesound.org/previews/535/535810_9159316-hq.mp3",
+   "dur": 9.24837,
+   "dl": 1267,
+   "rating": 4.7,
+   "file": "cand/grunt_1.mp3"
+  },
+  {
+   "q": "pig grunt",
+   "id": "536746",
+   "author": "egomassive",
+   "url": "https://freesound.org/people/egomassive/sounds/536746/",
+   "title": "Pig.ogg",
+   "mp3": "https://cdn.freesound.org/previews/536/536746_1415754-hq.mp3",
+   "dur": 1.35829,
+   "dl": 1000,
+   "rating": 4.4,
+   "file": "cand/grunt_2.mp3"
+  },
+  {
+   "q": "rhino",
+   "id": "350424",
+   "author": "bevibeldesign",
+   "url": "https://freesound.org/people/bevibeldesign/sounds/350424/",
+   "title": "Rhinoceros Trumpeting Angry",
+   "mp3": "https://cdn.freesound.org/previews/350/350424_4557960-hq.mp3",
+   "dur": 11.0891,
+   "dl": 726,
+   "rating": 4.5,
+   "file": "cand/grunt_3.mp3"
+  }
+ ],
+ "hiss": [
+  {
+   "q": "snake hiss",
+   "id": "540162",
+   "author": "schreibsel",
+   "url": "https://freesound.org/people/schreibsel/sounds/540162/",
+   "title": "Snake hissing.mp3",
+   "mp3": "https://cdn.freesound.org/previews/540/540162_7898982-hq.mp3",
+   "dur": 2.95075,
+   "dl": 8239,
+   "rating": 4.6,
+   "file": "cand/hiss_0.mp3"
+  },
+  {
+   "q": "snake hiss",
+   "id": "553374",
+   "author": "xoiziox",
+   "url": "https://freesound.org/people/xoiziox/sounds/553374/",
+   "title": "Snake Hiss",
+   "mp3": "https://cdn.freesound.org/previews/553/553374_3940234-hq.mp3",
+   "dur": 3.6,
+   "dl": 4400,
+   "rating": 4.7,
+   "file": "cand/hiss_1.mp3"
+  },
+  {
+   "q": "snake hiss",
+   "id": "343928",
+   "author": "Reitanna",
+   "url": "https://freesound.org/people/Reitanna/sounds/343928/",
+   "title": "hiss3.wav",
+   "mp3": "https://cdn.freesound.org/previews/343/343928_950925-hq.mp3",
+   "dur": 0.882358,
+   "dl": 2295,
+   "rating": 3.5,
+   "file": "cand/hiss_2.mp3"
+  },
+  {
+   "q": "snake hiss",
+   "id": "406089",
+   "author": "Yin_Yang_Jake007",
+   "url": "https://freesound.org/people/Yin_Yang_Jake007/sounds/406089/",
+   "title": "Hissing Sound.wav",
+   "mp3": "https://cdn.freesound.org/previews/406/406089_7919598-hq.mp3",
+   "dur": 5.33007,
+   "dl": 1976,
+   "rating": 3.8,
+   "file": "cand/hiss_3.mp3"
+  }
+ ],
+ "whale": [
+  {
+   "q": "whale song",
+   "id": "684188",
+   "author": "muri_kuri",
+   "url": "https://freesound.org/people/muri_kuri/sounds/684188/",
+   "title": "whale song",
+   "mp3": "https://cdn.freesound.org/previews/684/684188_10105416-hq.mp3",
+   "dur": 10.25,
+   "dl": 3737,
+   "rating": 4.8,
+   "file": "cand/whale_0.mp3"
+  },
+  {
+   "q": "whale song",
+   "id": "435815",
+   "author": "vanszisounddesign",
+   "url": "https://freesound.org/people/vanszisounddesign/sounds/435815/",
+   "title": "Ambient Synth Key (C Major)",
+   "mp3": "https://cdn.freesound.org/previews/435/435815_6262563-hq.mp3",
+   "dur": 9.56662,
+   "dl": 305,
+   "rating": 4.8,
+   "file": "cand/whale_1.mp3"
+  },
+  {
+   "q": "whale song",
+   "id": "514422",
+   "author": "iut_Paris8",
+   "url": "https://freesound.org/people/iut_Paris8/sounds/514422/",
+   "title": "Ruiz_Ylona_2019_2020_handspinner.wav",
+   "mp3": "https://cdn.freesound.org/previews/514/514422_907124-hq.mp3",
+   "dur": 7.90531,
+   "dl": 143,
+   "rating": 3,
+   "file": "cand/whale_2.mp3"
+  }
+ ],
+ "trumpet": [
+  {
+   "q": "elephant trumpet",
+   "id": "527845",
+   "author": "D.jones",
+   "url": "https://freesound.org/people/D.jones/sounds/527845/",
+   "title": "Elephant Trumpets Growls.flac",
+   "mp3": "https://cdn.freesound.org/previews/527/527845_11431915-hq.mp3",
+   "dur": 2.0,
+   "dl": 9716,
+   "rating": 4.7,
+   "file": "cand/trumpet_0.mp3"
+  },
+  {
+   "q": "elephant trumpet",
+   "id": "507467",
+   "author": "Danjocross",
+   "url": "https://freesound.org/people/Danjocross/sounds/507467/",
+   "title": "Angry Elephant.aiff",
+   "mp3": "https://cdn.freesound.org/previews/507/507467_2977885-hq.mp3",
+   "dur": 6.71504,
+   "dl": 3334,
+   "rating": 4.6,
+   "file": "cand/trumpet_1.mp3"
+  },
+  {
+   "q": "elephant trumpet",
+   "id": "350424",
+   "author": "bevibeldesign",
+   "url": "https://freesound.org/people/bevibeldesign/sounds/350424/",
+   "title": "Rhinoceros Trumpeting Angry",
+   "mp3": "https://cdn.freesound.org/previews/350/350424_4557960-hq.mp3",
+   "dur": 11.0891,
+   "dl": 726,
+   "rating": 4.5,
+   "file": "cand/trumpet_2.mp3"
+  },
+  {
+   "q": "elephant trumpet",
+   "id": "819668",
+   "author": "ikbenraar",
+   "url": "https://freesound.org/people/ikbenraar/sounds/819668/",
+   "title": "Elephant sound",
+   "mp3": "https://cdn.freesound.org/previews/819/819668_754558-hq.mp3",
+   "dur": 7.8,
+   "dl": 608,
+   "rating": 4.8,
+   "file": "cand/trumpet_3.mp3"
+  }
+ ],
+ "moo": [
+  {
+   "q": "cow moo",
+   "id": "401636",
+   "author": "Mystikuum",
+   "url": "https://freesound.org/people/Mystikuum/sounds/401636/",
+   "title": "cows_mooing_mono_4824.wav",
+   "mp3": "https://cdn.freesound.org/previews/401/401636_1643758-hq.mp3",
+   "dur": 5.5,
+   "dl": 4253,
+   "rating": 4.7,
+   "file": "cand/moo_0.mp3"
+  },
+  {
+   "q": "cow moo",
+   "id": "513565",
+   "author": "spurioustransients",
+   "url": "https://freesound.org/people/spurioustransients/sounds/513565/",
+   "title": "Cow moo #8",
+   "mp3": "https://cdn.freesound.org/previews/513/513565_2898771-hq.mp3",
+   "dur": 10.822,
+   "dl": 2961,
+   "rating": 4.4,
+   "file": "cand/moo_1.mp3"
+  },
+  {
+   "q": "cow moo",
+   "id": "546479",
+   "author": "invertedturtle",
+   "url": "https://freesound.org/people/invertedturtle/sounds/546479/",
+   "title": "Cow Moo 2",
+   "mp3": "https://cdn.freesound.org/previews/546/546479_11588763-hq.mp3",
+   "dur": 2.62379,
+   "dl": 2314,
+   "rating": 3.3,
+   "file": "cand/moo_2.mp3"
+  },
+  {
+   "q": "cow moo",
+   "id": "449622",
+   "author": "lusiaspinetv",
+   "url": "https://freesound.org/people/lusiaspinetv/sounds/449622/",
+   "title": "cow_vinyl",
+   "mp3": "https://cdn.freesound.org/previews/449/449622_7555999-hq.mp3",
+   "dur": 3.75,
+   "dl": 815,
+   "rating": 4.1,
+   "file": "cand/moo_3.mp3"
+  }
+ ],
+ "click": [
+  {
+   "q": "insect click",
+   "id": "467700",
+   "author": "LucasDuff",
+   "url": "https://freesound.org/people/LucasDuff/sounds/467700/",
+   "title": "insectoid monster clicking",
+   "mp3": "https://cdn.freesound.org/previews/467/467700_8272463-hq.mp3",
+   "dur": 5.00785,
+   "dl": 885,
+   "rating": 4.8,
+   "file": "cand/click_0.mp3"
+  },
+  {
+   "q": "insect click",
+   "id": "337621",
+   "author": "dotY21",
+   "url": "https://freesound.org/people/dotY21/sounds/337621/",
+   "title": "Weird Clicking",
+   "mp3": "https://cdn.freesound.org/previews/337/337621_5048136-hq.mp3",
+   "dur": 10.4025,
+   "dl": 500,
+   "rating": 4.8,
+   "file": "cand/click_1.mp3"
+  },
+  {
+   "q": "cicada",
+   "id": "562838",
+   "author": "LinaManjarrez",
+   "url": "https://freesound.org/people/LinaManjarrez/sounds/562838/",
+   "title": "Cicada - calm",
+   "mp3": "https://cdn.freesound.org/previews/562/562838_12494184-hq.mp3",
+   "dur": 10.0,
+   "dl": 107,
+   "rating": 3,
+   "file": "cand/click_2.mp3"
+  }
+ ],
+ "bubble": [
+  {
+   "q": "underwater bubbles",
+   "id": "539823",
+   "author": "ristooooo1",
+   "url": "https://freesound.org/people/ristooooo1/sounds/539823/",
+   "title": "Bubbles 001.wav",
+   "mp3": "https://cdn.freesound.org/previews/539/539823_6205597-hq.mp3",
+   "dur": 4.80004,
+   "dl": 7037,
+   "rating": 4.9,
+   "file": "cand/bubble_0.mp3"
+  },
+  {
+   "q": "underwater bubbles",
+   "id": "119915",
+   "author": "ftpalad",
+   "url": "https://freesound.org/people/ftpalad/sounds/119915/",
+   "title": "Gargling Underwater.aif",
+   "mp3": "https://cdn.freesound.org/previews/119/119915_1990698-hq.mp3",
+   "dur": 6.87352,
+   "dl": 2780,
+   "rating": 4.3,
+   "file": "cand/bubble_1.mp3"
+  },
+  {
+   "q": "underwater bubbles",
+   "id": "533147",
+   "author": "mattfinarelli",
+   "url": "https://freesound.org/people/mattfinarelli/sounds/533147/",
+   "title": "Bubbling",
+   "mp3": "https://cdn.freesound.org/previews/533/533147_7566729-hq.mp3",
+   "dur": 3.25079,
+   "dl": 1047,
+   "rating": 4.8,
+   "file": "cand/bubble_2.mp3"
+  },
+  {
+   "q": "underwater bubbles",
+   "id": "588468",
+   "author": "cartoonrob",
+   "url": "https://freesound.org/people/cartoonrob/sounds/588468/",
+   "title": "Bubbles_01.wav",
+   "mp3": "https://cdn.freesound.org/previews/588/588468_1778576-hq.mp3",
+   "dur": 10.3097,
+   "dl": 642,
+   "rating": 4.4,
+   "file": "cand/bubble_3.mp3"
+  }
+ ],
+ "hit": [
+  {
+   "q": "body hit",
+   "id": "504626",
+   "author": "leonelmail",
+   "url": "https://freesound.org/people/leonelmail/sounds/504626/",
+   "title": "BODY FALL - V HVY - DIRT",
+   "mp3": "https://cdn.freesound.org/previews/504/504626_4437257-hq.mp3",
+   "dur": 1.63372,
+   "dl": 15798,
+   "rating": 4.7,
+   "file": "cand/hit_0.mp3"
+  },
+  {
+   "q": "body hit",
+   "id": "264062",
+   "author": "Paul368",
+   "url": "https://freesound.org/people/Paul368/sounds/264062/",
+   "title": "Melee Weapon hit with male moan &amp; body fall ",
+   "mp3": "https://cdn.freesound.org/previews/264/264062_2971294-hq.mp3",
+   "dur": 1.60304,
+   "dl": 10481,
+   "rating": 4.6,
+   "file": "cand/hit_1.mp3"
+  },
+  {
+   "q": "body hit",
+   "id": "276600",
+   "author": "insanity54",
+   "url": "https://freesound.org/people/insanity54/sounds/276600/",
+   "title": "body_hit.wav",
+   "mp3": "https://cdn.freesound.org/previews/276/276600_464940-hq.mp3",
+   "dur": 0.841179,
+   "dl": 5882,
+   "rating": 3.7,
+   "file": "cand/hit_2.mp3"
+  },
+  {
+   "q": "body hit",
+   "id": "344402",
+   "author": "jawbutch",
+   "url": "https://freesound.org/people/jawbutch/sounds/344402/",
+   "title": "Body Wall Impact.wav",
+   "mp3": "https://cdn.freesound.org/previews/344/344402_4986214-hq.mp3",
+   "dur": 1.0844,
+   "dl": 4862,
+   "rating": 4.3,
+   "file": "cand/hit_3.mp3"
+  }
+ ],
+ "whoosh": [
+  {
+   "q": "whoosh swing",
+   "id": "369698",
+   "author": "crackles04",
+   "url": "https://freesound.org/people/crackles04/sounds/369698/",
+   "title": "Whoosh.wav",
+   "mp3": "https://cdn.freesound.org/previews/369/369698_5445085-hq.mp3",
+   "dur": 8.25212,
+   "dl": 20334,
+   "rating": 4.6,
+   "file": "cand/whoosh_0.mp3"
+  },
+  {
+   "q": "whoosh swing",
+   "id": "507466",
+   "author": "Danjocross",
+   "url": "https://freesound.org/people/Danjocross/sounds/507466/",
+   "title": "Clean fast Swoosh.aiff",
+   "mp3": "https://cdn.freesound.org/previews/507/507466_2977885-hq.mp3",
+   "dur": 0.917583,
+   "dl": 2874,
+   "rating": 4.6,
+   "file": "cand/whoosh_1.mp3"
+  },
+  {
+   "q": "whoosh swing",
+   "id": "735907",
+   "author": "ErikCruzDev",
+   "url": "https://freesound.org/people/ErikCruzDev/sounds/735907/",
+   "title": "Whip woosh",
+   "mp3": "https://cdn.freesound.org/previews/735/735907_15173542-hq.mp3",
+   "dur": 1.54,
+   "dl": 1323,
+   "rating": 4.7,
+   "file": "cand/whoosh_2.mp3"
+  },
+  {
+   "q": "whoosh swing",
+   "id": "391448",
+   "author": "saturdaysoundguy",
+   "url": "https://freesound.org/people/saturdaysoundguy/sounds/391448/",
+   "title": "Shirt Whoosh 1.wav",
+   "mp3": "https://cdn.freesound.org/previews/391/391448_7280678-hq.mp3",
+   "dur": 11.5627,
+   "dl": 1302,
+   "rating": 4.6,
+   "file": "cand/whoosh_3.mp3"
+  }
+ ]
+}

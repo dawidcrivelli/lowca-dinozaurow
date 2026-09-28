@@ -90,7 +90,8 @@ function tone(type, f0, f1, dur, vol, filter) {
   n.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + dur + 0.02);
 }
 const blip = (f, d = .1) => tone('triangle', f, f, d, .13);
-const cry = (sp, mode) => { const ac = audio(); if (ac) voice(ac, sp, mode); };   // głos gatunku: js/voices.js
+const cry = (sp, mode) => DB.settings.sound && voice(sp, mode);   // głos gatunku i odgłosy walki: js/voices.js
+const fx = name => DB.settings.sound && sfx(name);
 const thud = () => tone('sine', 140, 50, .18, .3);
 function crack() {
   const ac = audio(); if (!ac) return;
@@ -400,8 +401,8 @@ function showEvents(evs, done) {
       if (ev.move !== 'guard') cry(who(ev.att), 'attack');
       if (ev.hpDef === 0) later(250, () => cry(who(ev.def), 'ko'));
       f.classList.remove('attacking'); void f.offsetWidth; f.classList.add('attacking');
-      if (ev.damage) { g.classList.remove('hit'); void g.offsetWidth; g.classList.add('hit'); tone('square', 220, 90, .15, .12); navigator.vibrate?.(18); }
-      else blip(ev.heal ? 880 : 760, .08);
+      if (ev.damage) { g.classList.remove('hit'); void g.offsetWidth; g.classList.add('hit'); later(150, () => fx('hit')); navigator.vibrate?.(18); }
+      else if (ev.heal) blip(880, .08); else fx('whoosh');
       const dmg = $(`#dmg-${ev.heal ? as : ds}`);
       dmg.textContent = ev.damage ? `−${ev.damage}` : ev.heal ? `+${ev.heal}` : ev.dodge ? 'unik!' : 'pudło';
       dmg.className = 'dmg show ' + (ev.heal ? 'heal' : ''); void dmg.offsetWidth;
