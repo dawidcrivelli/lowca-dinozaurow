@@ -257,11 +257,11 @@ window.Arena3D = (() => {
       hit: () => { dx = -f.dir * .35 * s; flash = 1 - t; },
       dodge: () => { dz = -1.1 * s; dy = .5 * s; },
       guard: () => { sy = 1 - .16 * s; glow = s; },
-      ko: () => { rz = lean * Math.PI / 2 * t; dy = -.15 * t; flash = 1 - t; },
+      ko: () => { rz = lean * Math.PI / 2 * t; dy = -f.lift * t; flash = 1 - t; },
     })[a.k]();
     if (a && t >= 1 && a.k !== 'ko') f.anim = null;
     f.ko = f.ko || (a && a.k === 'ko' && t >= 1);
-    if (f.ko) { rz = lean * Math.PI / 2; dy = -.15; }
+    if (f.ko) { rz = lean * Math.PI / 2; dy = -f.lift; }
     const tm = now / 1000 + f.phase;
     if (!f.ko) sy *= 1 + .025 * Math.sin(tm * 3);
     if (f.swim && !f.ko) dy += .12 * Math.sin(tm * 2);
@@ -272,6 +272,10 @@ window.Arena3D = (() => {
     f.inner.scale.y = sy;
     for (const m of f.mats) m.emissive ? m.emissive.setRGB(flash * .8, glow * .35, 0) : m.color.setRGB(1, 1 - flash * .6, 1 - flash * .6);
     if (f.kind === 'bill') f.root.quaternion.copy(S.camera.quaternion);
+    if (a?.k === 'ko' || f.ko) {   // przewrócony obraca się wokół stóp → podnieś, żeby leżał NA ziemi, nie pod nią
+      f.root.updateMatrixWorld(true);
+      f.root.position.y -= Math.min(0, new THREE.Box3().setFromObject(f.inner).min.y);
+    }
   }
   function loop(now) {
     if (!S) return;
@@ -305,5 +309,5 @@ window.Arena3D = (() => {
     if (!S) return;
     for (const [k, f] of Object.entries(S.byId)) k === id ? f.won = true : f.ko || play(f, 'ko', ANIM_MS * 2);
   }
-  return { ok, start, stop, event, win };
+  return { ok, start, stop, event, win, get S() { return S; } };   // S: stan sceny dla testów (tmp/steps_ko.js)
 })();
