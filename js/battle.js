@@ -96,12 +96,12 @@ function inflict(B, f, ail, E) {
   f.status = ail; if (ail === 'sleep') f.sleep = intRange(B.rnd, TUNE.sleep);
   E({ status: ail, on: side(B, f), text: `${STATUS[ail][0]} ${f.name}: ${STATUS[ail][1]}!` }); return true;
 }
+// jedno zdarzenie na ruch: Prastara Moc = jedna ⬆️ dla 5 statystyk (ruchy nie mieszają znaków)
 function boost(B, f, st, E) {
-  for (const [k, n] of st) {
-    const was = f.stage[k]; f.stage[k] = clampN(was + n, -6, 6);
-    E({ stat: k, n: f.stage[k] - was, on: side(B, f),
-      text: f.stage[k] === was ? `${f.name}: ${STAT_PL[k]} już się nie zmieni.` : `${n > 0 ? '⬆️' : '⬇️'} ${f.name}: ${STAT_PL[k]} ${n > 0 ? 'rośnie' : 'spada'}${Math.abs(n) > 1 ? ' mocno' : ''}!` });
-  }
+  const n = st[0][1], ch = st.filter(([k]) => f.stage[k] !== (f.stage[k] = clampN(f.stage[k] + n, -6, 6))).map(([k]) => STAT_PL[k]), many = +(ch.length > 1);
+  E({ stat: st[0][0], n: ch.length ? n : 0, on: side(B, f),
+    text: ch.length ? `${n > 0 ? '⬆️' : '⬇️'} ${f.name}: ${ch.join(', ')} ${[['spada', 'spadają'], ['rośnie', 'rosną']][+(n > 0)][many]}${Math.abs(n) > 1 ? ' mocno' : ''}!`
+      : `${f.name}: ${st.map(([k]) => STAT_PL[k]).join(', ')} już się nie ${st.length > 1 ? 'zmienią' : 'zmieni'}.` });
 }
 
 /* ---------- jeden ruch; zwraca zdarzenia ---------- */
