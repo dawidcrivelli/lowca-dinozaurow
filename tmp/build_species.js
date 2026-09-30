@@ -51,7 +51,7 @@ function move(name) {
   const st = m.stat_changes.map(s => [STAT[s.stat.name], s.change]);
   MOVES[name] = { n: MOVES_PL[name] || en(m.names)[0].name, t: m.type.name, c: CLS[m.damage_class.name], p: m.power || undefined, a: m.accuracy || undefined, pp: m.pp,
     pr: m.priority || undefined, ail, ch: ail && (x.ailment_chance || 100), st: st.length ? st : undefined, sc: st.length ? x.stat_chance || 100 : undefined,
-    self: st.length && (m.target.name === 'user' || cat === 'damage+raise') ? 1 : undefined, drain: x.drain || undefined, heal: x.healing || undefined,
+    self: st.length && (m.target.name === 'user' || cat === 'damage-raise') ? 1 : undefined, drain: x.drain || undefined, heal: x.healing || undefined,
     hits: x.min_hits ? [x.min_hits, x.max_hits] : undefined, fl: x.flinch_chance || undefined, cr: x.crit_rate || undefined,
     chg: MV.CHARGE.includes(name) ? 1 : undefined, rch: MV.RECHARGE.includes(name) ? 1 : undefined, fix: MV.FIXED[name], ohko: cat === 'ohko' ? 1 : undefined };
   return name;
