@@ -69,6 +69,8 @@ function newBattle(sa, sb, rnd = Math.random) {
 }
 const eff = (f, k) => f.st[k] * stageMult(f.stage[k]) * (k === 'spd' && f.status === 'paralysis' ? .5 : 1);
 const intRange = (rnd, [lo, hi]) => lo + Math.floor(rnd() * (hi - lo + 1));
+// leczenie jak w grach: % życia bez TUNE.hp, inaczej leczy 2.5× więcej względem ciosów i walki kręcą się w kółko
+const healOf = (f, m) => Math.floor(f.hp0 / TUNE.hp * m.heal / 100);
 
 /* obrażenia jednego trafienia; opts.avg → średnia bez losowania (dla komputera) */
 function damageOf(B, att, def, m, { crit = false, avg = false } = {}) {
@@ -132,7 +134,7 @@ function useMove(B, att, def, slot) {
   att.charging = null;
   if (!hits(B, att, def, m)) return E({ ...ev, miss: true, text: `💨 ${att.name}: ${m.n} — pudło!` });
   if (m.c === 'x') {   // bez obrażeń: stan, statystyki, leczenie
-    if (m.heal) { const h = Math.min(att.hp0 - att.hp, Math.floor(att.hp0 * m.heal / 100)); att.hp += h; E({ ...ev, heal: h, text: `💚 ${att.name}: ${m.n} — +${h} życia.` }); }
+    if (m.heal) { const h = Math.min(att.hp0 - att.hp, healOf(att, m)); att.hp += h; E({ ...ev, heal: h, text: `💚 ${att.name}: ${m.n} — +${h} życia.` }); }
     else E({ ...ev, text: `${att.name}: ${m.n}!` });
     if (m.ail && !inflict(B, def, m.ail, E)) E({ ...ev, fail: true, text: `…ale nic się nie dzieje.` });
     if (m.st) boost(B, m.self ? att : def, m.st, E);
@@ -183,7 +185,7 @@ function aiMove(B, me, foe) {
       return d >= foe.hp ? foe.hp * (1 + acc) : d * acc;
     }
     let v = 0;
-    if (m.heal && me.hp < me.hp0 * K.healBelow) v += me.hp0 * m.heal / 100;
+    if (m.heal && me.hp < me.hp0 * K.healBelow) v += healOf(me, m);
     if (m.ail && !(m.ail === 'confusion' ? foe.confused : foe.status) && !STATUS[m.ail][2].some(t => foe.s.types.includes(t))) v += foe.hp0 * K.status * acc;
     if (m.st) v += m.st.reduce((t, [k, n]) => t + ((m.self ? n > 0 && me.stage[k] < 2 : n < 0 && foe.stage[k] > -2) ? foe.hp0 * K.boost : 0), 0) * (me.hp > me.hp0 / 2);
     return v;
