@@ -7,7 +7,7 @@ const LEVEL = 50, ROUNDS = 15;
 const TUNE = {
   hp: 2.5,               // życie × hp: w grach walka na poziomie 50 trwa ~2 tury, za krótko, żeby zobaczyć stany i animacje
   stab: 1.5, crit: [1 / 24, 1 / 8, 1 / 2], critMult: 1.5, roll: [.85, .15],   // krytyk wg premii ruchu (0, 1, 2+); losowo ×[.85, 1]
-  arena: 1.2, sleep: [1, 3], confuse: [2, 5], selfHit: 1 / 3, selfHitPower: 40, para: .25, thaw: .2,
+  arena: 1.2, sleep: [1, 3], confuse: [2, 5], selfHit: 1 / 3, selfHitPower: 40, para: .25, thaw: .2, freeze: 3,   // lód: jak w grach 20% na odmarznięcie, ale najwyżej 3 tury (bez limitu bywało 10+)
   poison: 1 / 8, burn: 1 / 16, struggle: 50, struggleRecoil: 1 / 4, ohkoAcc: 30,
   ai: { random: .15, status: .3, boost: .25, healBelow: .5 },   // komputer: czasem losowo, wartość ruchu ze stanem / wzmocnienia (× życia rywala)
 };
@@ -95,7 +95,7 @@ function inflict(B, f, ail, E) {
     f.confused = intRange(B.rnd, TUNE.confuse); E({ status: ail, on: side(B, f), text: `💫 ${f.name} jest zdezorientowany!` }); return true;
   }
   if (f.status || f.hp <= 0 || STATUS[ail][2].some(t => f.s.types.includes(t))) return false;
-  f.status = ail; if (ail === 'sleep') f.sleep = intRange(B.rnd, TUNE.sleep);
+  f.status = ail; f.sleep = ail === 'sleep' ? intRange(B.rnd, TUNE.sleep) : TUNE.freeze;   // sleep = ile tur śpi / najwyżej zamrożony
   E({ status: ail, on: side(B, f), text: `${STATUS[ail][0]} ${f.name}: ${STATUS[ail][1]}!` }); return true;
 }
 // jedno zdarzenie na ruch: Prastara Moc = jedna ⬆️ dla 5 statystyk (ruchy nie mieszają znaków)
@@ -115,7 +115,7 @@ function useMove(B, att, def, slot) {
     att.status = null; E({ wake: true, text: `☀️ ${att.name} się budzi!` });
   }
   if (att.status === 'freeze') {
-    if (rnd() >= TUNE.thaw) return E({ skip: 'freeze', text: `🧊 ${att.name} jest zamrożony!` });
+    if (rnd() >= TUNE.thaw && att.sleep-- > 0) return E({ skip: 'freeze', text: `🧊 ${att.name} jest zamrożony!` });
     att.status = null; E({ wake: true, text: `💧 ${att.name} odmarza!` });
   }
   if (att.flinch) { att.flinch = false; return E({ skip: 'flinch', text: `😖 ${att.name} się wzdrygnął i nie atakuje!` }); }
