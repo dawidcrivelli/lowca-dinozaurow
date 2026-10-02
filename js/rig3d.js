@@ -25,47 +25,95 @@ window.Rig3D = (() => {
   const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
   /* ---------- ruchy: [ms, ułamek trafienia, ...klucze [t, {kanał: wartość}]] — brak kanału w kluczu = 0, gładko między kluczami
+     styl = jeden ruch albo lista wariantów [[ms, hit, …], …]; przy każdym wypadzie losowy wariant, strona (lustro) i rozrzut ±JIT
      korzeń (arena): fwd, up [m], pit, yaw · miednica: by (przysiad × biodro), bp (dęba), sr (przechył) · kręgosłup: sb, sy
      szyja nk, ny · głowa hp, hy, hr · jw pysk · ogon tl (unieś), tw (zamach, z opóźnieniem w dół ogona)
-     ar ręce/łapy w przód · lf przednie nogi w powietrzu · kk kopnięcie · st tupnięcie · fold podkulenie · sh potrząsanie · bl powieki
+     ar ręce/łapy w przód · al ręka wiodąca (+ jedna w przód, druga w tył) · ax ręce w bok · af machanie rękami
+     lf przednie nogi w powietrzu · kk kopnięcie · st tupnięcie · fold podkulenie · sh potrząsanie · bl powieki
      wb chwianie (trucizna) · jk szarpanie (ofiara się wyrywa) · sq zgniecenie (− ściśnięcie) · cl zwinięcie ogona (wąż) · tn sięgnięcie macek/szczypiec */
-  const CH = 'fwd up pit yaw by bp sr sb sy nk ny hp hy hr jw tl tw ar lf kk st fold sh bl wg fp tr wb jk sq cl tn'.split(' ');
+  const CH = 'fwd up pit yaw by bp sr sb sy nk ny hp hy hr jw tl tw ar al ax af lf kk st fold sh bl wg fp tr wb jk sq cl tn'.split(' ');
+  const MIR = new Set('yaw sr sy ny hy hr tw al'.split(' ')), FIX = new Set(['fwd', 'yaw']);   // kanały odbijane lustrem; bez rozrzutu amplitudy (zasięg, pełne obroty)
+  const JIT = .15, MS_MAX = 720;             // rozrzut amplitudy i tempa; górny limit czasu ataku [ms]
+  // teropody: kłapnięcie z góry / z boku nisko / podwójne; szarpanie łbem / całym ciałem / podrzut; pazury z góry / z boku / dwa razy
+  const BITE2 = [700, .62, [.2, { fwd: -.1, bp: .15, nk: .35, hp: .3, jw: 1, ar: -.3 }], [.36, { fwd: .65, bp: -.1, nk: -.2, hp: -.2, jw: 0, ny: -.25 }],
+    [.48, { fwd: .55, nk: .15, hp: .2, jw: 1, ny: .1, bp: .05 }], [.62, { fwd: 1.05, bp: -.18, nk: -.35, hp: -.3, jw: 0, ny: .3, by: -.1, ar: .3 }], [.8, { fwd: .8, jw: .2, nk: -.1 }]];
   const BI = {
-    bite: [640, .48, [.3, { fwd: -.15, bp: .12, nk: .4, hp: .35, jw: 1, tl: .25, by: -.05 }], [.48, { fwd: 1, bp: -.15, nk: -.3, hp: -.25, jw: 0, tl: -.1, by: -.08 }],
-      [.7, { fwd: .8, bp: -.08, nk: -.15, hp: -.1, jw: .15, sh: 1 }]],
-    shake: [700, .4, [.25, { fwd: -.2, bp: .15, nk: .55, hp: .4, jw: 1, tl: .35, by: -.1 }], [.4, { fwd: 1.05, bp: -.15, nk: -.3, hp: -.3, jw: 0 }],
-      [.85, { fwd: .75, bp: .05, nk: .15, hp: .1, jw: .05, sh: 1.8 }]],
-    claw: [620, .5, [.3, { fwd: .1, bp: .3, ar: -1.2, nk: .3, hp: .25, jw: .6, tl: -.15 }], [.5, { fwd: .85, bp: .05, ar: 1.3, nk: -.1, jw: .8 }], [.72, { fwd: .6, ar: .5, jw: .3 }]],
-    tail: [700, .55, [.28, { yaw: -.45, sy: -.4, tw: -.8, by: -.06, nk: .15 }], [.55, { yaw: 2.3, fwd: .4, sy: .5, tw: 1.2, nk: .25, hy: -.3 }], [.8, { yaw: 1.1, fwd: .2, tw: .3 }]],
-    kick: [620, .5, [.3, { by: -.15, bp: .2, kk: -.3, ar: -.6, nk: .25, tl: .2 }], [.5, { fwd: .9, up: .35, bp: .4, kk: 1, ar: .8, tl: .45, jw: .7 }], [.72, { fwd: .5, kk: .2, up: .05 }]],
-    pounce: [700, .55, [.3, { by: -.28, bp: -.1, nk: -.15, ar: -.6, tl: .25 }], [.55, { fwd: 1.2, up: .75, pit: .15, kk: .9, ar: 1.1, jw: 1, tl: .45 }], [.78, { fwd: .8, kk: .3, jw: .2, by: -.1 }]],
+    bite: [[620, .5, [.3, { fwd: -.15, bp: .3, by: .04, nk: .55, hp: .45, jw: 1.1, tl: .35, ar: -.5, ax: .3 }], [.5, { fwd: 1, bp: -.28, by: -.12, nk: -.5, hp: -.45, jw: 0, tl: -.15, ar: .5 }],
+      [.72, { fwd: .8, bp: -.1, nk: -.2, hp: -.15, jw: .2, sh: .6 }]],
+      [600, .48, [.3, { fwd: -.1, by: -.16, bp: -.05, sy: .7, yaw: .5, ny: -.8, hy: -.4, hr: .6, jw: 1.1, nk: -.1, tl: .2, sr: .2, al: .6 }],
+        [.48, { fwd: 1.05, by: -.14, sy: -.5, yaw: -.35, ny: .5, hy: .3, hr: .7, nk: -.25, hp: -.1, jw: 0, sr: -.2, al: -.6 }], [.7, { fwd: .8, by: -.08, sy: -.2, yaw: -.15, ny: .2, hr: .3, jw: .15 }]], BITE2],
+    shake: [[700, .4, [.25, { fwd: -.2, bp: .15, nk: .55, hp: .4, jw: 1, tl: .35, by: -.1 }], [.4, { fwd: 1.05, bp: -.15, nk: -.3, hp: -.3, jw: 0 }],
+      [.85, { fwd: .75, bp: .05, nk: .15, hp: .1, jw: .05, sh: 1.8, af: .8 }]],
+      [700, .38, [.22, { fwd: -.2, bp: .12, nk: .45, hp: .35, jw: 1, tl: .3, by: -.08 }], [.38, { fwd: 1.05, bp: -.15, nk: -.3, hp: -.3, jw: 0 }],
+        [.52, { fwd: .9, sy: .6, yaw: .3, ny: .7, sr: .2, tw: .8, af: 1 }], [.68, { fwd: .85, sy: -.6, yaw: -.3, ny: -.7, sr: -.2, tw: -.8, af: 1 }], [.84, { fwd: .75, sy: .4, yaw: .15, ny: .4, tw: .5, sh: .6 }]],
+      [700, .4, [.25, { fwd: -.15, by: -.12, nk: -.2, hp: -.1, jw: 1, bp: -.05 }], [.4, { fwd: 1, by: -.15, bp: -.18, nk: -.45, hp: -.35, jw: 0 }],
+        [.65, { fwd: .7, by: .04, bp: .25, nk: .4, hp: .35, sh: 1.4, tl: -.2, af: .8, ny: .3, sr: .15 }], [.85, { fwd: .5, bp: .1, nk: .25, hp: .3, jw: .9, hy: .5, yaw: .2 }]]],
+    claw: [[620, .5, [.3, { fwd: .1, bp: .35, ar: -1.3, ax: .5, nk: .3, hp: .25, jw: .6, tl: -.15 }], [.5, { fwd: .85, bp: .02, ar: 1.4, ax: -.2, nk: -.15, jw: .8, by: -.06 }], [.72, { fwd: .6, ar: .5, jw: .3 }]],
+      [620, .5, [.3, { sy: -.55, yaw: -.3, sr: .15, ar: -.4, al: -.9, ax: .7, ny: .3, jw: .5, tl: .2 }], [.5, { fwd: .85, sy: .55, yaw: .3, sr: -.15, ar: .6, al: 1.1, ax: -.4, ny: -.3, jw: .8 }],
+        [.72, { fwd: .6, sy: .2, yaw: .1, al: .4 }]],
+      [700, .62, [.22, { fwd: .05, bp: .25, ar: -.8, al: -.6, ax: .4, jw: .6, nk: .25 }], [.4, { fwd: .7, bp: .05, ar: .6, al: 1, jw: .8, sr: .1 }],
+        [.62, { fwd: .95, bp: .08, ar: .6, al: -1, jw: .9, sr: -.1, by: -.06 }], [.8, { fwd: .6, ar: .3 }]]],
+    tail: [[700, .55, [.28, { yaw: -.45, sy: -.4, tw: -.8, by: -.06, nk: .15, ax: .3 }], [.55, { yaw: 2.3, fwd: .4, sy: .5, tw: 1.2, nk: .25, hy: -.3, ax: .5 }], [.8, { yaw: 1.1, fwd: .2, tw: .3 }]],
+      [700, .55, [.3, { yaw: -.3, sy: -.6, tw: -1.4, tl: .6, by: -.1, ax: .5, nk: .3, hp: .2 }], [.55, { yaw: 1.3, fwd: .55, up: .2, sy: .8, tw: 1.8, tl: -.2, sr: .2, ax: .6, ny: -.5 }],
+        [.8, { yaw: .5, fwd: .25, tw: .5, by: -.06 }]]],
+    kick: [[620, .5, [.3, { by: -.15, bp: .2, kk: -.3, ar: -.6, nk: .25, tl: .2 }], [.5, { fwd: .9, up: .35, bp: .4, kk: 1, ar: .8, tl: .45, jw: .7 }], [.72, { fwd: .5, kk: .2, up: .05 }]],
+      [660, .6, [.22, { by: -.2, bp: .15, kk: -.4, ar: -.4, ax: .3 }], [.38, { fwd: .6, kk: .8, bp: .3, up: .15, sr: .1 }], [.48, { fwd: .55, kk: -.2 }],
+        [.6, { fwd: .95, up: .3, bp: .45, kk: 1.1, ar: .6, jw: .7, tl: .45, sr: -.1 }], [.78, { fwd: .5, kk: .2 }]]],
+    pounce: [[700, .55, [.3, { by: -.28, bp: -.1, nk: -.15, ar: -.6, tl: .25 }], [.55, { fwd: 1.2, up: .75, pit: .15, kk: .9, ar: 1.1, jw: 1, tl: .45 }], [.78, { fwd: .8, kk: .3, jw: .2, by: -.1 }]],
+      [680, .55, [.3, { by: -.22, sy: .3, nk: -.2, ar: -.3, ax: .7, tl: .2 }], [.55, { fwd: 1.15, up: .4, pit: -.05, sy: -.2, ar: 1, ax: -.3, jw: 1, kk: .6, nk: -.2, hp: -.2 }],
+        [.78, { fwd: .85, ar: .7, ax: -.4, jw: .3, by: -.12, sh: .4 }]]],
     peck: [560, .5, [.32, { fwd: -.1, nk: .5, hp: .35, jw: .5, bp: .1 }], [.5, { fwd: .8, nk: -.55, hp: -.45, jw: .1, bp: -.25 }], [.66, { fwd: .6, nk: -.3, jw: .4 }]],
-    headbutt: [620, .5, [.3, { fwd: -.2, nk: .3, hp: .2, by: -.1, bp: .12 }], [.5, { fwd: 1.1, nk: -.5, hp: -.7, bp: -.25, by: -.12 }], [.66, { fwd: .75, nk: -.3, hp: -.3 }]],
+    headbutt: [[620, .5, [.3, { fwd: -.2, nk: .3, hp: .2, by: -.1, bp: .12 }], [.5, { fwd: 1.1, nk: -.5, hp: -.7, bp: -.25, by: -.12 }], [.66, { fwd: .75, nk: -.3, hp: -.3 }]],
+      [640, .5, [.3, { fwd: -.15, bp: .3, nk: .5, hp: .5, by: .02, ax: .4 }], [.5, { fwd: 1.05, bp: -.35, nk: -.6, hp: -.8, by: -.12, ar: .4 }], [.68, { fwd: .7, bp: -.15, nk: -.3, hp: -.3 }]]],
     charge: [700, .52, [.22, { fwd: -.25, nk: .15, by: -.1 }], [.52, { fwd: 1.3, nk: -.55, hp: -.7, bp: -.3, by: -.12, tl: .2 }], [.68, { fwd: .9, nk: -.2, hp: .1 }]],
     stomp: [660, .55, [.35, { fwd: .2, bp: .4, by: .04, nk: .45, hp: .3, st: 1, jw: .6, ar: -.5 }], [.55, { fwd: .75, bp: -.12, nk: -.15, jw: .3, by: -.08 }], [.72, { fwd: .6, by: -.04 }]],
     thumb: [600, .5, [.3, { fwd: .05, bp: .2, ar: -1, nk: .2 }], [.5, { fwd: .85, bp: .05, ar: 1.4, nk: -.1, hp: -.1 }], [.72, { fwd: .6, ar: .4 }]],
   };
   BI.fire = BI.shake;
-  // czworonogi: ar = przednia łapa w przód (zamach), lf = przednie nogi w górę (dęba), tr = trąba
+  /* czworonogi: ar = przednia łapa w przód (zamach), lf = przednie nogi w górę (dęba), tr = trąba
+     ceratopsy: róg — podrzut / prosty taran / szarpanie łbem; łeb — dęba i w dół / zamach kryzą / dwa pchnięcia; tupnięcie — raz / dwa / grzebanie; szarża — galop / skok / zamach rogami */
   const QU = {
-    gore: [660, .5, [.3, { fwd: -.2, by: -.1, nk: .3, hp: .45, bp: .06 }], [.5, { fwd: 1.05, nk: -.35, hp: -.6, bp: -.1, by: -.12 }], [.68, { fwd: .8, nk: .1, hp: .35, jw: .3 }]],
-    headbutt: BI.headbutt, charge: BI.charge, pounce: BI.pounce,
-    stomp: [700, .58, [.38, { fwd: .15, bp: .45, lf: 1, nk: .35, hp: .2, jw: .5, tl: -.2 }], [.58, { fwd: .7, bp: -.05, by: -.08, nk: -.1, jw: .2 }], [.75, { fwd: .55 }]],
+    gore: [[660, .5, [.3, { fwd: -.2, by: -.14, bp: .05, nk: -.25, hp: -.45 }], [.5, { fwd: 1.05, by: -.12, bp: -.1, nk: -.4, hp: -.6 }],
+      [.66, { fwd: .9, by: .02, bp: .25, lf: .5, nk: .35, hp: .55, jw: .4, sr: .1 }], [.85, { fwd: .6, bp: .1, nk: .15, hp: .25 }]],
+      [600, .45, [.28, { fwd: -.3, by: -.16, bp: -.05, nk: -.5, hp: -.6, tl: .25 }], [.45, { fwd: 1.15, by: -.14, bp: -.15, nk: -.55, hp: -.7, tl: .3 }], [.6, { fwd: .85, bp: .05, nk: -.3, hp: -.4 }]],
+      [700, .45, [.25, { fwd: -.15, by: -.1, nk: -.3, hp: -.4, ny: -.4, hy: -.2 }], [.45, { fwd: 1, by: -.12, nk: -.4, hp: -.55, ny: .3, hr: .4, sr: .12 }],
+        [.6, { fwd: .9, nk: -.3, hp: -.45, ny: -.45, hr: -.5, sr: -.12, sy: -.2 }], [.75, { fwd: .85, nk: -.3, hp: -.4, ny: .4, hr: .45, sr: .1, sy: .2 }], [.9, { fwd: .6, nk: -.1, hp: -.1 }]]],
+    headbutt: [[700, .55, [.35, { fwd: -.05, bp: .4, lf: 1, nk: .3, hp: .35, tl: -.2 }], [.55, { fwd: 1, bp: -.15, by: -.14, nk: -.5, hp: -.75 }], [.72, { fwd: .75, by: -.08, nk: -.25, hp: -.3 }]],
+      [660, .52, [.3, { fwd: -.05, yaw: .4, sy: .4, ny: -.9, hy: -.5, hr: -.3, by: -.08, sr: .1 }], [.52, { fwd: .8, yaw: -.5, sy: -.5, ny: .9, hy: .5, hr: .35, sr: -.15, nk: -.2 }],
+        [.72, { fwd: .6, yaw: -.2, ny: .35, hy: .2 }]],
+      [700, .66, [.2, { fwd: -.15, by: -.1, nk: -.3, hp: -.4 }], [.35, { fwd: .6, by: -.12, nk: -.4, hp: -.55, bp: -.1 }], [.48, { fwd: .35, nk: -.15, hp: -.2, bp: .05 }],
+        [.66, { fwd: 1.1, by: -.14, nk: -.5, hp: -.7, bp: -.15 }], [.82, { fwd: .75, nk: -.25, hp: -.3 }]]],
+    charge: [[700, .55, [.2, { fwd: -.25, by: -.08, nk: -.2, hp: -.3 }], [.32, { fwd: .15, by: -.14, bp: .06, nk: -.35, hp: -.5 }], [.44, { fwd: .6, by: -.04, bp: -.06, nk: -.45, hp: -.6 }],
+      [.55, { fwd: 1.3, by: -.14, bp: -.12, nk: -.55, hp: -.75, tl: .3 }], [.72, { fwd: .9, nk: -.2, hp: .1 }]],
+      [700, .55, [.25, { fwd: -.3, by: -.18, nk: -.2, hp: -.3, tl: .2 }], [.45, { fwd: .8, up: .25, pit: .08, lf: .5, nk: -.35, hp: -.5 }], [.55, { fwd: 1.25, pit: -.08, by: -.12, nk: -.55, hp: -.75 }],
+        [.72, { fwd: .9, nk: -.25, hp: -.1 }]],
+      [700, .52, [.22, { fwd: -.25, by: -.1, nk: -.2, ny: -.5, hy: -.3 }], [.52, { fwd: 1.25, by: -.12, bp: -.15, nk: -.5, hp: -.6, ny: .6, hy: .4, yaw: -.25, sr: -.1 }], [.7, { fwd: .9, ny: .2, nk: -.2 }]]],
+    pounce: BI.pounce,
+    stomp: [[700, .58, [.38, { fwd: .15, bp: .45, lf: 1, nk: .35, hp: .2, jw: .5, tl: -.2 }], [.58, { fwd: .7, bp: -.05, by: -.1, nk: -.1, jw: .2 }], [.75, { fwd: .55 }]],
+      [720, .7, [.22, { fwd: .1, bp: .35, lf: .9, nk: .3, hp: .2, jw: .4 }], [.38, { fwd: .4, bp: -.05, by: -.06, nk: -.1 }], [.55, { fwd: .5, bp: .45, lf: 1, nk: .35, hp: .25, jw: .6, sr: .1 }],
+        [.7, { fwd: .75, bp: -.1, by: -.1, nk: -.15, jw: .2 }], [.85, { fwd: .55 }]],
+      [720, .62, [.15, { ar: -.8, nk: -.2, hp: -.2, by: -.05 }], [.28, { ar: .5, nk: -.25 }], [.4, { ar: -.8, nk: -.2 }], [.5, { fwd: .4, st: 1.3, bp: .3, nk: .25, hp: .15, jw: .4, sr: -.12 }],
+        [.62, { fwd: .75, bp: -.1, by: -.1, nk: -.1, jw: .2 }], [.8, { fwd: .55 }]]],
     rear: [700, .55, [.4, { fwd: .1, bp: .7, lf: 1, nk: -.35, hp: .2, tl: -.3, jw: .5 }], [.55, { fwd: .8, bp: .1, nk: -.2, by: -.06 }], [.75, { fwd: .6 }]],
-    tail: [700, .55, [.28, { yaw: .45, sy: .4, tw: .8, nk: .1 }], [.55, { yaw: -2.4, fwd: .35, sy: -.5, tw: -1.4, ny: .4 }], [.8, { yaw: -1.2, fwd: .2, tw: -.3 }]],
+    tail: [[700, .55, [.28, { yaw: .45, sy: .4, tw: .8, nk: .1 }], [.55, { yaw: -2.4, fwd: .35, sy: -.5, tw: -1.4, ny: .4 }], [.8, { yaw: -1.2, fwd: .2, tw: -.3 }]],
+      [700, .55, [.3, { yaw: .3, sy: .3, tw: .6, tl: .8, by: -.06, nk: .1 }], [.55, { yaw: -2, fwd: .3, sy: -.5, tw: -1.6, tl: -.2, ny: .4, sr: .15 }], [.8, { yaw: -1, fwd: .15, tw: -.4 }]]],
     neck: [700, .52, [.3, { fwd: -.1, ny: -1.2, nk: .2, hy: -.3 }], [.52, { fwd: .55, ny: 1.1, nk: -.5, hy: .4, hp: -.2 }], [.75, { fwd: .4, ny: .3 }]],
-    club: [680, .56, [.3, { yaw: .5, sy: .5, tw: 1.2, tl: .4, by: -.08 }], [.56, { yaw: -2.6, fwd: .3, sy: -.6, tw: -1.8, tl: .2 }], [.8, { yaw: -1.3, fwd: .15, tw: -.4 }]],
+    club: [[680, .56, [.3, { yaw: .5, sy: .5, tw: 1.2, tl: .4, by: -.08 }], [.56, { yaw: -2.6, fwd: .3, sy: -.6, tw: -1.8, tl: .2 }], [.8, { yaw: -1.3, fwd: .15, tw: -.4 }]],
+      [700, .55, [.32, { yaw: .3, sy: .6, tw: 1.6, tl: .9, by: -.1, sr: -.1 }], [.55, { yaw: -1.8, fwd: .3, sy: -.7, tw: -2.2, tl: -.1, sr: .2 }], [.8, { yaw: -.9, tw: -.6 }]]],
     roll: [720, .55, [.3, { fwd: -.1, by: -.15, sr: .35, tw: .5 }], [.55, { yaw: -2.2, fwd: .5, sr: -.4, tw: -1.6, tl: .3 }], [.8, { yaw: -1, fwd: .3, tw: -.3 }]],
     spin: [720, .6, [.25, { yaw: .3, by: -.08, tw: .5, tl: .3 }], [.6, { yaw: -3.6, fwd: .35, tw: -1.8, tl: .4 }], [1, { yaw: -2 * Math.PI }]],
-    bite: [620, .48, [.3, { fwd: -.15, nk: .35, hp: .3, jw: 1, by: -.06 }], [.48, { fwd: .95, nk: -.3, hp: -.25, jw: 0, by: -.1 }], [.7, { fwd: .75, sh: .8, jw: .1 }]],
+    bite: [[620, .48, [.3, { fwd: -.15, nk: .35, hp: .3, jw: 1, by: -.06 }], [.48, { fwd: .95, nk: -.3, hp: -.25, jw: 0, by: -.1 }], [.7, { fwd: .75, sh: .8, jw: .1 }]],
+      [600, .48, [.3, { fwd: -.1, ny: -.6, hy: -.3, hr: .4, jw: 1.1, sy: .3, by: -.05 }], [.48, { fwd: 1, ny: .4, hy: .25, hr: .4, jw: 0, sy: -.3, nk: -.2 }], [.7, { fwd: .75, ny: .15, jw: .15, sh: .5 }]], BITE2],
     claw: [640, .5, [.3, { bp: .3, lf: .6, ar: -1, nk: .2, jw: .6 }], [.5, { fwd: .85, bp: .1, lf: .4, ar: 1.2, jw: .8 }], [.72, { fwd: .6, ar: .3 }]],
-    tusk: [660, .52, [.3, { fwd: -.15, nk: .4, hp: .4, tr: .6, by: -.05 }], [.52, { fwd: 1, nk: -.4, hp: -.55, ny: .3, tr: -.4 }], [.72, { fwd: .7, nk: .2, hp: .3, tr: .3 }]],
+    tusk: [[660, .52, [.3, { fwd: -.15, nk: .4, hp: .4, tr: .6, by: -.05 }], [.52, { fwd: 1, nk: -.4, hp: -.55, ny: .3, tr: -.4 }], [.72, { fwd: .7, nk: .2, hp: .3, tr: .3 }]],
+      [660, .5, [.3, { fwd: -.15, nk: -.3, hp: -.4, by: -.1, tr: .8 }], [.5, { fwd: 1, nk: .3, hp: .5, bp: .2, lf: .3, tr: -.6, sr: .1 }], [.72, { fwd: .7, nk: .1, hp: .2 }]]],
     trunk: [660, .5, [.32, { fwd: 0, nk: .3, hp: .4, tr: 1.6, jw: .4 }], [.5, { fwd: .75, nk: -.1, hp: -.2, tr: -1.2 }], [.72, { fwd: .55, tr: .4 }]],
   };
   QU.croll = [760, .5, [.3, { fwd: .9, jw: 1, nk: -.1 }], [.42, { fwd: .9, jw: 0 }], [.75, { fwd: .7, sr: Math.PI * .9, tw: 1 }], [1, { fwd: 0, sr: 0 }]];
   // reakcje (wspólne): trafienie, unik, nokaut — klucz 1 nokautu zostaje (leży)
   const REACT = {
-    hit: [0, 0, [.18, { nk: .4, hp: .5, hy: .25, jw: .7, by: -.08, bp: .15, sr: .12, tl: .45, sy: .3, bl: .8, ar: -.4 }]],
+    hit: [[0, 0, [.18, { nk: .4, hp: .5, hy: .25, jw: .7, by: -.08, bp: .15, sr: .12, tl: .45, sy: .3, bl: .8, ar: -.4 }]],
+      [0, 0, [.18, { nk: -.3, hp: -.4, ny: .4, hy: .3, jw: .6, by: -.1, sr: -.15, bl: .8, sy: -.3, tl: .3, ax: .4 }]]],
     dodge: [0, 0, [.45, { fold: .8, nk: -.25, hp: -.2, tl: .4, ar: -.6, lf: 1 }]],
     ko: [0, 0, [.25, { nk: .5, hp: .55, jw: .9, bp: .12 }], [1, { fold: 1, lf: 1, nk: -.9, hp: -.35, jw: .45, tl: -.25, by: -.25, bl: 1, ar: .6, sr: .2 }]],
   };
@@ -84,10 +132,21 @@ window.Rig3D = (() => {
     dive: [720, .58, [.35, { fwd: -.2, up: .7, pit: .4, wg: 1, nk: .2 }], [.58, { fwd: 1.1, up: -.5, pit: -.5, nk: -.3, hp: -.3, jw: 1, wg: -.6 }], [.78, { fwd: .7, up: -.2 }]] };
   // wspólny słownik (gdy archetyp nie ma własnej wersji): paszcza, łapy, ciało, macki, szczypce, żądło
   const GEN = {
-    crush: [700, .45, [.28, { fwd: -.15, nk: .4, hp: .4, jw: 1.1, by: -.05, bp: .1 }], [.45, { fwd: 1, nk: -.35, hp: -.3, jw: 0, by: -.1 }], [.65, { fwd: .9, nk: -.5, hp: -.45, by: -.16, sh: .5 }], [.85, { fwd: .6, jw: .25 }]],
+    // zgniecenie: docisk w dół / szarpnięcie i miażdżenie z obrotem łba / przydepnięcie łapą i gryz z góry
+    crush: [[700, .45, [.28, { fwd: -.15, nk: .4, hp: .4, jw: 1.1, by: -.05, bp: .1 }], [.45, { fwd: 1, nk: -.35, hp: -.3, jw: 0, by: -.1 }], [.65, { fwd: .9, nk: -.5, hp: -.45, by: -.16, sh: .5 }], [.85, { fwd: .6, jw: .25 }]],
+      [700, .42, [.26, { fwd: -.15, nk: .4, hp: .4, jw: 1.15, bp: .12 }], [.42, { fwd: 1, nk: -.3, hp: -.3, jw: 0, by: -.1 }], [.6, { fwd: .6, bp: .15, by: -.05, nk: -.1, hr: .45, jk: .6, af: .6 }],
+        [.8, { fwd: .5, hr: -.35, jk: .5, nk: -.1 }]],
+      [700, .55, [.3, { fwd: .2, bp: .35, st: 1, nk: .5, hp: .4, jw: 1, ar: -.4 }], [.55, { fwd: .95, bp: -.3, by: -.16, nk: -.55, hp: -.45, jw: 0, st: .3 }],
+        [.75, { fwd: .85, bp: -.25, by: -.18, nk: -.5, hp: -.4, sh: .6, jw: .1 }]]],
     venom: [640, .42, [.3, { fwd: -.25, nk: .55, hp: .6, jw: 1.2, by: -.08, sr: .1 }], [.42, { fwd: 1.05, nk: -.4, hp: -.35, jw: .1 }], [.65, { fwd: .95, hp: -.2, sh: .35 }], [.85, { fwd: .45, jw: .6 }]],
     spit: [650, .5, [.3, { fwd: -.25, nk: .55, hp: .5, jw: .3, bp: .12 }], [.5, { fwd: .15, nk: -.3, hp: -.45, jw: 1.1, bp: -.05 }], [.72, { fwd: .1, jw: .7, hp: -.15 }]],
-    roar: [700, .5, [.25, { fwd: -.15, bp: .2, nk: .5, hp: .55, jw: .3, tl: .2 }], [.5, { fwd: .3, bp: .05, nk: -.05, hp: .15, jw: 1.2, sh: .5, tl: .5, ar: -.5 }], [.82, { fwd: .25, hp: .1, jw: 1, sh: .35, tl: .4 }]],
+    // ryk: łeb w górę / nisko ku wrogowi / omiecenie łbem na boki; ręce machają
+    roar: [[700, .5, [.25, { fwd: -.15, bp: .25, nk: .6, hp: .6, jw: .3, tl: .2, ar: -.3 }], [.5, { fwd: .25, bp: .15, nk: .45, hp: .7, jw: 1.25, sh: .45, tl: .5, af: 1, ax: .4 }],
+      [.82, { fwd: .2, bp: .1, nk: .3, hp: .5, jw: 1.1, sh: .35, tl: .4, af: .7 }]],
+      [700, .5, [.25, { fwd: -.2, by: -.05, bp: .1, nk: .3, hp: .3, jw: .4 }], [.5, { fwd: .4, by: -.16, bp: -.2, nk: -.4, hp: -.05, jw: 1.3, sh: .6, ny: .2, tl: .6, af: .8, ax: .3, sr: .1 }],
+        [.82, { fwd: .35, by: -.12, bp: -.15, nk: -.3, jw: 1.1, sh: .45, tl: .5, af: .6 }]],
+      [700, .45, [.2, { fwd: -.1, bp: .15, nk: .4, hp: .4, jw: .5, ny: -.8, sy: -.3, hy: -.3 }], [.45, { fwd: .2, bp: .1, nk: .3, hp: .4, jw: 1.25, sh: .3, af: .9 }],
+        [.75, { fwd: .2, nk: .3, hp: .4, jw: 1.2, ny: .8, sy: .3, hy: .3, sh: .3, af: .6, tl: .4 }]]],
     slash: [620, .5, [.3, { by: -.2, bp: .25, kk: -.4, ar: -.5, nk: .2 }], [.5, { fwd: 1, up: .45, bp: .55, kk: 1.2, ar: .9, jw: .8, tl: .5 }], [.68, { fwd: .7, up: .1, kk: .3 }]],
     grab: [700, .45, [.28, { fwd: -.1, ar: -1.1, lf: .4, nk: .2, jw: .6, tn: -.6 }], [.45, { fwd: 1, ar: 1.2, lf: .3, nk: -.2, jw: .9, tn: 1 }], [.7, { fwd: .6, ar: .9, by: -.1, sh: .5, jw: .2, tn: .7 }], [.9, { fwd: .3, ar: .3, tn: .2 }]],
     trample: [720, .6, [.25, { fwd: .15, bp: .35, lf: .8, st: .8, nk: .3, jw: .4 }], [.42, { fwd: .55, by: -.06 }], [.6, { fwd: .95, bp: .3, lf: .7, st: .9 }], [.8, { fwd: .8, by: -.1 }]],
@@ -100,20 +159,28 @@ window.Rig3D = (() => {
   /* reakcje na trafienie wg stylu napastnika: ugryziony szarpie się, podrapany wzdryga, otruty chwieje i słabnie, zdeptany spłaszcza,
      staranowany odlatuje z odrzuconą głową, smagnięty ogonem obraca się, oplątany jest ściskany, zastraszony kuli się */
   const RX = {
-    grip: [0, 0, [.15, { nk: .5, hp: .4, jw: .8, by: -.1, sr: .15, bl: .8, jk: 1 }], [.6, { nk: .3, hp: .2, jw: .6, jk: .8, by: -.05 }]],
-    flinch: [0, 0, [.12, { hy: -.6, ny: -.5, hp: .3, bl: 1, by: -.06, sr: -.2, ar: -.6, jw: .4, tl: .4 }], [.35, { hy: -.3, ny: -.2, bl: .6 }]],
-    poison: [0, 0, [.2, { nk: .3, hp: .3, jw: .5, bl: .6 }], [.55, { nk: -.5, hp: -.4, by: -.12, wb: 1, bl: .7, jw: .4, tl: -.3 }], [.85, { nk: -.3, wb: .7, by: -.06, bl: .5 }]],
-    squash: [0, 0, [.15, { sq: 1, by: -.2, nk: -.5, hp: -.3, bl: 1, jw: .6, fold: .2 }], [.4, { sq: -.35, by: .03 }], [.6, { sq: .15 }]],
-    knock: [0, 0, [.12, { bp: .22, nk: .45, hp: .6, hr: .2, jw: .8, bl: 1, by: -.05, tl: .6, ar: -.7 }], [.4, { bp: .1, nk: .3, hp: .2 }]],
-    spun: [0, 0, [.15, { sy: 1.2, sr: .35, ny: 1, hy: .5, tw: 1, bl: 1, jw: .6 }], [.45, { sy: -.4, ny: -.3, sr: -.1 }]],
-    squeeze: [0, 0, [.2, { sq: -.6, jk: .7, bl: 1, jw: 1, nk: .4, hp: .5 }], [.65, { sq: -.45, jk: .5, jw: .8 }]],
-    scare: [0, 0, [.2, { by: -.18, nk: -.5, hp: -.4, bl: 1, tl: -.4, ar: .5, fold: .2, jk: .4 }], [.7, { by: -.12, nk: -.3, bl: .6, jk: .3 }]],
+    grip: [[0, 0, [.15, { nk: .5, hp: .4, jw: .8, by: -.1, sr: .15, bl: .8, jk: 1 }], [.6, { nk: .3, hp: .2, jw: .6, jk: .8, by: -.05 }]],
+      [0, 0, [.15, { nk: -.3, hp: -.2, ny: .6, hy: .3, jw: .8, by: -.12, sr: -.2, bl: .8, jk: 1 }], [.6, { ny: .3, jk: .7, jw: .5, by: -.06 }]]],
+    flinch: [[0, 0, [.12, { hy: -.6, ny: -.5, hp: .3, bl: 1, by: -.06, sr: -.2, ar: -.6, jw: .4, tl: .4 }], [.35, { hy: -.3, ny: -.2, bl: .6 }]],
+      [0, 0, [.12, { bp: .25, nk: .5, hp: .5, bl: 1, ar: -.8, ax: .5, jw: .5, tl: .5, by: .03 }], [.35, { bp: .1, nk: .2, bl: .6 }]]],
+    poison: [[0, 0, [.2, { nk: .3, hp: .3, jw: .5, bl: .6 }], [.55, { nk: -.5, hp: -.4, by: -.12, wb: 1, bl: .7, jw: .4, tl: -.3 }], [.85, { nk: -.3, wb: .7, by: -.06, bl: .5 }]],
+      [0, 0, [.2, { sr: .3, ny: .5, bl: .6, jw: .5 }], [.55, { sr: -.25, ny: -.4, by: -.1, wb: 1, nk: -.4, bl: .8 }], [.85, { sr: .1, wb: .6, by: -.05 }]]],
+    squash: [[0, 0, [.15, { sq: 1, by: -.2, nk: -.5, hp: -.3, bl: 1, jw: .6, fold: .2 }], [.4, { sq: -.35, by: .03 }], [.6, { sq: .15 }]],
+      [0, 0, [.15, { fold: .5, by: -.3, nk: -.6, hp: -.4, bl: 1, jw: .6, sq: .6 }], [.45, { fold: .3, by: -.15, sq: -.2 }], [.7, { sq: .1 }]]],
+    knock: [[0, 0, [.12, { bp: .22, nk: .45, hp: .6, hr: .2, jw: .8, bl: 1, by: -.05, tl: .6, ar: -.7 }], [.4, { bp: .1, nk: .3, hp: .2 }]],
+      [0, 0, [.12, { sr: .35, sy: .6, ny: .8, hy: .4, hr: .3, jw: .8, bl: 1, tl: .4, ar: -.5, ax: .6 }], [.4, { sr: .12, sy: .2, ny: .3 }]]],
+    spun: [[0, 0, [.15, { sy: 1.2, sr: .35, ny: 1, hy: .5, tw: 1, bl: 1, jw: .6 }], [.45, { sy: -.4, ny: -.3, sr: -.1 }]],
+      [0, 0, [.15, { sy: -1.4, sr: -.2, ny: -1, hy: -.4, tw: -1.2, bl: 1, jw: .7, by: -.1 }], [.4, { sy: .5, ny: .4, wb: .6 }], [.7, { sy: -.15 }]]],
+    squeeze: [[0, 0, [.2, { sq: -.6, jk: .7, bl: 1, jw: 1, nk: .4, hp: .5 }], [.65, { sq: -.45, jk: .5, jw: .8 }]],
+      [0, 0, [.2, { sq: -.5, bp: .25, nk: .7, hp: .6, jw: 1.1, bl: 1, jk: .5, af: .6 }], [.65, { sq: -.35, bp: .12, nk: .4, jk: .4, jw: .8 }]]],
+    scare: [[0, 0, [.2, { by: -.18, nk: -.5, hp: -.4, bl: 1, tl: -.4, ar: .5, fold: .2, jk: .4 }], [.7, { by: -.12, nk: -.3, bl: .6, jk: .3 }]],
+      [0, 0, [.18, { bp: .3, lf: .7, nk: .4, hp: .4, jw: .7, bl: 1, ar: -.6, af: .5 }], [.55, { by: -.15, nk: -.35, hp: -.3, tl: -.4, bl: .6, jk: .3 }]]],
   };
   const GRP = Object.fromEntries(Object.entries({ grip: 'bite crush shake grab pincer tentacle', flinch: 'claw slash thumb peck wing kick', poison: 'venom sting spit',
     squash: 'stomp trample rear', knock: 'headbutt gore ram charge dive tusk pounce', spun: 'tail club spin roll neck flipper trunk shell', squeeze: 'coil', scare: 'roar fire' })
     .flatMap(([g, l]) => l.split(' ').map(s => [s, g])));
   const MOVES = { biped: BI, quad: QU, swim: SWM, fly: FLY }, REAC = {};
-  for (const tab of [...Object.values(MOVES), REACT, GEN, RX]) for (const k in tab) tab[k] = comp(tab[k]);
+  for (const tab of [...Object.values(MOVES), REACT, GEN, RX]) for (const k in tab) tab[k] = (typeof tab[k][0] === 'number' ? [tab[k]] : tab[k]).map(comp);   // styl → lista wariantów
   Object.assign(REAC, REACT);
   const STAY = new Set(['roar', 'spit', 'fire']);   // ataki z miejsca: fwd nie skaluje się z odległością
   const curve = (A, c, t) => { const v = A.ch[c]; if (!v) return 0; const ts = A.ts; t = Math.min(1, Math.max(0, t));
@@ -717,9 +784,15 @@ window.Rig3D = (() => {
   function rig(c, ctx, scale, half) {
     const ch = Object.fromEntries(CH.map(k => [k, 0])), R = { fwd: 0, up: 0, pitch: 0, yaw: 0 }, moves = { ...GEN, ...QU, ...SWM, ...FLY, ...MOVES[c.kind] };
     const ph = Math.random() * 9, py0 = c.pelvis.position.y, hy = c.hy, spine2 = [{}, ...c.spine.map(() => ({}))];
-    let g = 0, look = null, kx = 1, offX = 0, lastBlink = 0, gap = GAP0;
+    let g = 0, look = null, kx = 1, offX = 0, pk = null, pt = 0, fresh = false, side = 1, gap = GAP0;
     const move = s => moves[c.alias?.[s] || s] || moves.bite || Object.values(moves)[0];
-    const add = (A, t, k = 1) => { for (const n in A.ch) ch[n] += curve(A, n, t) * k; };
+    /* wariant ruchu V = { s, L, A, m: strona ±1, k: amplituda, ms }: losowy z listy L, rozrzut ±JIT; self.fv / fm wymuszają wariant i stronę (podgląd) */
+    const cur = {}, re = {}, KO = { A: REAC.ko[0], m: 1, k: 1 };
+    const roll = (V, L, s, v = self.fv) => { const r = v == null, j = () => r ? 1 + (Math.random() * 2 - 1) * JIT : 1, A = L[r ? Math.random() * L.length | 0 : Math.min(v, L.length - 1)];
+      return Object.assign(V, { s, L, A, m: r ? (Math.random() < .5 ? -1 : 1) : self.fm, k: j(), ms: Math.min(MS_MAX, Math.round(A.ms * j())) }); };
+    const lunge = s => cur.s === s ? cur : roll(cur, move(s), s);
+    const cv = (V, n, t) => curve(V.A, n, t) * (MIR.has(n) ? V.m : 1) * (FIX.has(n) ? 1 : V.k);
+    const add = (V, t) => { for (const n in V.A.ch) ch[n] += cv(V, n, t); };
     function opp() {   // kierunek do przeciwnika w układzie ciała (przeciwnik leży na osi x areny)
       const root = ctx.body.parent?.parent; if (!root) return 0;
       const v = new T.Vector3(root.position.x < 0 ? 1 : -1, 0, 0).applyAxisAngle(new T.Vector3(0, 1, 0), -root.rotation.y);
@@ -750,7 +823,7 @@ window.Rig3D = (() => {
           fx = L.gx - offX; fy += Math.sin(Math.PI * L.st.t) * STEP.h * hy; tilt = Math.sin(Math.PI * L.st.t) * .5; if (L.st.t >= 1) L.st = null; }
         L.lo = offX;
         // uniesienie: kopnięcie (pierwsza tylna), tupnięcie (pierwsza przednia lub tylna), wolna noga podąża za ciałem
-        const kick = !L.front && L.side > 0 ? ch.kk : 0, stomp = L.side > 0 && L.front === c.legs.some(o => o.front) ? ch.st : 0, paw = L.front && L.side > 0 ? ch.ar : 0;
+        const kick = !L.front && L.side === side ? ch.kk : 0, stomp = L.side === side && L.front === c.legs.some(o => o.front) ? ch.st : 0, paw = L.front && L.side === side ? ch.ar : 0;
         if (free > 0 || kick || stomp || paw) {
           const ca = Math.cos(P.a), sa = Math.sin(P.a), rx = home - L.j[0][0], ry = fy - L.j[0][1], hx = P.x + L.hip[0] * ca - L.hip[1] * sa, hyy = P.y + L.hip[0] * sa + L.hip[1] * ca;
           const k = Math.max(free, Math.abs(kick), stomp, Math.abs(paw)), f = 1 - .45 * ch.fold;
@@ -764,15 +837,21 @@ window.Rig3D = (() => {
     const reach = () => { const foe = Object.values(window.Arena3D?.S?.byId || {}).find(f => f.rig && f.rig !== self)?.rig;
       return Math.min(3, Math.max(.25, gap - half * .8 - (foe?.half ?? half) * .7)); };
     const self = {
-      half, ms: s => move(s).ms, hitAt: s => move(s).hit,
-      root(k, s, t) { const A = move(s); R.fwd = curve(A, 'fwd', t) * (STAY.has(s) ? 1 : reach()); R.up = curve(A, 'up', t); R.pitch = curve(A, 'pit', t); R.yaw = curve(A, 'yaw', t); return R; },
+      half, fv: null, fm: 1,
+      ms(s) { fresh = true; return roll(cur, move(s), s).ms; }, hitAt: s => lunge(s).A.hit,   // ms() = początek wypadu: losuje wariant
+      root(k, s, t) { const V = lunge(s); R.fwd = curve(V.A, 'fwd', t) * (STAY.has(s) ? 1 : reach()); R.up = cv(V, 'up', t); R.pitch = cv(V, 'pit', t); R.yaw = cv(V, 'yaw', t); return R; },
       update(st) {
         if (look === null) look = opp();
-        const { k, t, tm, dt } = st, A = k === 'lunge' ? move(st.style) : k === 'hit' ? RX[GRP[st.style]] || REAC.hit : k && REAC[k];
+        const { k, t, tm, dt } = st, L = k === 'hit' ? RX[GRP[st.style]] || REAC.hit : k !== 'lunge' && REAC[k], nw = k !== pk || t < pt, t0 = nw ? -1 : pt;
+        if (nw && k === 'lunge' && !fresh) roll(cur, move(st.style), st.style);   // nowa animacja: wariant (wypad bez ms() / reakcja)
+        if (L && (nw || re.L !== L)) roll(re, L, k);
+        if (nw) fresh = false; pk = k; pt = t;
+        const V = k === 'lunge' ? lunge(st.style) : L ? re : null, A = V?.A;
+        side = k === 'lunge' ? cur.m : 1;
         if (k !== 'lunge' && st.gap) gap = st.gap;
         for (const n in ch) ch[n] = 0;
-        if (A) add(A, t);
-        if (st.ko && !A) add(REAC.ko, 1);
+        if (A) add(V, t);
+        if (st.ko && !A) add(KO, 1);
         g += ((st.guarding && !st.ko ? 1 : 0) - g) * Math.min(1, dt * 8);
         for (const n in GUARD) ch[n] += GUARD[n] * g;
         if (st.won) { const r = Math.max(0, Math.sin(tm * 2.4)); ch.nk += .35; ch.hp += .35 + .2 * r; ch.jw += .2 + .8 * r; ch.tl += .3; ch.bp += .12; ch.ar -= .5; ch.sh += r * .3; ch.st += Math.max(0, Math.sin(tm * 4.8)) ** 4 * .8; }   // zwycięstwo: ryk, tupanie, smaganie ogonem
@@ -789,13 +868,14 @@ window.Rig3D = (() => {
         c.head.rotation.set(ch.hr + shake * .35, ch.hy + ly * .4 + shake * .25, ch.hp - br * .02 * idle);
         c.jaw.rotation.z = -c.jawMax * Math.min(1.2, ch.jw + (.04 + .03 * br) * idle);
         c.tail.forEach((b, i) => {
-          const f = i / nt, tw = (A ? curve(A, 'tw', t - i * .035) : 0) + (st.won ? Math.sin(tm * 6 - i * .6) * .9 : 0);
+          const f = i / nt, tw = (A ? cv(V, 'tw', t - i * .035) : 0) + (st.won ? Math.sin(tm * 6 - i * .6) * .9 : 0);
           const u = Math.sin(tm * 2.6 + ph - i * .7) * (.3 + f) * idle;   // falowanie pływaka: bok-bok (ryby, gady) albo góra-dół (wieloryb)
           b.rotation.set(0, (tw * 1.4 + ch.sy * .5) / nt - ch.cl * .9 * f + Math.sin(tm * 1.3 + ph - i * .55) * .05 * (.4 + f) * idle + u * (c.undul || 0),
             -(ch.tl + .1 * Math.sin(tm * .9 + ph - i * .4) * idle) / nt - (i ? 0 : ch.bp * .75) + (ch.fold > .5 ? .05 : 0) + u * (c.vert || 0));
         });
-        c.arms.forEach(a => { const r = ch.ar, j = Math.sin(tm * 1.6 + ph + a.s) * .05 * idle;
-          a.b[0].rotation.set(-a.s * ch.wg * .8, 0, r * .9 + j); a.b[1].rotation.set(0, 0, -.3 * Math.max(0, -r) + r * .4 - j); a.b[2].rotation.set(0, 0, -r * .3); });
+        // ręce: zamach w przód (ar), ręka wiodąca (al), rozłożenie (ax), machanie (af, na zmianę), w spoczynku zginanie łokci i dłoni
+        c.arms.forEach(a => { const r = ch.ar + ch.al * a.s + ch.af * Math.sin(tm * 17 + a.s * 2), j = Math.sin(tm * 1.6 + ph + a.s) * .12 * idle;
+          a.b[0].rotation.set(-a.s * (ch.wg * .8 + ch.ax), 0, r * .9 + j); a.b[1].rotation.set(0, 0, -.3 * Math.max(0, -r) + r * .4 - j); a.b[2].rotation.set(0, 0, -r * .3 + j * .8); });
         c.fins?.forEach(F => F.b.rotation.set(-F.s * (Math.sin(tm * 2.6 + ph + F.ph) * .25 * idle + ch.fp * .8), F.s * ch.fp * .4, Math.sin(tm * 2.6 + ph + F.ph + 1) * .15 * idle));
         c.wings?.forEach(W => { const f = (Math.sin(tm * 5 + ph) * .55 + .1) * idle + ch.wg;   // machanie: ramię w górę/dół, dłoń i palec dociągają z opóźnieniem
           W.b[0].rotation.set(-W.s * f, 0, 0); W.b[1].rotation.set(-W.s * f * .3, 0, 0); W.b[2].rotation.set(-W.s * (Math.sin(tm * 5 + ph - .8) * .2 * idle + ch.wg * .2), 0, 0); W.b[3].rotation.set(-W.s * f * .2, 0, 0); });
@@ -806,8 +886,7 @@ window.Rig3D = (() => {
         for (const e of c.eyes) { e.ball.rotation.set(0, (look - ly - ch.yaw * 0) * .6 - ch.hy * .5, -ch.hp * .3);
           e.lid.rotation.set(e.s * (-LID + blink * (Math.PI / 2 + LID)), 0, 0); }
         legs(st, dt, !st.ko && k !== 'ko' && k !== 'dodge' && !c.float);
-        if (A && k === 'lunge' && st.style === 'stomp' && t >= A.hit && lastBlink < A.hit && window.Arena3D?.S) Arena3D.S.shake = .3;   // tupnięcie trzęsie ziemią
-        lastBlink = k === 'lunge' ? t : 0;
+        if (A && k === 'lunge' && st.style === 'stomp' && t >= A.hit && t0 < A.hit && window.Arena3D?.S) Arena3D.S.shake = .3;   // tupnięcie trzęsie ziemią
       },
     };
     return self;
