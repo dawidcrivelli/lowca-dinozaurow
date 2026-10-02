@@ -103,6 +103,50 @@ function arenaMods(p, arena) {
 }
 
 /* ---------- walka ---------- */
+/* ---------- styl ataku (pokaz: animacja rigów, efekty, dziennik) ----------
+   wg presetu rysunku (ART w artspec.js) albo gatunku (SIG); ostatni w liście = popisowy, gdy cios jest specjalny.
+   Zwykłe ciosy z „worka”: losowo bez powtórzeń, dopóki worek się nie opróżni. */
+const STYLES = {
+  thero: ['bite', 'claw', 'tail', 'roar', 'shake', 'crush'], raptor: ['claw', 'bite', 'kick', 'slash', 'pounce'], ornimim: ['kick', 'peck', 'claw', 'charge'],
+  tbird: ['peck', 'kick', 'grab', 'crush'], dragon: ['bite', 'claw', 'tail', 'fire'], prosauro: ['claw', 'tail', 'thumb', 'stomp'],
+  hadro: ['headbutt', 'tail', 'kick', 'roar', 'trample'], orni: ['tail', 'kick', 'thumb', 'stomp'], dome: ['headbutt', 'kick', 'charge'],
+  sauro: ['stomp', 'tail', 'neck', 'trample', 'rear'], cerat: ['gore', 'headbutt', 'stomp', 'charge'], armor: ['club', 'tail', 'roll', 'club'],
+  stego: ['tail', 'spin', 'stomp', 'spin'], ptero: ['peck', 'wing', 'grab', 'dive'], bird: ['peck', 'claw', 'wing', 'dive'],
+  plesio: ['bite', 'flipper', 'neck', 'shake'], mosa: ['bite', 'tail', 'roll', 'crush'], ichthyo: ['bite', 'tail', 'ram'], fish: ['bite', 'tail', 'ram'],
+  shark: ['bite', 'ram', 'tail', 'shake'], whale: ['bite', 'tail', 'ram', 'crush'], croc: ['bite', 'tail', 'shake', 'roll'], lizard: ['bite', 'claw', 'tail', 'venom'],
+  snake: ['bite', 'venom', 'coil'], turtle: ['bite', 'flipper', 'shell'], sail: ['bite', 'claw', 'roar', 'charge'], synap: ['bite', 'claw', 'roar', 'pounce'],
+  amphib: ['bite', 'tail', 'pounce'], bug: ['ram', 'roll'], ammo: ['tentacle', 'ram', 'tentacle'], scorp: ['pincer', 'tail', 'sting'],
+  anomalo: ['grab', 'ram', 'grab'], mammal: ['bite', 'claw', 'roar', 'pounce'], cat: ['claw', 'bite', 'roar', 'pounce'], ele: ['tusk', 'stomp', 'trunk', 'trample', 'charge'],
+  sloth: ['claw', 'grab', 'rear'],
+};
+// gatunki z własnym repertuarem (nadpisuje preset)
+const SIG = {
+  'dilophosaurus-wetherilli': ['bite', 'claw', 'roar', 'spit'], 'varanus-priscus': ['bite', 'claw', 'tail', 'venom'],
+  'titanoboa-cerrejonensis': ['bite', 'venom', 'coil'], 'therizinosaurus-cheloniformis': ['claw', 'slash', 'kick', 'slash'],
+  'tyrannosaurus-rex': ['bite', 'tail', 'roar', 'shake', 'crush'], 'spinosaurus-aegyptiacus': ['bite', 'claw', 'tail', 'shake'],
+  'deinonychus-antirrhopus': ['claw', 'bite', 'kick', 'slash'], 'utahraptor-ostrommaysorum': ['claw', 'bite', 'slash', 'pounce'],
+  'inostrancevia-alexandri': ['bite', 'claw', 'roar', 'crush'], 'jaekelopterus-rhenaniae': ['pincer', 'tail', 'grab', 'sting'],
+  'smilodon-fatalis': ['claw', 'bite', 'roar', 'grab', 'pounce'], 'mammuthus-primigenius': ['tusk', 'stomp', 'trunk', 'trample', 'charge'],
+  'triceratops-horridus': ['gore', 'headbutt', 'stomp', 'charge'], 'velociraptor-mongoliensis': ['claw', 'bite', 'kick', 'pounce', 'slash'],
+};
+// styl → [ikona, czasownik w dzienniku]
+const VERB = { bite: ['🦷', 'gryzie'], crush: ['🦷', 'miażdży szczękami'], shake: ['🦷', 'chwyta i szarpie'], venom: ['🧪', 'kąsa jadem'],
+  spit: ['🧪', 'pluje jadem'], fire: ['🔥', 'zieje ogniem'], claw: ['🐾', 'drapie'], slash: ['🗡️', 'tnie pazurem'], kick: ['🦶', 'kopie'],
+  pounce: ['🐾', 'skacze na przeciwnika'], grab: ['✊', 'chwyta'], thumb: ['👍', 'dźga kolcem kciuka'], tail: ['🌀', 'uderza ogonem'],
+  club: ['🔨', 'wali maczugą'], spin: ['🌀', 'obraca się z kolcami'], stomp: ['🦶', 'tupie'], rear: ['⬆️', 'staje dęba i spada'],
+  trample: ['🦶', 'tratuje'], headbutt: ['💥', 'uderza głową'], gore: ['🦏', 'bodzie rogami'], charge: ['💨', 'szarżuje'],
+  neck: ['🌀', 'smaga szyją'], roll: ['🌀', 'robi obrót'], coil: ['🐍', 'oplata i dusi'], shell: ['🐢', 'taranuje skorupą'],
+  roar: ['📢', 'ryczy i atakuje'], flipper: ['🌊', 'bije płetwą'], ram: ['💨', 'taranuje'], peck: ['🐦', 'dziobie'], wing: ['🪽', 'bije skrzydłem'],
+  dive: ['⬇️', 'pikuje'], sting: ['🦂', 'żądli'], pincer: ['🦀', 'szczypie'], tentacle: ['🐙', 'chwyta mackami'], tusk: ['🐘', 'wbija kły'], trunk: ['🐘', 'smaga trąbą'] };
+const dmgWord = n => n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'obrażenia' : 'obrażeń';   // 22 obrażenia, 25 obrażeń
+const artKey = s => s.custom ? s.arch : (typeof ART !== 'undefined' ? ART : {})[s.id]?.[0];
+function styleOf(p, sig, rnd) {
+  const l = SIG[p.id] || STYLES[artKey(p.s)] || ['bite'], n = Math.max(1, l.length - 1);
+  if (sig) return l[l.length - 1];
+  if (!p.bag?.length) { const b = p.bag = l.slice(0, n).sort(() => rnd() - .5);
+    if (b[b.length - 1] === p.last) b.unshift(b.pop()); }   // nowy worek nie zaczyna od ciosu, którym skończył się poprzedni
+  return p.last = p.bag.pop();
+}
 function fighter(s) {
   const st = statsOf(s);
   return { s, id: s.id, name: s.name, ...st, hp0: st.hp, packReady: true, fortressReady: st.fortress, guard: 0 };
@@ -125,15 +169,14 @@ function attack(B, att, def, move) {
     att.hp = Math.min(att.hp0, att.hp + heal);
     return { ...ev, heal, hpAtt: att.hp, text: `🛡️ ${att.name} broni się i odzyskuje ${heal} energii.` };
   }
-  if (move === 'special' && rnd() < MOVES.special.miss) return { ...ev, miss: true, text: `💨 ${att.name} próbuje ciosu specjalnego… pudło!` };
+  if (move === 'special' && rnd() < MOVES.special.miss) return { ...ev, miss: true, style: styleOf(att, true, rnd), text: `💨 ${att.name} próbuje ciosu specjalnego… pudło!` };
   const dodge = clampN(.035 + Math.max(0, (def.speed + dm.speed) - (att.speed + am.speed)) * .0015 + def.evade + dm.dodge, .025, .26);
-  if (move !== 'special' && rnd() < dodge) return { ...ev, dodge: true, hpDef: def.hp, text: `${def.name} wykonuje unik!` };
+  if (move !== 'special' && rnd() < dodge) return { ...ev, dodge: true, style: styleOf(att, false, rnd), hpDef: def.hp, text: `${def.name} wykonuje unik!` };
   let mult = .82 + rnd() * .38;
   const notes = [];
   if (att.packReady && rnd() < att.pack) { att.packReady = false; mult *= 1.34; notes.push('🐾 atak grupowy'); }
-  const sp = special(att, B.arena);
-  if (move === 'special') { mult *= MOVES.special.mult; notes.push(sp.name); }
-  else if (rnd() < sp.chance) { mult *= sp.mult; notes.push(sp.name); }
+  const sp = special(att, B.arena), sig = move === 'special' || rnd() < sp.chance, style = styleOf(att, sig, rnd), [ico, verb] = VERB[style] || VERB.bite;
+  if (sig) { mult *= move === 'special' ? MOVES.special.mult : sp.mult; notes.push(sp.name); }
   if (rnd() < .105) { mult *= 1.48; notes.push('✨ cios krytyczny'); }
   let dmg = (14 + (att.attack + am.attack) * .34 - (def.defense + dm.defense) * .17) * mult;
   if (def.armored) { dmg *= .84; if (rnd() < .45) notes.push('🛡️ pancerz osłabił cios'); }
@@ -141,7 +184,7 @@ function attack(B, att, def, move) {
   if (def.guard) { dmg *= def.guard; def.guard = 0; notes.push('🛡️ obrona'); ev.guarded = true; }
   dmg = clampN(Math.round(dmg), 5, 58);
   def.hp = Math.max(0, def.hp - dmg);
-  return { ...ev, damage: dmg, hpDef: def.hp, text: `${notes.length ? notes.join(' + ') + ' — ' : ''}${att.name} zadaje ${dmg} obrażeń.` };
+  return { ...ev, style, damage: dmg, hpDef: def.hp, text: `${notes.length ? notes.join(' + ') + ' — ' : ''}${att.name} ${ico} ${verb}: ${dmg} ${dmgWord(dmg)}.` };
 }
 /* jedna runda; moveA = ruch gracza (tryb „ty wybierasz”) albo undefined (automat) */
 function playRound(B, moveA) {

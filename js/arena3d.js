@@ -79,36 +79,7 @@ window.Arena3D = (() => {
     mammal: { b: [.8, .42, .36], leg: [.75, .12], neck: [.45, .35], head: [.55, .32], tail: .7 },
     sloth: { b: [.8, .62, .5], leg: [.7, .2], neck: [.35, .45], head: [.45, .3], tail: .4 },
   };
-  /* styl ataku wg presetu (art.js) albo gatunku (SIG); zwykły cios losuje z listy, specjalny = ostatni (popisowy).
-     Słownik stylów (rigi js/puppet2d.js, js/rig3d.js muszą obsłużyć każdy; nieznany → najbliższy znany):
-       paszcza: bite, crush (zaciska i miażdży), shake (chwyta i szarpie), venom (jadowite ugryzienie), spit (pluje jadem z dystansu), fire
-       łapy:    claw (drapie), slash (pazur sierpowy), kick, pounce (skok na przeciwnika), grab (chwyta i przyciska), thumb (kolec kciuka)
-       ciało:   tail, club, spin, stomp, rear, trample, headbutt, gore, charge, neck, roll, coil (oplata i dusi), shell, roar (zastrasza)
-       morze/powietrze: flipper, ram, peck, wing, dive, sting (żądło z jadem), pincer (szczypce), tentacle, tusk, trunk */
-  const STYLES = {
-    thero: ['bite', 'claw', 'tail', 'roar', 'shake', 'crush'], raptor: ['claw', 'bite', 'kick', 'slash', 'pounce'], ornimim: ['kick', 'peck', 'claw', 'charge'],
-    tbird: ['peck', 'kick', 'grab', 'crush'], dragon: ['bite', 'claw', 'tail', 'fire'], prosauro: ['claw', 'tail', 'thumb', 'stomp'],
-    hadro: ['headbutt', 'tail', 'kick', 'roar', 'trample'], orni: ['tail', 'kick', 'thumb', 'stomp'], dome: ['headbutt', 'kick', 'charge'],
-    sauro: ['stomp', 'tail', 'neck', 'trample', 'rear'], cerat: ['gore', 'headbutt', 'stomp', 'charge'], armor: ['club', 'tail', 'roll', 'club'],
-    stego: ['tail', 'spin', 'stomp', 'spin'], ptero: ['peck', 'wing', 'grab', 'dive'], bird: ['peck', 'claw', 'wing', 'dive'],
-    plesio: ['bite', 'flipper', 'neck', 'shake'], mosa: ['bite', 'tail', 'roll', 'crush'], ichthyo: ['bite', 'tail', 'ram'], fish: ['bite', 'tail', 'ram'],
-    shark: ['bite', 'ram', 'tail', 'shake'], whale: ['bite', 'tail', 'ram', 'crush'], croc: ['bite', 'tail', 'shake', 'roll'], lizard: ['bite', 'claw', 'tail', 'venom'],
-    snake: ['bite', 'venom', 'coil'], turtle: ['bite', 'flipper', 'shell'], sail: ['bite', 'claw', 'roar', 'charge'], synap: ['bite', 'claw', 'roar', 'pounce'],
-    amphib: ['bite', 'tail', 'pounce'], bug: ['ram', 'roll'], ammo: ['tentacle', 'ram', 'tentacle'], scorp: ['pincer', 'tail', 'sting'],
-    anomalo: ['grab', 'ram', 'grab'], mammal: ['bite', 'claw', 'roar', 'pounce'], cat: ['claw', 'bite', 'roar', 'pounce'], ele: ['tusk', 'stomp', 'trunk', 'trample', 'charge'],
-    sloth: ['claw', 'grab', 'rear'],
-  };
-  // gatunki z własnym repertuarem (nadpisuje preset)
-  const SIG = {
-    'dilophosaurus-wetherilli': ['bite', 'claw', 'roar', 'spit'], 'varanus-priscus': ['bite', 'claw', 'tail', 'venom'],
-    'titanoboa-cerrejonensis': ['bite', 'venom', 'coil'], 'therizinosaurus-cheloniformis': ['claw', 'slash', 'kick', 'slash'],
-    'tyrannosaurus-rex': ['bite', 'tail', 'roar', 'shake', 'crush'], 'spinosaurus-aegyptiacus': ['bite', 'claw', 'tail', 'shake'],
-    'deinonychus-antirrhopus': ['claw', 'bite', 'kick', 'slash'], 'utahraptor-ostrommaysorum': ['claw', 'bite', 'slash', 'pounce'],
-    'inostrancevia-alexandri': ['bite', 'claw', 'roar', 'crush'], 'jaekelopterus-rhenaniae': ['pincer', 'tail', 'grab', 'sting'],
-    'smilodon-fatalis': ['claw', 'bite', 'roar', 'grab', 'pounce'], 'mammuthus-primigenius': ['tusk', 'stomp', 'trunk', 'trample', 'charge'],
-    'triceratops-horridus': ['gore', 'headbutt', 'stomp', 'charge'], 'velociraptor-mongoliensis': ['claw', 'bite', 'kick', 'pounce', 'slash'],
-  };
-  const style = (f, move) => { const l = SIG[f.id] || STYLES[f.key] || STYLES[f.base] || ['bite']; return move === 'special' ? l[l.length - 1] : l[Math.floor(Math.random() * (l.length - 1 || 1))]; };
+  /* styl ataku (ev.style) wybiera silnik walki: STYLES/SIG w js/battle.js; tu tylko animacja i efekty */
   /* RIG — figura z ruchomymi częściami, budowana przez Puppet2D (wycinanka, tryb 'bill') albo Rig3D (bryła, tryb 'model'):
        build(ctx) → rig | null (null = stary kształt).  ctx = { THREE, body, sp, key, base, o, P, M, H, h: { V, mesh, ell, limb, flat, phong } }
          body: grupa do wypełnienia, patrzy w +x, stopy na y=0, docelowa wysokość H (fighter() NIE przeskalowuje bryły z rigiem)
@@ -610,7 +581,7 @@ window.Arena3D = (() => {
     const a = S?.byId[ev.att], d = S?.byId[ev.def];
     if (!a || !d) return;
     if (ev.move === 'guard') { a.guarding = true; return play(a, 'guard', ANIM_MS * 1.5); }
-    const sty = style(a, ev.move), ms = a.rig?.ms?.(sty) || ANIM_MS, hit = ms * (a.rig?.hitAt?.(sty) ?? HIT_FRAC);
+    const sty = ev.style || 'bite', ms = a.rig?.ms?.(sty) || ANIM_MS, hit = ms * (a.rig?.hitAt?.(sty) ?? HIT_FRAC);
     const sp = ev.move === 'special', ko = ev.hpDef === 0, big = sp || ev.damage >= BIG_HIT, dx = f => f.root.position.x;
     play(a, 'lunge', ms, sty);
     if (PRE[sty]) soon(Math.max(0, hit - PRE_MS), () => PRE[sty](a, d, Math.min(hit, PRE_MS) / 1000));
