@@ -33,7 +33,7 @@ window.Puppet2D = (() => {
     claw: { a: { arm: [1.6, -.9], arm2: [1.4, -.7], fl: [1.3, -.8], body: [.1, -.25], head: [.25, -.1], jaw: [-.5, 0] }, b: { tail: [.4, -.5] }, pitch: [.25, -.05], fwd: [-.4, .95] },
     kick: { a: { hl: [-.7, 1.5], body: [.3, .35], arm: [.6, .4], head: [.1, .2], tail: [0, -.3] }, b: { tail: [.4, -.7] }, fwd: [-.3, .85], up: [0, .3] },
     pounce: { a: { hl: [.3, -.9], hl2: [.3, -.9], fl: [-.3, 1.1], fl2: [-.3, 1.1], arm: [0, 1.2], head: [-.3, .2], jaw: [-.3, -1] }, b: { tail: [.8, -.6] }, sq: [-.3, .15], fwd: [-.5, 1.05], up: [0, .9] },
-    slash: { a: { hl: [-.8, 2], hl2: [-.4, .7], body: [.2, .25], arm: [.8, .9], tail: [.3, -.7], head: [.2, .15], jaw: [-.4, -.6] }, b: { tail: [.5, -1] }, sq: [-.25, .15], pitch: [-.05, .2], fwd: [-.4, .95], up: [0, 1.1] },
+    slash: { a: { hl: [-.8, 2], hl2: [-.4, .7], body: [.2, .25], arm: [.8, .9], tail: [.3, -.7], head: [.2, .15], jaw: [-.4, -.6] }, b: { tail: [.5, -1] }, sq: [-.25, .15], pitch: [-.05, .2], fwd: [-.4, .95], up: [0, .7] },
     grab: { a: { arm: [1.5, -1.1], arm2: [1.4, -1], fl: [1.2, -.9], head: [.3, -.15], jaw: [-1, -.2] }, b: { arm: [.4, -1.3], arm2: [-.4, 1.3], neck: [.3, -.2], tail: [.4, -.4] }, fwd: [-.4, 1], hold: .22,
       fx: (T, t) => { const k = ss((t - .6) / .2); T.pitch += .3 * k; legs(T, t * 30, .35 * k); } },   // chwyta i ciągnie do siebie
     thumb: { a: { arm: [-.5, 1.4], body: [.2, -.2], head: [.2, 0] }, b: { tail: [.4, -.5] }, fwd: [-.4, .9] },
@@ -55,14 +55,14 @@ window.Puppet2D = (() => {
     venom: { a: { body: [.12, -.15], neck: [.5, -.3], head: [.55, -.25], jaw: [-1.15, -1], tail: [.2, -.2] }, b: { body: [.6, -.3], neck: [.4, -.2], tail: [.6, -.4] }, fwd: [-.6, 1], hold: .25,
       fx: (T, t, W) => { const k = Math.sin(t * 24) * W; add(T.a, 'body', .12 * k); add(T.a, 'neck', .3 * k); add(T.a, 'head', -.25 * k); add(T.b, 'body', .3 * k); } },
     // plucie: głowa w tył, policzki nadęte, wyrzut do przodu (pocisk rysuje arena3d.js)
-    spit: { a: { neck: [.35, -.45], head: [.35, -.4], jaw: [.05, -1], body: [.12, -.1] }, b: { tail: [.5, -.4], neck: [.3, -.3] }, s: { head: [.32, -.08] }, sq: [.1, -.12], fwd: [-.5, .2] },
+    spit: { a: { neck: [.2, -.45], head: [.25, -.4], jaw: [.05, -1], body: [.05, -.1] }, b: { tail: [.5, -.4], neck: [.3, -.3] }, s: { head: [.32, -.08] }, sq: [.1, -.12], fwd: [-.5, .2] },
     roar: { a: { neck: [-.2, .45], head: [-.3, .6], jaw: [-.2, -1.2], body: [-.05, .12], arm: [.3, 1.1], tail: [.2, .4] }, b: { tail: [.3, .9] }, sq: [-.12, .25], fwd: [-.5, .15], hold: .35,
       fx: (T, t, W, S) => { T.jit += .03 * S; add(T.a, 'head', .1 * S * Math.sin(t * 90)); } },
     // dwa razy staje dęba i wali przednimi nogami
     trample: { a: { fl: [.7, -.1], fl2: [.5, -.1], arm: [.8, 0], head: [.3, -.2], jaw: [-.6, 0] }, b: { tail: [.6, -.7] }, fwd: [-.3, .6],
       fx: (T, t) => { const r = (a, b) => ss((t - a) / .14) * (1 - ss((t - b) / .06)); T.pitch += .6 * r(.04, .3) + .5 * r(.42, .65);
         T.sq -= .25 * (r(.32, .4) + r(.67, .76)); add(T.a, 'fl', .8 * (r(.04, .3) + r(.42, .65))); } },
-    coil: { a: { head: [.5, -.5], jaw: [-1, -.4], neck: [.3, -.3] }, b: { body: [.8, -1.7], tail: [.6, -1.4] }, fwd: [-.4, 1], hold: .3, fx: (T, t, W, S) => { T.sq += .1 * S * Math.sin(t * 30); } },
+    coil: { a: { head: [.5, -.5], jaw: [-1, -.4], neck: [.3, -.3] }, b: { body: [.8, -2.3], tail: [.6, -1.4] }, fwd: [-.4, 1], hold: .3, fx: (T, t, W, S) => { T.sq += .1 * S * Math.sin(t * 30); } },
     // żądło: ogon łukiem nad grzbietem, pchnięcie do przodu
     sting: { a: { tail: [-.3, -1], body: [.05, -.12], head: [.15, -.2] }, b: { tail: [-.6, -2.4] }, pitch: [.05, -.12], fwd: [-.4, .7], hold: .2 },
     pincer: { a: { arm: [-.5, .3], arm2: [.5, -.3], fl: [.6, -.5], head: [.15, -.1], jaw: [-.5, 0] }, fwd: [-.4, .95],
@@ -166,6 +166,10 @@ window.Puppet2D = (() => {
       mouth = open => { for (let i = 0; i < N; i++) for (const [k, f] of [[3, i / N], [6, (i + 1) / N]]) {
         pos[i * 9 + k] = Math.cos(a0 + open * f) * r; pos[i * 9 + k + 1] = Math.sin(a0 + open * f) * r; } g.attributes.position.needsUpdate = true; };
     }
+    // kotwice dla efektów (arena3d.js): czubek pyska na górnej szczęce, środek głowy — puste Object3D jadące z kartonikami
+    const anchor = (p, [x, y]) => { const o = new THREE.Object3D(); o.position.set(x - p.piv[0], y - p.piv[1], 0); p.grp.add(o); return o; };
+    const hp = get('head') || get('body') || pcs[0], hb = hp.box, hc = V((hb[0] + hb[2]) / 2, (hb[1] + hb[3]) / 2);
+    const anchors = { head: anchor(hp, hc), mouth: D.j.jaw ? anchor(jaw ? jaw.parent : hp, V(D.j.jaw[2], D.j.jaw[3])) : anchor(hp, V(hb[2], (hb[1] + hb[3]) / 2)) };
     const S = { q: { x: 1, v: 0 }, w: { x: 1, v: 0 }, pitch: { x: 0, v: 0 } }, feet = ['hl', 'hl2', 'fl', 'fl2'].map(J).filter(Boolean).map(v => v[0]);
     const back = feet.length ? Math.min(...feet) : P0[0], front = feet.length ? Math.max(...feet) : P0[0], mid = (bodyBox[1] + bodyBox[3]) / 2;
     const cy = (D.ground - mid) * K, top = Math.max(...pcs.map(p => (D.ground - p.box[1]) * K)), swim = D.water || ctx.sp.loco === 'swim', fly = D.fly;
@@ -253,7 +257,7 @@ window.Puppet2D = (() => {
       for (; thumped < l.length && t >= l[thumped]; thumped++) { const A = window.Arena3D?.S; if (A) A.shake = Math.max(A.shake, .12); } }
     const hitAt = sty => HIT[sty] || HIT_AT;
     return {
-      update,
+      update, anchors,
       ms: sty => MS[sty] || ATTACK_MS, hitAt,
       root: (k, sty, t) => { const m = M[sty] || M.bite, [W, Sx] = env(t, hitAt(sty), m.hold), f = m.fwd || [0, 0];
         const reach = Math.max(REACH_MIN * H, gap0 - (m.flip ? rear : nose) - FOE);   // ogonem sięga tyłem
