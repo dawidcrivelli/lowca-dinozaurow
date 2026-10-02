@@ -21,7 +21,8 @@ window.Arena3D = (() => {
   const ANIM_MS = 440, HIT_FRAC = .39, BIG_HIT = 24, SHAKE = 0.22, LUNGE = 0.9;
   const ORBIT = 0.32, ORBIT_MS = 9000, CAM_Y = 2.7, CAM_D = 7.8, LOOK_Y = 1.3;
   const PIXEL_RATIO_MAX = 2, SHADOW_MAP = 1024;
-  const KB = { base: .2, k: .016, ko: .7 };    // odrzut trafionego: podstawa + obrażenia × k; ślizg przy nokaucie
+  const KB = { base: .2, k: .016, ko: .7 };
+  const BEAT_MS = 300, INTRO_GAP_MS = 150;   // pauza po wymianie ciosów zanim ruszy następny; odstęp ryków na wejściu    // odrzut trafionego: podstawa + obrażenia × k; ślizg przy nokaucie
   const POOL = 220, PRE_MS = 260;               // cząstki w puli (krąg, bez alokacji w klatce); o ile wcześniej startuje plwocina/ogień/ryk
   const HITSTOP_MS = 80, SLOW = { k: .3, ms: 900 }, PUNCH = .1;   // stop-klatka mocnego ciosu; zwolnienie przy nokaucie; skok zbliżenia
   const CAM = { ease: 3.5, intro: 1.6, win: .75, swing: .8, winMs: 8000 };  // płynność, odjazd na wejściu, zbliżenie i wahadło przy zwycięzcy
@@ -419,8 +420,9 @@ window.Arena3D = (() => {
     const sea = [B.a, B.b].map((p, i) => p.s.cat === 'marine' ? (i ? 1 : -1) : 0).find(Boolean) || 0;
     terrain(theme, rnd, key === 'coast' ? sea : 0);
     S.ro = new ResizeObserver(() => { const { clientWidth: w, clientHeight: h } = stage; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); });
-    S.ro.observe(stage); intro(figures);
+    S.ro.observe(stage); const introMs = intro(figures);
     S.raf = requestAnimationFrame(loop);
+    return wait(introMs);
   }
   function stop() {
     if (!S) return;
@@ -434,6 +436,7 @@ window.Arena3D = (() => {
   /* S.now: zegar gry (staje na stop-klatce, zwalnia przy nokaucie); kb: odrzut trafionego */
   const play = (f, k, ms = ANIM_MS, sty, kb) => { if (!f.ko) f.anim = { k, t0: S.now, ms, style: sty, kb }; };
   const soon = (ms, fn) => S.todo.push([S.now + ms, fn]);
+  const wait = ms => new Promise(r => soon(ms, r));   // obietnica na zegarze gry (uwzględnia stop-klatkę i zwolnienie)
   const cam = (x, k, ms) => Object.assign(S.cam, { tx: x, tk: k, until: S.now + ms });   // kamera płynie do: x patrzenia, krotność dystansu
   // wejście na arenę: kształty cząstek, pula, kamera z daleka najeżdża, obaj zawodnicy po kolei ryczą
   function intro(figures) {
@@ -444,7 +447,10 @@ window.Arena3D = (() => {
     Object.assign(S, { paper: figures === 'bill', now: performance.now(), ix: 0, cam: { x: 0, k: CAM.intro, th: 0, tx: 0, tk: 1, until: 0 } });
     S.parts = Array.from({ length: POOL }, () => { const o = new T.Mesh(S.geo.blob, new T.MeshBasicMaterial({ transparent: true, depthWrite: false, side: T.DoubleSide }));
       o.visible = false; S.scene.add(o); return { o, v: V(0, 0), on: false }; });
-    Object.values(S.byId).forEach((f, i) => soon(i * 350, () => { play(f, 'lunge', f.rig?.ms?.('roar') || ANIM_MS * 1.5, 'roar'); PRE.roar(f); }));
+    let at0 = 0;   // ryczą po kolei, nie naraz — inaczej wygląda to jak pierwszy atak obu
+    for (const f of Object.values(S.byId)) { const ms = f.rig?.ms?.('roar') || ANIM_MS * 1.5;
+      soon(at0, () => { play(f, 'lunge', ms, 'roar'); PRE.roar(f); }); at0 += ms + INTRO_GAP_MS; }
+    return at0 + BEAT_MS;
   }
   /* cząstka z puli (krąg: najstarsza ustępuje). o: life [s], s: [rozmiar od, do], grow: część życia na wzrost, g: grawitacja, drag: opór,
      spin, face: przodem do kamery (rz: obrót w płaszczyźnie ekranu), r: obrót [x, y, z], op: krycie, fn(q, k): własny ruch */
@@ -580,7 +586,7 @@ window.Arena3D = (() => {
   function event(ev) {
     const a = S?.byId[ev.att], d = S?.byId[ev.def];
     if (!a || !d) return;
-    if (ev.move === 'guard') { a.guarding = true; return play(a, 'guard', ANIM_MS * 1.5); }
+    if (ev.move === 'guard') { a.guarding = true; play(a, 'guard', ANIM_MS * 1.5); return wait(ANIM_MS * 1.5 + BEAT_MS); }
     const sty = ev.style || 'bite', ms = a.rig?.ms?.(sty) || ANIM_MS, hit = ms * (a.rig?.hitAt?.(sty) ?? HIT_FRAC);
     const sp = ev.move === 'special', ko = ev.hpDef === 0, big = sp || ev.damage >= BIG_HIT, dx = f => f.root.position.x;
     play(a, 'lunge', ms, sty);
@@ -594,6 +600,8 @@ window.Arena3D = (() => {
       if (big) { S.shake = Math.max(S.shake, SHAKE); S.stop = performance.now() + HITSTOP_MS; S.cam.k -= PUNCH; cam(dx(d) * .4, .85, 500); }   // stop-klatka i skok kamery
       if (ko) { S.slow = performance.now() + SLOW.ms; cam(dx(d) * .5, .72, 2500); dizzy(d, KO_DIZZY_MS); }   // nokaut: zwolnienie, najazd, gwiazdki
     });
+    // koniec wymiany: atak i reakcja trafionego dobiegły końca → następny ruch (app.js czeka na tę obietnicę)
+    return wait(Math.max(ms, hit + ANIM_MS * (ko ? 2 : ev.dodge ? 1.4 : ev.damage ? 1 : 0)) + BEAT_MS);
   }
   /* efekty trafienia wg stylu: lista klocków z FXP (nieznany styl → gwiazdki); kurz z burst() zawsze */
   const FX = { bite: 'chomp stars', crush: 'chomp squeeze', shake: 'chomp dizzy', venom: 'fang poison', spit: 'splat poison', fire: 'smoke stars',

@@ -388,9 +388,10 @@ function startFight() {
     <div class="battle-log" id="log"><div><strong>Runda 1.</strong> Walka się zaczyna!</div></div>
     <div class="battle-result" id="result" hidden></div>
   </div>`, 'wide');
-  if (window.Arena3D?.ok) Arena3D.start($('.fight-grid'), B, view3d() === 'mix' ? 'bill' : 'model');   // bez WebGL zostaje widok 2D
+  const ready = window.Arena3D?.ok && Arena3D.start($('.fight-grid'), B, view3d() === 'mix' ? 'bill' : 'model');   // bez WebGL zostaje widok 2D
   thud();
-  play ? later(500, askMove) : later(500, autoStep);
+  const t = A.token;   // walka rusza dopiero po wejściu zawodników (scena wczytana, ryki)
+  Promise.resolve(ready).then(() => t === A.token && later(START_MS, play ? askMove : autoStep));
 }
 function autoStep() { showEvents(playRound(A.B), () => A.B.winner ? finish() : autoStep()); }
 function askMove() { $('#moves').hidden = false; }
@@ -400,11 +401,13 @@ function playerMove(move) {
   showEvents(playRound(A.B, move), () => A.B.winner ? finish() : askMove());
 }
 /* odtwarza zdarzenia rundy z animacją: wypad atakującego, wstrząs trafionego, pasek życia, liczba obrażeń */
-const EVENT_MS = 720;   // odstęp zdarzeń rundy: dłuższe ataki rigów (gryzienie, ogon) muszą się zmieścić
-function showEvents(evs, done) {
-  const B = A.B, side = id => id === B.a.id ? 'a' : 'b';
-  evs.forEach((ev, i) => later(i * EVENT_MS, () => {
-    window.Arena3D?.event(ev);
+const EVENT_MS = 720, START_MS = 400;   // odstęp zdarzeń bez sceny 3D; pauza przed pierwszym ciosem
+/* zdarzenia po kolei: następne dopiero, gdy scena skończy poprzednią wymianę (Arena3D.event → obietnica), bez sceny co EVENT_MS */
+async function showEvents(evs, done) {
+  const B = A.B, side = id => id === B.a.id ? 'a' : 'b', t = A.token;
+  for (const ev of evs) {
+    if (t !== A.token) return;
+    const settled = window.Arena3D?.event(ev);
     if (ev.att) {
       const as = side(ev.att), ds = as === 'a' ? 'b' : 'a', f = $(`#f-${as}`), g = $(`#f-${ds}`), who = id => (id === B.a.id ? B.a : B.b).s;
       const wet = B.arena === ARENAS.deep;   // pod wodą: plusk i bąble zamiast uderzeń i świstu
@@ -425,8 +428,9 @@ function showEvents(evs, done) {
     const log = $('#log');
     log.insertAdjacentHTML('beforeend', `<div><strong>Runda ${ev.round}.</strong> ${esc(ev.text)}</div>`);
     log.scrollTop = log.scrollHeight;
-  }));
-  later(evs.length * EVENT_MS + 150, done);
+    await (settled || new Promise(r => later(EVENT_MS, r)));
+  }
+  if (t === A.token) done();
 }
 function finish() {
   const { winner: w, a, b } = A.B, l = w === a ? b : a;

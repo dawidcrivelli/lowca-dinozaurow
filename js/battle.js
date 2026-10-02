@@ -189,7 +189,9 @@ function attack(B, att, def, move) {
 /* jedna runda; moveA = ruch gracza (tryb „ty wybierasz”) albo undefined (automat) */
 function playRound(B, moveA) {
   const { a, b, rnd } = B, am = arenaMods(a, B.arena), bm = arenaMods(b, B.arena);
-  const order = a.speed + am.speed + rnd() * 18 >= b.speed + bm.speed + rnd() * 18 ? [a, b] : [b, a];
+  // szybszy (z losem) zaczyna walkę, potem ciosy na zmianę — nikt nie atakuje dwa razy z rzędu na styku rund
+  const first = B.last ? (B.last === a ? b : a) : a.speed + am.speed + rnd() * 18 >= b.speed + bm.speed + rnd() * 18 ? a : b, order = first === a ? [a, b] : [b, a];
+  B.last = order[1];
   const out = [];
   for (const att of order) {
     const def = att === a ? b : a;
