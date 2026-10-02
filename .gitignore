@@ -4,3 +4,6 @@ tmp/sheet.html
 tmp/review/shots/
 dist/
 tmp/shots/
+.claude/
+tmp/prof_*/
+tmp/steps_*.json
