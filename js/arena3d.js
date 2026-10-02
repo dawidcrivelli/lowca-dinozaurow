@@ -483,7 +483,8 @@ window.Arena3D = (() => {
   }
   const R = (a = 1) => (Math.random() - .5) * 2 * a, pick = l => [].concat(l)[Math.floor(Math.random() * [].concat(l).length)], V0 = () => V(0, 0);
   const at = (f, fy = .5, fx = 0) => V(f.root.position.x + f.dir * f.len * fx, f.root.position.y + f.h * fy, .35);  // punkt na zawodniku (ułamki wysokości i długości ku wrogowi), bliżej kamery
-  const snout = f => at(f, .78, .4), sz = f => Math.min(1.3, Math.max(.6, f.h / 1.6));   // skala efektu do wielkości zawodnika
+  const anchor = (f, k, v = V(0, 0)) => f.rig?.anchors?.[k]?.getWorldPosition(v).setZ(.35);   // punkt z rigu (pysk/głowa), jeśli go podaje
+  const snout = f => anchor(f, 'mouth') || at(f, .78, .4), sz = f => Math.min(1.3, Math.max(.6, f.h / 1.6));   // skala efektu do wielkości zawodnika
   const puff = (p, n, g, c, { sp = 2, up = 2, r = .25, ...o } = {}) => { for (let i = 0; i < n; i++)   // n cząstek rozsypanych z punktu p
     part(g, pick(c), V(p.x + R(r), p.y + R(r), p.z + R(r)), V(R(sp), up * Math.random(), R(sp)), { spin: R(9), ...o, life: (o.life || .6) * (.7 + Math.random() * .6) }); };
   const bubbles = (p, n) => puff(p, n, 'ring', C.water[0], { face: true, g: -3, s: [.06, .13], up: 1, sp: 1, life: 1 });
@@ -500,8 +501,9 @@ window.Arena3D = (() => {
   const squeeze = (d, ms) => { const p = at(d, .55), r = d.h * .5; d.squeeze = S.now + ms;   // kreski ściskania zbiegają się do środka, ciało się zgniata
     for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, c = Math.cos(a), s = Math.sin(a);
       part('streak', C.white, V(p.x + c * r, p.y + s * r, p.z + .2), V(-c * 1.2, -s * 1.2, 0), { face: true, rz: a, life: .45, s: [.5, .25], g: 0 }); } };
-  const dizzy = (f, ms) => { for (let i = 0; i < 3; i++) part('star', C.star, V0(), V0(), { face: true, life: ms / 1000, s: [.13, .13], g: 0, spin: 3,   // gwiazdki krążą nad głową
-    fn: q => { const a = q.t * 5 + i * 2.1, p = f.root.position; q.o.position.set(p.x + f.dir * f.len * (f.ko ? 0 : .3) + Math.cos(a) * .35, p.y + f.h * (f.ko ? .4 : 1) + .1, Math.sin(a) * .35); } }); };
+  const dizzy = (f, ms) => { const h = V0(); for (let i = 0; i < 3; i++) part('star', C.star, V0(), V0(), { face: true, life: ms / 1000, s: [.13, .13], g: 0, spin: 3,   // gwiazdki krążą nad głową (z rigu, jeśli podaje)
+    fn: q => { const a = q.t * 5 + i * 2.1, p = f.root.position, c = anchor(f, 'head', h)?.setY(h.y + .25 * sz(f)) || h.set(p.x + f.dir * f.len * (f.ko ? 0 : .3), p.y + f.h * (f.ko ? .4 : 1) + .1, 0);
+      q.o.position.set(c.x + Math.cos(a) * .35, c.y, Math.sin(a) * .35); } }); };
   const confetti = p => puff(p, 30, 'chip', RAINBOW, { up: 6, sp: 2.5, g: 4, drag: 1.5, s: [.09, .08], life: 1.8 });
   /* przed ciosem: plwocina leci łukiem, strumień ognia, fale ryku; T = czas lotu [s] */
   const PRE = {
