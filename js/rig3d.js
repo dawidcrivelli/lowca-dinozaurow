@@ -12,7 +12,7 @@
    w miejscu i przestawiają się krokami. Kości w spoczynku nie są obrócone → kąt kości = suma obrotów w łańcuchu. */
 window.Rig3D = (() => {
   let T;
-  const RING = 12, SEG = 4, U = 1 / 40;    // wierzchołki pierścienia; próbki między kluczami rurki; jednostka rysunku SVG → wysokość biodra
+  const RING = 12, SEG = 3, U = 1 / 40;    // wierzchołki pierścienia; próbki między kluczami rurki; jednostka rysunku SVG → wysokość biodra
   const COL = { mouth: 0x8E3236, eye: 0xE8B53C, pupil: 0x151210, ivory: 0xF2E7CC, claw: 0x34291F, horn: 0x5A4A3A };
   const STEP = { len: .3, s: .16, h: .14 }; // krok: próg odjechania stopy, czas [s], uniesienie (× wysokość biodra)
   const BLINK = 3.3, LID = .5;               // średni odstęp mrugnięć [s]; uchylenie powieki (rad, 0 = pół-przymknięta)
@@ -127,7 +127,7 @@ window.Rig3D = (() => {
       g.dispose();
     };
     const at = (p, rot, s) => M4.compose(p, Q.setFromEuler(E.set(...rot || [0, 0, 0])), S3.set(...s));
-    m.ball = (b, p, r, c, rot, seg = [10, 7]) => { at(p, rot, r); part(new T.SphereGeometry(1, ...seg), b, c); };
+    m.ball = (b, p, r, c, rot, seg = [8, 6]) => { at(p, rot, r); part(new T.SphereGeometry(1, ...seg), b, c); };
     // stożek od a do tip (róg, ząb, pazur, kolec); kolor c0 u podstawy → c1 na czubku; rz: spłaszczenie w bok
     m.spike = (b, a, tip, r, c0, c1 = c0, n = 6, rz = 1) => {
       const d = tip.clone().sub(a), L = d.length(); d.divideScalar(L);
@@ -141,7 +141,7 @@ window.Rig3D = (() => {
       part(new T.SphereGeometry(1, 10, 6), b, c.isColor ? c : (p, l) => tmp.copy(SKIN).lerp(DARK, sm(-.3, 1, l.y) * .45));
     };
     // czasza (powieka): górna półkula promienia r
-    m.cap = (b, p, r, c, rot) => { at(p, rot, [r, r, r]); part(new T.SphereGeometry(1, 10, 4, 0, 2 * Math.PI, 0, Math.PI / 2), b, c); };
+    m.cap = (b, p, r, c, rot) => { at(p, rot, [r, r, r]); part(new T.SphereGeometry(1, 8, 3, 0, 2 * Math.PI, 0, Math.PI / 2), b, c); };
     /* płachta (żagiel, płetwa, błona, kryza): wiersze punktów [x, y, z, kość, kość2?, w?]; paint(i, j) ∈ 0‥1 */
     m.sheet = (rows, paint) => {
       const base = pos.length / 3, nr = rows.length, nc = rows[0].length;
@@ -241,11 +241,11 @@ window.Rig3D = (() => {
     },
     pad: (m, r) => (b, ball) => { const { V, C } = m;
       m.ball(b, ball.clone().add(V(.02, -ball.y * .3)), [r * 1.15, ball.y * .9, r * 1.1], m.SKIN.clone().lerp(m.DARK, .25));
-      for (let i = 0; i < 4; i++) { const a = (i - 1.5) * .45; m.ball(b, ball.clone().add(V(Math.cos(a) * r * 1.05, -ball.y * .55, Math.sin(a) * r)), [r * .14, r * .1, r * .12], C.ivory); } },
+      for (let i = 0; i < 4; i++) { const a = (i - 1.5) * .45; m.ball(b, ball.clone().add(V(Math.cos(a) * r * 1.05, -ball.y * .55, Math.sin(a) * r)), [r * .14, r * .1, r * .12], C.ivory, 0, [5, 3]); } },
     hoof: (m, r) => (b, ball, tip) => m.ball(b, ball.clone().lerp(tip, .4).setY(r * .4), [r * 1.1, r * .45, r * .9], m.DARK),
     paw: (m, r, claws) => (b, ball, tip) => { const { V, C } = m;
       for (let i = 0; i < 4; i++) { const a = (i - 1.5) * .32, p = ball.clone().lerp(tip, .55).add(V(0, 0, Math.sin(a) * r * 1.2)).setY(r * .4);
-        m.ball(b, p, [r * .42, r * .38, r * .32], m.SKIN); if (claws) m.spike(b, p.clone().add(V(r * .3, 0)), p.clone().add(V(r * .8, -r * .35)), r * .14, C.claw); } },
+        m.ball(b, p, [r * .42, r * .38, r * .32], m.SKIN, 0, [6, 4]); if (claws) m.spike(b, p.clone().add(V(r * .3, 0)), p.clone().add(V(r * .8, -r * .35)), r * .14, C.claw); } },
     liz: (m, r) => (b, ball, tip) => { const { V, C } = m, l = tip.x - ball.x;
       for (const a of [-.7, -.25, .2, .65]) { const e = ball.clone().add(V(Math.cos(a) * l, -r * .4, Math.sin(a) * l * Math.sign(ball.z)));
         m.spike(b, ball, e, r * .45, m.SKIN); m.spike(b, e, e.clone().add(V(l * .2, -r * .3)), r * .25, C.claw); } },
@@ -440,7 +440,7 @@ window.Rig3D = (() => {
   }
   /* ---------- budowa i animacja ---------- */
   const BUILD = { thero: biped, raptor: biped, ornimim: biped, tbird: biped, dragon: biped, prosauro: biped, hadro: biped, orni: biped, dome: biped,
-    sauro: quad, cerat: quad, armor: quad, stego: quad, mammal: quad, cat: quad, ele: quad, croc: quad, lizard: quad, sail: quad, synap: quad,
+    sauro: quad, cerat: quad, armor: quad, stego: quad, mammal: quad, cat: quad, ele: quad, croc: quad, lizard: quad, sail: quad, synap: quad, amphib: quad, sloth: quad,
     mosa: swim, plesio: swim, ichthyo: swim, fish: swim, whale: swim, ptero };
   function build(ctx) {
     const fn = BUILD[ctx.key] || BUILD[ctx.base]; if (!fn) return null;
