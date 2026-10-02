@@ -69,7 +69,14 @@ window.Rig3D = (() => {
     const ch = {}; for (const c of CH) if (keys.some(k => k[1][c])) ch[c] = keys.map(k => k[1][c] || 0);
     return { ms, hit, ts: keys.map(k => k[0]), ch };
   }
-  const MOVES = { biped: BI, quad: QU }, REAC = {};
+  // pływacy (fp = płetwy) i lotnicy (wg = zamach skrzydeł)
+  const SWM = { bite: QU.bite, shake: BI.shake, tail: QU.tail, neck: QU.neck,
+    ram: [680, .5, [.28, { fwd: -.3, nk: .15, tw: .5 }], [.5, { fwd: 1.3, pit: -.1, nk: -.2, hp: -.15, tw: -.5, jw: .3 }], [.7, { fwd: .8 }]],
+    flipper: [660, .52, [.3, { fwd: .1, sr: .35, fp: -1 }], [.52, { fwd: .85, sr: -.25, fp: 1.2, jw: .4 }], [.75, { fwd: .6, fp: .3 }]] };
+  const FLY = { peck: BI.peck,
+    wing: [640, .5, [.3, { fwd: -.1, up: .3, wg: 1.3, nk: .2 }], [.5, { fwd: .9, wg: -1.1, jw: .6 }], [.7, { fwd: .6, wg: .4 }]],
+    dive: [720, .58, [.35, { fwd: -.2, up: .7, pit: .4, wg: 1, nk: .2 }], [.58, { fwd: 1.1, up: -.5, pit: -.5, nk: -.3, hp: -.3, jw: 1, wg: -.6 }], [.78, { fwd: .7, up: -.2 }]] };
+  const MOVES = { biped: BI, quad: QU, swim: SWM, fly: FLY }, REAC = {};
   for (const tab of [...Object.values(MOVES), REACT]) for (const k in tab) tab[k] = comp(tab[k]);
   Object.assign(REAC, REACT);
   const curve = (A, c, t) => { const v = A.ch[c]; if (!v) return 0; const ts = A.ts; t = Math.min(1, Math.max(0, t));
@@ -127,6 +134,12 @@ window.Rig3D = (() => {
       M4.compose(a.clone().addScaledVector(d, L / 2), Q.setFromUnitVectors(Y, d), S3.set(1, 1, rz));
       part(new T.ConeGeometry(r, L, n, 1), b, (p, l) => tmp.copy(c0).lerp(c1, sm(-.2, .5, l.y / L)));
     };
+    // płetwa/kość skrzydła: spłaszczona elipsoida od a do tip, szerokość w, grubość th wzdłuż normalnej n
+    m.fin = (b, a, tip, w, th, c, n = Y) => {
+      const d = tip.clone().sub(a), L = d.length(); d.divideScalar(L); const z = n.clone().addScaledVector(d, -n.dot(d)).normalize();
+      M4.makeBasis(d.clone().cross(z).multiplyScalar(w), d.clone().multiplyScalar(L / 2), z.multiplyScalar(th)).setPosition(a.clone().addScaledVector(d, L / 2));
+      part(new T.SphereGeometry(1, 10, 6), b, c.isColor ? c : (p, l) => tmp.copy(SKIN).lerp(DARK, sm(-.3, 1, l.y) * .45));
+    };
     // czasza (powieka): górna półkula promienia r
     m.cap = (b, p, r, c, rot) => { at(p, rot, [r, r, r]); part(new T.SphereGeometry(1, 10, 4, 0, 2 * Math.PI, 0, Math.PI / 2), b, c); };
     /* płachta (żagiel, płetwa, błona, kryza): wiersze punktów [x, y, z, kość, kość2?, w?]; paint(i, j) ∈ 0‥1 */
@@ -154,6 +167,8 @@ window.Rig3D = (() => {
     duck: [[-.15, .08, .42, .4, .4], [.3, .05, .45, .38, .4], [.7, -.1, .24, .3, .22], [.97, -.16, .14, .34, .1]],
     cerat: [[-.1, .12, .5, .42, .45], [.35, .05, .52, .4, .5], [.7, -.08, .4, .27, .38], [.95, -.25, .2, .12, .16]],
     mammal: [[-.2, .15, .55, .46, .42], [.15, .12, .6, .47, .45], [.5, -.05, .4, .36, .32], [.82, -.18, .26, .28, .22]],
+    shark: [[-.15, .05, .45, .42, .45], [.3, .06, .45, .38, .42], [.7, .08, .3, .25, .25], [.97, .1, .1, .08, .07]],
+    beak: [[-.1, .05, .45, .38, .4], [.25, 0, .38, .3, .35], [.6, -.05, .22, .18, .2], [.97, -.08, .04, .04, .04]],
     sauro: [[-.15, .1, .45, .4, .4], [.3, .12, .55, .42, .4], [.7, -.04, .3, .33, .26], [.95, -.1, .2, .26, .15]],
   };
   function head(m, c, h0, o) {
@@ -372,9 +387,61 @@ window.Rig3D = (() => {
     m.spots = liz || key === 'cat' ? 7 : 0;
     Object.assign(c, { kind: 'quad', hy, jawMax: o.sab ? 1.1 : s.head.teeth ? .7 : .35 });
   }
+  /* ---------- pływacy: mozazaur, plezjozaur/pliozaur, ichtiozaur, rekin/ryba pancerna, wieloryb ----------
+     tułów jak u lądowych (rurka), zamiast nóg płetwy (sztywne elipsoidy na własnych kościach), ogon faluje,
+     płetwa ogonowa pionowa (ryby, gady) albo pozioma (wieloryb: ogon faluje góra-dół) */
+  function swim(m, c, o, sp, key, base) {
+    const { V, C } = m, plio = o.plio, nl = { long: 1.6, xlong: 2.3 }[o.nk] || 1.3, eel = o.k === 'eel';
+    const S = {   // L, D, W, ogon [długość, grubość, zwężanie], szyja [x, y, kości, grubość], głowa [l, h, profil, zęby], płetwy [przód, tył], ogonowa, grzbietowa
+      mosa: plio ? [1.1, .32, .4, [.6, .25, 1], [.2, 0, 2, .27], [.95, .6, 'thero', 1], [.7, .65], 0, 0] : [1.3, .26, .24, [2.1, .2, 1], [.25, 0, 2, .2], [.75, .48, 'thero', 1], [.45, .35], 'down', 0],
+      plesio: [1, .3, .42, [.7, .2, 1.2], [nl * .9, nl * .35, 8, .17], [.32, .15, 'thero', .9], [.75, .7], 0, 0],
+      ichthyo: [1, .34, .28, [1.1, .25, 1.4], [.15, 0, 1, .27], [.75, .55, 'beak', .5], [.4, .2], 'moon', .35],
+      fish: [1.2, .36, .3, [1, .28, 1.3], [.1, 0, 1, .3], [.6, .7, 'shark', o.k === 'shark' ? 1 : .5], [.5, .15], 'shark', .45],
+      whale: eel ? [2.2, .26, .24, [1.4, .2, 1.2], [.15, 0, 1, .22], [.7, .45, 'mammal', .8], [.3, 0], 'flat', 0] : [1.6, .42, .38, [1.2, .3, 1.3], [.12, 0, 1, .36], [.85, .8, 'mammal', .8], [.45, 0], 'flat', .2],
+    }[base];
+    const [L, D, W, [tl, tr, tp], [nx, ny, nn, nw], [hl, hh, prof, teeth], fins, fluke, dorsal] = S, hy = D * 1.05;
+    const t = trunk(m, c, { hy, sy: hy, L, D, Db: D * 1.05, W, n0: V(L * 1.02, hy + D * .05), nv: V(nx, ny), nn, ex: 1.2, ey: .7, nw0: nw, nw1: nn > 2 ? nw * .45 : nw,
+      tl, td: 0, tr, tp, tn: 7, head: { l: hl, h: hh, pr: 0, prof, teeth, eye: base === 'ichthyo' ? 1.15 : 1, brow: base === 'mosa', ex: prof === 'shark' ? .3 : .22 } });
+    c.fins = [];
+    for (const s of [-1, 1]) [[t.ch, L * .85, fins[0]], [t.pel, L * .05, fins[1]]].forEach(([par, x, len], i) => { if (!len) return;
+      const a = V(x, hy - D * .45, s * W * .8), b = m.bone(par, a), tip = a.clone().add(V(-len * .55, -len * .3, s * len * .78));
+      m.fin(b, a, tip, len * (prof === 'shark' ? .3 : .22), .035, m.SKIN.clone().lerp(m.DARK, .3)); c.fins.push({ b, s, ph: i * 1.3 }); });
+    const tb = c.tail.at(-1), tp0 = tb.userData.w, x0 = tp0.x - tl / 7, y0 = tp0.y, k = D * 1.6, vert = fluke === 'flat';
+    const F = (dx, dy) => vert ? [x0 + dx * k, y0, dy * k, tb] : [x0 + dx * k, y0 + dy * k, 0, tb];   // płetwa ogonowa w płaszczyźnie pionowej albo poziomej
+    if (fluke) { const up = fluke === 'down' ? .35 : fluke === 'shark' ? 1.1 : 1, lo = fluke === 'shark' ? .6 : 1;
+      m.sheet([[F(.05, .06), F(-.45 * up, .65 * up)], [F(.12, 0), F(-.22, 0)], [F(.05, -.06), F(-.4 * lo, -.6 * lo)]], (i, j) => m.tmp.copy(m.SKIN).lerp(m.DARK, j * .4)); }
+    c.undul = vert ? 0 : .09; c.vert = vert ? .07 : 0;
+    if (dorsal) { const x = L * .45, y = hy + D * .9, h = dorsal * (base === 'fish' ? 1.4 : 1);
+      m.sheet([[[x + .2, y - .05, 0, t.mid], [x - .2, y - .05, 0, t.mid]], [[x - .12, y + h * .7, 0, t.mid], [x - .26, y + h, 0, t.mid]]], (i) => m.tmp.copy(m.SKIN).lerp(m.DARK, .2 + i * .3)); }
+    if (base === 'fish' && o.k !== 'shark') m.ball(c.head, t.P(hl * .3, hh * .1), [hl * .45, hh * .55, hh * .5], m.DARK.clone().lerp(m.SKIN, .4));   // pancerz głowy (dunkleosteus)
+    m.spots = base === 'fish' || base === 'whale' ? 0 : 6;
+    Object.assign(c, { kind: 'swim', hy, float: true, jawMax: teeth ? .8 : .4 });
+  }
+  /* ---------- pterozaur w locie: skrzydło = ramię → przedramię → nadgarstek → palec skrzydłowy, błona do miednicy ---------- */
+  function ptero(m, c, o) {
+    const { V, C } = m, hy = .5, L = .45, D = .13, W = .12, sy = hy + .04, bl = (o.bl || 50) * U * .7;
+    const t = trunk(m, c, { hy, sy, L, D, Db: D * 1.1, W, n0: V(L * 1.02, sy + D * .3), nv: V(.32, .14), nn: 3, ex: 1.2, ey: .8, nw0: .07, nw1: .055,
+      tl: .15, td: 0, tr: .05, tn: 2, head: { l: bl, h: .17, pr: -.12, prof: 'beak', eye: .9 } });
+    const H = c.head, P = t.P, k = .17, bc = m.SKIN.clone().lerp(m.BELLY, .4), mem = (i, j) => m.tmp.copy(m.SKIN).lerp(m.BELLY, .35 + i * .2).lerp(m.DARK, (j > .9) * .3);
+    if (o.cr === 'back') m.sheet([[P(bl * .2, k * .4), P(-bl * .1, k * .45)], [P(-bl * .55, k * 1.2), P(-bl * .6, k * 1.1)]].map(r => r.map(p => [p.x, p.y, p.z, H])), mem);
+    if (o.cr === 'quetz') m.sheet([[P(bl * .45, k * .3), P(bl * .05, k * .4)], [P(bl * .3, k * .9), P(bl * .1, k * .95)]].map(r => r.map(p => [p.x, p.y, p.z, H])), mem);
+    c.wings = [];
+    for (const s of [-1, 1]) {
+      const pts = [V(L * .9, sy, s * W * .8), V(L * .7, sy + .05, s * .4), V(L * .95, sy + .03, s * .78), V(L * .55, sy, s * 1.3), V(L * .15, sy - .04, s * 1.8)];
+      const b = pts.slice(0, 4).reduce((l, p, i) => [...l, m.bone(l[i - 1] || t.ch, p)], []);
+      pts.slice(0, 4).forEach((p, i) => m.fin(b[i], p, pts[i + 1], [.045, .04, .025, .018][i], [.045, .04, .025, .018][i], bc));
+      for (let f = 0; f < 3; f++) m.spike(b[2], pts[2], pts[2].clone().add(V(.08, -.02, s * (f - 1) * .04)), .012, C.claw);
+      const tr = [V(-L * .05, hy, s * W), V(L * .05, hy - .02, s * .45), V(L * .1, sy - .03, s * .85), V(0, sy - .05, s * 1.3), pts[4]];
+      m.sheet([pts.map((p, i) => [p.x, p.y, p.z, [t.ch, ...b][i]]), tr.map((p, i) => [p.x, p.y, p.z, [t.pel, ...b][i]])], mem);
+      const hip = V(-.02, hy - .05, s * .07); m.fin(t.pel, hip, hip.clone().add(V(-.32, -.08, s * .1)), .03, .03, bc);   // nogi wyciągnięte w tył
+      c.wings.push({ b, s });
+    }
+    Object.assign(c, { kind: 'fly', hy, float: true, jawMax: .5 });
+  }
   /* ---------- budowa i animacja ---------- */
   const BUILD = { thero: biped, raptor: biped, ornimim: biped, tbird: biped, dragon: biped, prosauro: biped, hadro: biped, orni: biped, dome: biped,
-    sauro: quad, cerat: quad, armor: quad, stego: quad, mammal: quad, cat: quad, ele: quad, croc: quad, lizard: quad, sail: quad, synap: quad };
+    sauro: quad, cerat: quad, armor: quad, stego: quad, mammal: quad, cat: quad, ele: quad, croc: quad, lizard: quad, sail: quad, synap: quad,
+    mosa: swim, plesio: swim, ichthyo: swim, fish: swim, whale: swim, ptero };
   function build(ctx) {
     const fn = BUILD[ctx.key] || BUILD[ctx.base]; if (!fn) return null;
     T = ctx.THREE;
@@ -458,11 +525,15 @@ window.Rig3D = (() => {
         c.jaw.rotation.z = -c.jawMax * Math.min(1.2, ch.jw + (.04 + .03 * br) * idle);
         c.tail.forEach((b, i) => {
           const f = i / nt, tw = A ? curve(A, 'tw', t - i * .035) : 0;
-          b.rotation.set(0, (tw * 1.4 + ch.sy * .5) / nt + Math.sin(tm * 1.3 + ph - i * .55) * .05 * (.4 + f) * idle,
-            -(ch.tl + .1 * Math.sin(tm * .9 + ph - i * .4) * idle) / nt - (i ? 0 : ch.bp * .75) + (ch.fold > .5 ? .05 : 0));
+          const u = Math.sin(tm * 2.6 + ph - i * .7) * (.3 + f) * idle;   // falowanie pływaka: bok-bok (ryby, gady) albo góra-dół (wieloryb)
+          b.rotation.set(0, (tw * 1.4 + ch.sy * .5) / nt + Math.sin(tm * 1.3 + ph - i * .55) * .05 * (.4 + f) * idle + u * (c.undul || 0),
+            -(ch.tl + .1 * Math.sin(tm * .9 + ph - i * .4) * idle) / nt - (i ? 0 : ch.bp * .75) + (ch.fold > .5 ? .05 : 0) + u * (c.vert || 0));
         });
         c.arms.forEach(a => { const r = ch.ar, j = Math.sin(tm * 1.6 + ph + a.s) * .05 * idle;
           a.b[0].rotation.set(0, 0, r * .9 + j); a.b[1].rotation.set(0, 0, -.3 * Math.max(0, -r) + r * .4 - j); a.b[2].rotation.set(0, 0, -r * .3); });
+        c.fins?.forEach(F => F.b.rotation.set(-F.s * (Math.sin(tm * 2.6 + ph + F.ph) * .25 * idle + ch.fp * .8), F.s * ch.fp * .4, Math.sin(tm * 2.6 + ph + F.ph + 1) * .15 * idle));
+        c.wings?.forEach(W => { const f = (Math.sin(tm * 5 + ph) * .55 + .1) * idle + ch.wg;   // machanie: ramię w górę/dół, dłoń i palec dociągają z opóźnieniem
+          W.b[0].rotation.set(-W.s * f, 0, 0); W.b[1].rotation.set(-W.s * f * .3, 0, 0); W.b[2].rotation.set(-W.s * (Math.sin(tm * 5 + ph - .8) * .2 * idle + ch.wg * .2), 0, 0); W.b[3].rotation.set(-W.s * f * .2, 0, 0); });
         c.trunk?.forEach((b, i) => b.rotation.set(0, Math.sin(tm * 1.1 + ph - i * .5) * .06 * idle, ch.tr * (i + 1) * .12 + Math.sin(tm * .8 + ph - i * .6) * .08 * idle));
         // oczy: patrzą na przeciwnika; mruganie co kilka sekund
         const blink = Math.max(ch.bl, idle ? Math.max(0, 1 - Math.abs((tm + ph) % BLINK - .1) * 12) : 1);
