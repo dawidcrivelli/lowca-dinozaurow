@@ -629,7 +629,7 @@ window.Arena3D = (() => {
     peck: 'feathers stars', wing: 'feathers whoosh', dive: 'feathers stars', sting: 'stars poison', pincer: 'snip stars' };
   function win(id) {   // zwycięzca: konfetti i wahadło kamery; przegrany pada
     if (!S) return;
-    for (const [k, f] of Object.entries(S.byId)) if (k !== String(id)) f.ko || play(f, 'ko', ANIM_MS * 2);   // klucze obiektu to napisy, id Pokémona to liczba
+    for (const [k, f] of Object.entries(S.byId)) if (k !== String(id)) f.ko || f.anim?.k === 'ko' || (play(f, 'ko', ANIM_MS * 2), dizzy(f, KO_DIZZY_MS));   // klucze obiektu to napisy, id Pokémona to liczba
       else { Object.assign(f, { won: true, wonAt: performance.now() }); S.won = f; for (let i = 0; i < 3; i++) soon(i * 600, () => confetti(at(f, 1.2))); }
   }
   return { ok, start, stop, event, win, get S() { return S; } };   // S: stan sceny dla testów (tmp/steps_ko.js)
