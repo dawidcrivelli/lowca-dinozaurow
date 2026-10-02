@@ -180,7 +180,10 @@ window.Rig3D = (() => {
     squash: 'stomp trample rear', knock: 'headbutt gore ram charge dive tusk pounce', spun: 'tail club spin roll neck flipper trunk shell', squeeze: 'coil', scare: 'roar fire' })
     .flatMap(([g, l]) => l.split(' ').map(s => [s, g])));
   const MOVES = { biped: BI, quad: QU, swim: SWM, fly: FLY }, REAC = {};
-  for (const tab of [...Object.values(MOVES), REACT, GEN, RX]) for (const k in tab) tab[k] = (typeof tab[k][0] === 'number' ? [tab[k]] : tab[k]).map(comp);   // styl → lista wariantów
+  // atak bez własnych wariantów dostaje drugi: niżej, ze skrętem tułowia i przechyłem w trakcie (lustro i tak losuje stronę)
+  const alt = ([ms, hit, ...ks]) => [ms, hit, ...ks.map(([t, o]) => { const s = Math.sin(Math.PI * t);
+    return [t, { ...o, sy: (o.sy || 0) + .45 * s, ny: (o.ny || 0) - .35 * s, sr: (o.sr || 0) + .15 * s, by: (o.by || 0) - .07 * s }]; })];
+  for (const tab of [...Object.values(MOVES), REACT, GEN, RX]) for (const k in tab) tab[k] = (typeof tab[k][0] !== 'number' ? tab[k] : tab === REACT ? [tab[k]] : [tab[k], alt(tab[k])]).map(comp);   // styl → lista wariantów
   Object.assign(REAC, REACT);
   const STAY = new Set(['roar', 'spit', 'fire']);   // ataki z miejsca: fwd nie skaluje się z odległością
   const curve = (A, c, t) => { const v = A.ch[c]; if (!v) return 0; const ts = A.ts; t = Math.min(1, Math.max(0, t));
