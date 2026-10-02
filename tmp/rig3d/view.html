@@ -1,0 +1,58 @@
+<!doctype html><meta charset="utf-8">
+<!-- Arkusz brył Rig3D: siatka gatunków w jednej pozie. Parametry w adresie:
+     ?ids=a,b,c|all  &pose=idle|lunge:styl:t|hit:styl:t|ko|won  &cols=4 &w=360 &h=260 &yaw=.35 &el=.25 (wysokość kamery) &zoom=1
+     window.__done = true po narysowaniu; window.__stats = [{id, tris, verts, ms}] -->
+<style>body{margin:0;background:#222;font:12px system-ui;color:#eee}#g{position:relative}.l{position:absolute;padding:2px 5px;background:#0008;border-radius:0 0 6px 0}</style>
+<div id="g"></div>
+<script src="../../vendor/three.min.js"></script>
+<script src="../../js/species.js"></script><script src="../../js/artspec.js"></script><script src="../../js/art.js"></script><script src="../../js/rig3d.js"></script>
+<script>
+(() => {
+const Q = new URLSearchParams(location.search), num = (k, d) => +(Q.get(k) ?? d);
+const ids = Q.get('ids') === 'all' ? SPECIES.map(s => s.id) : (Q.get('ids') || 'tyrannosaurus-rex').split(',');
+const [pk, sty = 'bite', pt = '.5'] = (Q.get('pose') || 'idle').split(':'), cols = Math.min(ids.length, num('cols', 4)), W = num('w', 360), H = num('h', 260);
+const rows = Math.ceil(ids.length / cols), YAW = num('yaw', .35), EL = num('el', .25), GAP = 2.2;
+const R = new THREE.WebGLRenderer({ antialias: true }); R.setSize(cols * W, rows * H); R.setScissorTest(true);
+R.shadowMap.enabled = true; R.shadowMap.type = THREE.PCFSoftShadowMap;
+if (THREE.ACESFilmicToneMapping && Q.get('tone') === '1') { R.toneMapping = THREE.ACESFilmicToneMapping; R.toneMappingExposure = num('exp', 1.1); R.outputEncoding = THREE.sRGBEncoding; }
+document.getElementById('g').append(R.domElement);
+window.__stats = [];
+ids.forEach((id, n) => {
+  const sp = SPECIES.find(s => s.id === id) || { id }, [key, own] = ART[id] || ['thero', {}], [base, def] = PRESET[key] || [key, {}], o = { ...def, ...own };
+  const P = PAL[o.p ?? hash(String(key)) % PAL.length] || PAL[0];
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0xCFE8F7);
+  scene.add(new THREE.HemisphereLight(0xFFFFFF, 0xC9B56E, .75));
+  const sun = new THREE.DirectionalLight(0xFFFFFF, .7); sun.position.set(4, 9, 6); sun.castShadow = true; scene.add(sun);
+  Object.assign(sun.shadow.camera, { left: -7, right: 7, top: 7, bottom: -3 }); sun.shadow.mapSize.set(1024, 1024);
+  Object.assign(sun.shadow, { bias: -5e-4, normalBias: .02 }); const rim = new THREE.DirectionalLight(0xFFF2D8, .35); rim.position.set(-3, 5, -7); scene.add(rim);   // jak start() w arena3d
+  const gr = new THREE.Mesh(new THREE.CircleGeometry(30, 24), new THREE.MeshLambertMaterial({ color: 0xC9B56E })); gr.rotation.x = -Math.PI / 2; gr.receiveShadow = true; scene.add(gr);
+  const root = new THREE.Group(), inner = new THREE.Group(), body = new THREE.Group(); root.add(inner); inner.add(body); scene.add(root);
+  root.position.set(-GAP, 0, 0); root.rotation.y = -YAW;
+  const t0 = performance.now(), rig = Rig3D.build({ THREE, body, sp, key, base, o, P, M: {}, H: num('H', 2.4) }), ms = performance.now() - t0;
+  let tris = 0, verts = 0; body.traverse(c => { if (c.geometry && !c.material.side) { tris += (c.geometry.index ? c.geometry.index.count : c.geometry.attributes.position.count) / 3; verts += c.geometry.attributes.position.count; } });
+  window.__stats.push({ id, tris: Math.round(tris), verts, ms: Math.round(ms) });
+  if (rig) {   // przewiń animację klatka po klatce (kroki stóp, opóźnienia ogona)
+    const k = pk === 'idle' || pk === 'won' ? null : pk, T = pk === 'ko' ? 1 : +pt, dur = k === 'lunge' ? rig.ms?.(sty) || 600 : 600, steps = Math.max(1, Math.round(T * dur / 16));
+    let dx = 0;
+    for (let i = 0; i <= steps; i++) {
+      const t = i / steps * T, tm = 3 + i / 60;
+      if (k === 'lunge') { const m = rig.root?.('lunge', sty, t) || {}; dx = m.fwd || 0; root.position.set(-GAP + dx, m.up || 0, 0); inner.rotation.set(0, m.yaw || 0, m.pitch || 0); }
+      if (k === 'hit') root.position.x = -GAP - .35 * Math.sin(Math.PI * t);
+      if (k === 'ko') { inner.rotation.set(Math.PI / 2 * t, 0, 0); }
+      rig.update({ k, style: sty, t, tm, dt: 1 / 60, ko: k === 'ko' && t >= 1, won: pk === 'won', guarding: false, gap: GAP * 2 - dx });
+    }
+    if (k === 'ko') { root.updateMatrixWorld(true); root.position.y -= new THREE.Box3().setFromObject(inner).min.y; }
+  }
+  root.updateMatrixWorld(true);
+  const bb = new THREE.Box3().setFromObject(body), c = bb.getCenter(new THREE.Vector3()), sz = bb.getSize(new THREE.Vector3());
+  const cam = new THREE.PerspectiveCamera(30, W / H, .05, 100), d = Math.max(sz.x * .62 * H / W * 1.6, sz.y * 1.0, sz.z * .5) * 2.2 / num('zoom', 1);
+  cam.position.set(c.x, c.y + d * EL, c.z + d); cam.lookAt(c);
+  const x = n % cols, y = Math.floor(n / cols);
+  scene.userData = { cam, x, y };
+  R.setViewport(x * W, (rows - 1 - y) * H, W, H); R.setScissor(x * W, (rows - 1 - y) * H, W, H); R.render(scene, cam);
+  const l = Object.assign(document.createElement('div'), { className: 'l', textContent: `${id.split('-')[0]} · ${key} · ${Math.round(tris)}△${rig ? '' : ' · NULL'}` });
+  l.style.left = x * W + 'px'; l.style.top = y * H + 'px'; document.getElementById('g').append(l);
+});
+window.__done = true;
+})();
+</script>

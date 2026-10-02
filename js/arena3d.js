@@ -437,6 +437,8 @@ window.Arena3D = (() => {
     scene.add(new THREE.HemisphereLight(0xFFFFFF, theme.ground, theme.light || (theme.under ? .6 : .75)));
     const sun = new THREE.DirectionalLight(0xFFFFFF, theme.under ? .45 : .7); sun.position.set(4, 9, 6); sun.castShadow = true; if (tint) sun.color.lerp(new THREE.Color(tint), TINT_MIX);
     Object.assign(sun.shadow.camera, { left: -7, right: 7, top: 7, bottom: -3 }); sun.shadow.mapSize.set(SHADOW_MAP, SHADOW_MAP); sun.shadow.radius = 4;
+    Object.assign(sun.shadow, { bias: -5e-4, normalBias: .02 });   // bez pasków cienia na zaokrąglonych bryłach
+    const rim = new THREE.DirectionalLight(0xFFF2D8, theme.under ? .2 : .35); rim.position.set(-3, 5, -7); scene.add(rim);   // światło konturowe z tyłu: odcina bryłę od tła
     scene.add(sun);
     let seed = 1 + Math.floor(Math.random() * 2147483646); const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
     const cube = s => Math.cbrt(s.kg || 100), big = Math.max(cube(B.a.s), cube(B.b.s));
