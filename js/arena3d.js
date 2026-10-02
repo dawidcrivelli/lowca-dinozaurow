@@ -21,6 +21,13 @@ window.Arena3D = (() => {
   const ANIM_MS = 440, HIT_FRAC = .39, BIG_HIT = 24, SHAKE = 0.22, LUNGE = 0.9;
   const ORBIT = 0.32, ORBIT_MS = 9000, CAM_Y = 2.7, CAM_D = 7.8, LOOK_Y = 1.3;
   const PIXEL_RATIO_MAX = 2, SHADOW_MAP = 1024;
+  const KB = { base: .2, k: .016, ko: .7 };    // odrzut trafionego: podstawa + obrażenia × k; ślizg przy nokaucie
+  const POOL = 220, PRE_MS = 260;               // cząstki w puli (krąg, bez alokacji w klatce); o ile wcześniej startuje plwocina/ogień/ryk
+  const HITSTOP_MS = 80, SLOW = { k: .3, ms: 900 }, PUNCH = .1;   // stop-klatka mocnego ciosu; zwolnienie przy nokaucie; skok zbliżenia
+  const CAM = { ease: 3.5, intro: 1.6, win: .75, swing: .8, winMs: 8000 };  // płynność, odjazd na wejściu, zbliżenie i wahadło przy zwycięzcy
+  const POISON_MS = 3200, POISON_EVERY = 140, DIZZY_MS = 1500, KO_DIZZY_MS = 30000, COWER_MS = 1000, SQUEEZE_MS = 500;
+  const C = { star: 0xFFD84A, white: 0xFFFFFF, venom: 0x86E04A, sound: 0xFFF2B8, pincer: 0xF07A3A, smoke: 0x6A6460, crack: 0x3A2E24, splash: 0xE8F6FF,
+    fire: [0xFFE45A, 0xFF9A2A, 0xFF5A1A], water: [0xCFF0FF, 0x7CCBF0, 0xFFFFFF] };
   /* Każdy teren z battle.js ma kilka wyglądów (biomów), losowanych na walkę.
      props: element tła → ile sztuk; far: dalekie tło → szansa; rock: kolory skał; herd/fly: typy ciał dalekich rysunków;
      fog: [od, do]; light: jasność; tint: false = bez zachodu/chmur na niebie */
@@ -279,7 +286,7 @@ window.Arena3D = (() => {
     const bb = new THREE.Box3().setFromObject(inner), bz = bb.getSize(V(0, 0)), w = Math.max(bz.x, bz.z) * SHIELD.pad;
     const shield = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), new THREE.MeshBasicMaterial({ color: SHIELD.color, transparent: true, opacity: 0, depthWrite: false }));
     shield.position.copy(root.worldToLocal(bb.getCenter(V(0, 0)))); shield.scale.set(w, bz.y * SHIELD.pad, w); root.add(shield);
-    return { root, inner, shadow, shield, kind, dir, lift, ...parts, rig, key, base, id: sp.id, mats, x0: -dir * GAP, anim: null, ko: false, won: false, phase: Math.random() * 6, swim: water || fly };
+    return { root, inner, shadow, shield, kind, dir, lift, ...parts, rig, key, base, id: sp.id, mats, x0: -dir * GAP, h: bz.y, len: bz.x, col: P, anim: null, ko: false, won: false, phase: Math.random() * 6, swim: water || fly };
   }
 
   /* ---------- teren ---------- */
@@ -439,26 +446,95 @@ window.Arena3D = (() => {
     const sea = [B.a, B.b].map((p, i) => p.s.cat === 'marine' ? (i ? 1 : -1) : 0).find(Boolean) || 0;
     terrain(theme, rnd, key === 'coast' ? sea : 0);
     S.ro = new ResizeObserver(() => { const { clientWidth: w, clientHeight: h } = stage; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); });
-    S.ro.observe(stage);
+    S.ro.observe(stage); intro(figures);
     S.raf = requestAnimationFrame(loop);
   }
   function stop() {
     if (!S) return;
     cancelAnimationFrame(S.raf); S.ro.disconnect();
     S.scene.traverse(o => { o.geometry?.dispose(); for (const m of [].concat(o.material || [])) { m.map?.dispose(); m.dispose(); } });
+    Object.values(S.geo || {}).forEach(g => g.dispose());
     S.renderer.dispose(); S.renderer.forceContextLoss(); S.renderer.domElement.remove(); S = null;
   }
 
   /* ---------- animacje ---------- */
-  const play = (f, k, ms = ANIM_MS, sty) => { if (!f.ko) f.anim = { k, t0: performance.now(), ms, style: sty }; };
-  const soon = (ms, fn) => S.todo.push([performance.now() + ms, fn]);
-  function burst(f, n, color) {
-    const m = new THREE.MeshBasicMaterial({ color }), geo = new THREE.IcosahedronGeometry(.09, 0), p = f.root.position;
-    for (let i = 0; i < n; i++) {
-      const o = new THREE.Mesh(geo, m); o.position.set(p.x + (Math.random() - .5) * .8, .2 + p.y + Math.random() * .8, (Math.random() - .5) * .8);
-      S.scene.add(o); S.parts.push({ o, v: V((Math.random() - .5) * 3, 1 + Math.random() * 2.5, (Math.random() - .5) * 2), t: 0 });
-    }
+  /* S.now: zegar gry (staje na stop-klatce, zwalnia przy nokaucie); kb: odrzut trafionego */
+  const play = (f, k, ms = ANIM_MS, sty, kb) => { if (!f.ko) f.anim = { k, t0: S.now, ms, style: sty, kb }; };
+  const soon = (ms, fn) => S.todo.push([S.now + ms, fn]);
+  const cam = (x, k, ms) => Object.assign(S.cam, { tx: x, tk: k, until: S.now + ms });   // kamera płynie do: x patrzenia, krotność dystansu
+  // wejście na arenę: kształty cząstek, pula, kamera z daleka najeżdża, obaj zawodnicy po kolei ryczą
+  function intro(figures) {
+    const T = THREE, v2 = pts => pts.map(([x, y]) => new T.Vector2(x, y)), r = i => i % 2 ? .45 : 1;
+    S.geo = { blob: new T.IcosahedronGeometry(1, 0), chip: new T.CircleGeometry(1, 5), ring: new T.RingGeometry(.8, 1, 20), streak: new T.PlaneGeometry(1, .08),
+      star: new T.ShapeGeometry(new T.Shape(v2(Array.from({ length: 10 }, (_, i) => [Math.sin(i * Math.PI / 5) * r(i), Math.cos(i * Math.PI / 5) * r(i)])))),
+      tooth: new T.ConeGeometry(.07, .24, 4), arc: new T.TorusGeometry(1, .045, 3, 14, Math.PI * .7), feather: new T.ShapeGeometry(new T.Shape(v2(feather(1, .22).map(([x, y]) => [x - .5, y])))) };
+    Object.assign(S, { paper: figures === 'bill', now: performance.now(), ix: 0, cam: { x: 0, k: CAM.intro, th: 0, tx: 0, tk: 1, until: 0 } });
+    S.parts = Array.from({ length: POOL }, () => { const o = new T.Mesh(S.geo.blob, new T.MeshBasicMaterial({ transparent: true, depthWrite: false, side: T.DoubleSide }));
+      o.visible = false; S.scene.add(o); return { o, v: V(0, 0), on: false }; });
+    Object.values(S.byId).forEach((f, i) => soon(i * 350, () => { play(f, 'lunge', f.rig?.ms?.('roar') || ANIM_MS * 1.5, 'roar'); PRE.roar(f); }));
   }
+  /* cząstka z puli (krąg: najstarsza ustępuje). o: life [s], s: [rozmiar od, do], grow: część życia na wzrost, g: grawitacja, drag: opór,
+     spin, face: przodem do kamery (rz: obrót w płaszczyźnie ekranu), r: obrót [x, y, z], op: krycie, fn(q, k): własny ruch */
+  function part(g, c, p, v, o) {
+    const q = S.parts[S.ix++ % POOL], m = q.o;
+    Object.assign(q, { on: true, t: 0, life: .6, s: [.1, .03], grow: 1, g: 6, drag: 0, spin: 0, face: false, rz: 0, op: 1, fn: null }, o);
+    m.geometry = S.geo[S.paper && g === 'blob' ? 'chip' : g];   // wycinanki: papierowe skrawki zamiast kulek
+    m.material.color.setHex(c); m.position.copy(p); q.v.copy(v); m.rotation.set(...(o.r || [0, 0, 0])); m.visible = true;
+  }
+  const R = (a = 1) => (Math.random() - .5) * 2 * a, pick = l => [].concat(l)[Math.floor(Math.random() * [].concat(l).length)], V0 = () => V(0, 0);
+  const at = (f, fy = .5, fx = 0) => V(f.root.position.x + f.dir * f.len * fx, f.root.position.y + f.h * fy, .35);  // punkt na zawodniku (ułamki wysokości i długości ku wrogowi), bliżej kamery
+  const snout = f => at(f, .78, .4), sz = f => Math.min(1.3, Math.max(.6, f.h / 1.6));   // skala efektu do wielkości zawodnika
+  const puff = (p, n, g, c, { sp = 2, up = 2, r = .25, ...o } = {}) => { for (let i = 0; i < n; i++)   // n cząstek rozsypanych z punktu p
+    part(g, pick(c), V(p.x + R(r), p.y + R(r), p.z + R(r)), V(R(sp), up * Math.random(), R(sp)), { spin: R(9), ...o, life: (o.life || .6) * (.7 + Math.random() * .6) }); };
+  const bubbles = (p, n) => puff(p, n, 'ring', C.water[0], { face: true, g: -3, s: [.06, .13], up: 1, sp: 1, life: 1 });
+  function burst(f, n, color) {   // kurz spod trafionego; pod wodą bąble
+    if (!color && S.theme.under) return bubbles(at(f, .35), n);
+    puff(at(f, .35), n, 'blob', color ?? (S.theme.water ? C.splash : S.theme.ground), { up: 3, sp: 1.5, s: [.09, .02] });
+  }
+  const teeth = (d, c) => { const p = at(d, .6, .1), z = sz(d);   // dwa łuki zębów zamykają się na trafionym
+    for (const s of [-1, 1]) for (let i = -2; i <= 2; i++) part('tooth', c, V(p.x + i * .15 * z, p.y + s * (.55 - .05 * i * i) * z, p.z + .1), V(0, -s * 3 * z, 0),
+      { life: .45, s: [z, z], g: 0, drag: 7, r: [0, 0, s > 0 ? Math.PI : 0] }); };
+  const scratch = (a, d, n, len) => { const p = at(d, .55), rz = -.8 * a.dir, L = len * Math.max(.6, d.h * .45);   // n świecących rys pazurów
+    for (let i = 0; i < n; i++) for (const [c, k, op] of [[C.star, 1.25, .5], [C.white, 1, 1]]) { const o = (i - (n - 1) / 2) * .24;
+      part('streak', c, V(p.x - Math.sin(rz) * o, p.y + Math.cos(rz) * o, p.z + .2 * k), V0(), { face: true, rz, life: .6, s: [.1, L * k], grow: .2, g: 0, op }); } };
+  const squeeze = (d, ms) => { const p = at(d, .55), r = d.h * .5; d.squeeze = S.now + ms;   // kreski ściskania zbiegają się do środka, ciało się zgniata
+    for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, c = Math.cos(a), s = Math.sin(a);
+      part('streak', C.white, V(p.x + c * r, p.y + s * r, p.z + .2), V(-c * 1.2, -s * 1.2, 0), { face: true, rz: a, life: .45, s: [.5, .25], g: 0 }); } };
+  const dizzy = (f, ms) => { for (let i = 0; i < 3; i++) part('star', C.star, V0(), V0(), { face: true, life: ms / 1000, s: [.13, .13], g: 0, spin: 3,   // gwiazdki krążą nad głową
+    fn: q => { const a = q.t * 5 + i * 2.1, p = f.root.position; q.o.position.set(p.x + f.dir * f.len * (f.ko ? 0 : .3) + Math.cos(a) * .35, p.y + f.h * (f.ko ? .4 : 1) + .1, Math.sin(a) * .35); } }); };
+  const confetti = p => puff(p, 30, 'chip', RAINBOW, { up: 6, sp: 2.5, g: 4, drag: 1.5, s: [.09, .08], life: 1.8 });
+  /* przed ciosem: plwocina leci łukiem, strumień ognia, fale ryku; T = czas lotu [s] */
+  const PRE = {
+    spit: (a, d, T) => { const p = snout(a), q = at(d, .6), G = 9;
+      part('blob', C.venom, p, V((q.x - p.x) / T, (q.y - p.y) / T + G * T / 2, (q.z - p.z) / T), { life: T, s: [.16, .2], g: G, spin: 10 }); },
+    fire: (a, d, T) => { for (let i = 0; i < 16; i++) soon(i * T * 50, () => { const p = snout(a);
+      part('blob', pick(C.fire), p, V((d.root.position.x - p.x) / T * (.8 + R(.2)), R(.6), R(.6)), { life: T * 1.3, s: [.06, .4], g: -2, spin: 6 }); }); },
+    roar: a => { for (let i = 0; i < 3; i++) soon(i * 110, () => part('ring', C.sound, snout(a), V(a.dir * 3.5, 0, 0), { r: [0, 1.1, 0], life: .7, s: [.15, 1.3], g: 0, op: .8 })); },
+  };
+  /* klocki efektów trafienia: (atakujący, trafiony, mocny cios) */
+  const FXP = {
+    chomp: (a, d) => teeth(d, C.white), fang: (a, d) => teeth(d, C.venom), snip: (a, d) => teeth(d, C.pincer),
+    stars: (a, d, big) => { const p = at(d, .6, -.1); part('star', C.star, p, V0(), { face: true, life: .3, s: [.2, (big ? 1.1 : .7) * sz(d)], grow: .4, g: 0, spin: 3, op: .9 });   // „POW!”
+      puff(p, big ? 8 : 4, 'star', C.star, { face: true, s: [.14, .06], sp: 3 }); },
+    pop: (a, d) => part('ring', C.white, at(d, .5), V0(), { face: true, life: .4, s: [.2, d.h * .8], g: 0 }),
+    dizzy: (a, d) => dizzy(d, DIZZY_MS),
+    poison: (a, d) => { d.poison = S.now + POISON_MS; puff(at(d, .6), 8, 'ring', C.venom, { face: true, s: [.1, .18], g: -2, sp: 1.2, up: 1, life: .9 }); },
+    splat: (a, d) => puff(at(d, .6), 12, 'blob', C.venom, { up: 3, s: [.12, .05] }),
+    smoke: (a, d) => puff(at(d, .7), 8, 'blob', C.smoke, { up: 1, g: -1.5, s: [.12, .35], life: 1.1, spin: 1 }),
+    scratch: (a, d) => scratch(a, d, 3, 1), slash: (a, d) => scratch(a, d, 3, 1.6), mark: (a, d) => scratch(a, d, 1, 1),
+    whoosh: (a, d) => { for (let i = 0; i < 2; i++) part('arc', C.white, at(d, .55), V0(), { face: true, rz: a.dir > 0 ? 2 + i * .5 : -1 - i * .5, spin: -a.dir * 9, life: .35, s: [.5 + i * .2, .9 + i * .3], g: 0, op: .85 }); },
+    rush: a => { const p = at(a, .5); for (let i = 0; i < 5; i++) part('streak', C.white, V(p.x - a.dir * .5, p.y + R(a.h * .35), p.z + R(.2)), V(-a.dir * 5, 0, 0), { face: true, life: .3, s: [.8, .4], g: 0, op: .7 }); },
+    quake: (a, d) => { const p = V(d.root.position.x, .06, .3); S.shake = Math.max(S.shake, SHAKE);   // fala uderzeniowa, kamienie i pęknięcia; pod wodą bąble
+      part('ring', S.theme.under ? C.water[0] : C.white, p, V0(), { r: [-Math.PI / 2, 0, 0], life: .6, s: [.3, 2.8], g: 0, op: .7 });
+      if (S.theme.under) return bubbles(p, 14);
+      puff(p, 10, 'blob', S.theme.rock?.[0] || 0x9A8A74, { up: 5, sp: 1.6, s: [.1, .07], g: 12 });
+      for (let i = 0; i < 5; i++) part('streak', C.crack, p, V0(), { r: [-Math.PI / 2, 0, i * 1.25 + R(.3)], life: 1.4, s: [.2, .9], grow: .15, g: 0, op: .8 }); },
+    squeeze: (a, d) => squeeze(d, SQUEEZE_MS), coil: (a, d) => squeeze(d, SQUEEZE_MS * 3),
+    cower: (a, d) => { d.cower = S.now + COWER_MS; S.cam.k -= PUNCH; puff(at(d, .9), 4, 'blob', C.water[1], { up: 2, s: [.07, .05] }); },   // przestraszony kuli się, kropelki potu
+    swirl: (a, d) => { for (let i = 0; i < 3; i++) part('arc', C.water[1], at(d, .5), V(0, .4 * i, 0), { face: true, rz: i * 2.1, spin: 10, life: .6, s: [.3, .8 + i * .2], g: 0 }); bubbles(at(d, .5), 8); },
+    splash: (a, d) => { puff(at(d, .5), 12, 'blob', C.water, { up: 4, g: 9, s: [.1, .04] }); bubbles(at(d, .5), 6); },
+    feathers: (a, d) => puff(at(d, .7), 6, 'feather', a.col, { s: [.35, .3], g: 1.2, drag: 2.5, up: 3, sp: 1.5, life: 1.4 }),
+  };
   function animate(f, now, dt) {
     const a = f.anim, t = a ? Math.min(1, (now - a.t0) / a.ms) : 1, s = Math.sin(Math.PI * t);
     let dx = 0, dy = 0, dz = 0, rz = 0, ry = 0, sy = 1, flash = 0, glow = 0;
@@ -466,15 +542,19 @@ window.Arena3D = (() => {
       lunge: () => { const m = f.rig?.root?.('lunge', a.style, t);
         if (m) { dx = f.dir * (m.fwd || 0); dy = m.up || 0; rz = m.pitch || 0; ry = m.yaw || 0; }
         else { dx = f.dir * LUNGE * s; rz = -.18 * s; if (f.jaw) f.jaw.rotation.z = -.5 * s; } },
-      hit: () => { dx = -f.dir * .35 * s; flash = 1 - t; },
+      hit: () => { dx = -f.dir * (a.kb ?? .35) * Math.sin(Math.PI * Math.sqrt(t)); flash = 1 - t; },   // szybko w tył, powoli z powrotem
       dodge: () => { dx = -f.dir * DODGE.back * s; dy = DODGE.up * s; ry = 2 * Math.PI * t; },
       guard: () => { sy = 1 - .16 * s; glow = s; },
-      ko: () => { rz = Math.PI / 2 * t; dy = -f.lift * t; flash = 1 - t; },
+      ko: () => { rz = Math.PI / 2 * t; dy = -f.lift * t; dx = -f.dir * KB.ko * Math.min(1, 2 * t); flash = 1 - t; },
     })[a.k]();
     if (a && t >= 1 && a.k !== 'ko') f.anim = null;
     f.ko = f.ko || (a && a.k === 'ko' && t >= 1);
-    if (f.ko) { rz = Math.PI / 2; dy = -f.lift; }
+    if (f.ko) { rz = Math.PI / 2; dy = -f.lift; dx = -f.dir * KB.ko; }
     const tm = now / 1000 + f.phase;
+    // stany: otruty (zielony puls + bąble), przestraszony (kuli się i cofa), ściśnięty (drga zgnieciony)
+    const pz = f.poison > now ? .5 + .5 * Math.sin(now / 130) : 0, cw = Math.max(0, Math.min(1, ((f.cower || 0) - now) / 250)), sq = f.squeeze > now ? Math.abs(Math.sin(now / 45)) : 0;
+    if (pz && now > (f.pb || 0)) { f.pb = now + POISON_EVERY; part('ring', C.venom, at(f, .2 + Math.random() * .7, R(.4)), V(R(.2), .8, 0), { face: true, s: [.06, .14], g: -.5, life: 1 }); }
+    dx -= f.dir * .3 * cw; sy *= 1 - .15 * cw - .1 * sq;
     if (!f.ko) sy *= 1 + .025 * Math.sin(tm * 3);
     if (f.swim && !f.ko) dy += .12 * Math.sin(tm * 2);
     if (f.won) dy += Math.abs(Math.sin(tm * 5)) * .25;
@@ -486,7 +566,7 @@ window.Arena3D = (() => {
     const blk = Math.max(0, 1 - (now - (f.blockT || 0)) / SHIELD.flashMs);   // błysk bańki przy zablokowanym ciosie
     f.shield.material.opacity = f.ko ? 0 : f.guarding ? SHIELD.alpha * (1 + .2 * Math.sin(tm * 6)) : blk * .8;
     f.shield.visible = f.shield.material.opacity > .01;
-    for (const m of f.mats) m.emissive ? m.emissive.setRGB(flash * .8, glow * .35, 0) : m.color.setRGB(1, 1 - flash * .6, 1 - flash * .6);
+    for (const m of f.mats) m.emissive ? m.emissive.setRGB(flash * .8, glow * .35 + pz * .3, 0) : m.color.setRGB(1 - pz * .45, 1 - flash * .6, 1 - flash * .6 - pz * .45);
     if (a?.k === 'ko' || f.ko) {   // przewrócony obraca się wokół stóp → podnieś, żeby leżał NA ziemi, nie pod nią
       f.root.updateMatrixWorld(true);
       f.root.position.y -= Math.min(0, new THREE.Box3().setFromObject(f.inner).min.y - GROUND_EPS);
@@ -496,16 +576,27 @@ window.Arena3D = (() => {
     if (!S) return;
     if (!S.stage.isConnected) return stop();
     S.raf = requestAnimationFrame(loop);
-    const dt = Math.min(.05, (now - (S.last || now)) / 1000); S.last = now;
-    S.todo = S.todo.filter(([at, fn]) => at > now || void fn());
-    const th = ORBIT * Math.sin((now - S.t0) / ORBIT_MS * 2 * Math.PI), c = S.camera;
-    const d = CAM_D / Math.min(1, c.aspect / 1.5);  // wąski ekran telefonu → kamera dalej
-    c.position.set(d * Math.sin(th) + (Math.random() - .5) * S.shake, CAM_Y + (Math.random() - .5) * S.shake, d * Math.cos(th));
-    c.lookAt(0, LOOK_Y, 0); S.shake *= .88;
-    for (const f of Object.values(S.byId)) animate(f, now, dt);
-    S.parts = S.parts.filter(p => { p.t += dt; p.v.y -= 6 * dt; p.o.position.addScaledVector(p.v, dt); p.o.scale.setScalar(Math.max(.01, 1 - p.t * 1.6));
-      return p.t < .6 || void S.scene.remove(p.o); });
-    for (const fn of S.anims) fn(dt, now);
+    const rdt = Math.min(.05, (now - (S.last || now)) / 1000); S.last = now;
+    const dt = rdt * (now < (S.stop || 0) ? 0 : now < (S.slow || 0) ? SLOW.k : 1); S.now += dt * 1000;
+    const due = S.todo; S.todo = []; for (const j of due) j[0] > S.now ? S.todo.push(j) : j[1]();   // zadania mogą dokładać nowe
+    // kamera: wolno krąży; przy zwycięzcy wahadło i zbliżenie; cam() przesuwa cel na chwilę
+    const cm = S.cam, W = S.won, e = Math.min(1, rdt * CAM.ease), c = S.camera;
+    if (W) cm.tx = W.root.position.x * .6, cm.tk = Math.max(CAM.win, Math.max(W.h, W.len * LEN_K) / H_MAX); else if (S.now > cm.until) cm.tx = 0, cm.tk = 1;
+    const th = W ? CAM.swing * Math.sin((now - W.wonAt) / CAM.winMs * 2 * Math.PI) : ORBIT * Math.sin((now - S.t0) / ORBIT_MS * 2 * Math.PI);
+    cm.x += (cm.tx - cm.x) * e; cm.k += (cm.tk - cm.k) * e; cm.th += (th - cm.th) * e;
+    const d = CAM_D * cm.k / Math.min(1, c.aspect / 1.5);  // wąski ekran telefonu → kamera dalej
+    c.position.set(cm.x + d * Math.sin(cm.th) + (Math.random() - .5) * S.shake, LOOK_Y + (CAM_Y - LOOK_Y) * cm.k + (Math.random() - .5) * S.shake, d * Math.cos(cm.th));
+    c.lookAt(cm.x, LOOK_Y, 0); S.shake *= .88;
+    for (const f of Object.values(S.byId)) animate(f, S.now, dt);
+    for (const q of S.parts) if (q.on) {
+      const m = q.o, k = (q.t += dt) / q.life;
+      if (k >= 1) { q.on = m.visible = false; continue; }
+      q.v.y -= q.g * dt; q.v.multiplyScalar(1 - Math.min(1, q.drag * dt)); m.position.addScaledVector(q.v, dt);
+      m.scale.setScalar(q.s[0] + (q.s[1] - q.s[0]) * Math.min(1, k / q.grow)); m.material.opacity = q.op * Math.min(1, 4 * (1 - k));
+      if (q.face) { m.quaternion.copy(c.quaternion); m.rotateZ(q.rz + q.spin * q.t); } else if (q.spin) { m.rotation.x += q.spin * dt; m.rotation.z += q.spin * .6 * dt; }
+      q.fn?.(q, k);
+    }
+    for (const fn of S.anims) fn(dt, S.now);
     for (const g of S.faces) g.quaternion.copy(c.quaternion);   // dalekie rysunki zawsze przodem do kamery
     S.renderer.render(S.scene, c);
   }
@@ -514,21 +605,32 @@ window.Arena3D = (() => {
   function event(ev) {
     const a = S?.byId[ev.att], d = S?.byId[ev.def];
     if (!a || !d) return;
-    const dust = S.theme.water || S.theme.under ? 0xE8F6FF : S.theme.ground;
     if (ev.move === 'guard') { a.guarding = true; return play(a, 'guard', ANIM_MS * 1.5); }
     const sty = style(a, ev.move), ms = a.rig?.ms?.(sty) || ANIM_MS, hit = ms * (a.rig?.hitAt?.(sty) ?? HIT_FRAC);
+    const sp = ev.move === 'special', ko = ev.hpDef === 0, big = sp || ev.damage >= BIG_HIT, dx = f => f.root.position.x;
     play(a, 'lunge', ms, sty);
-    if (ev.dodge) soon(hit / 2, () => { play(d, 'dodge', ANIM_MS * 1.4); burst(d, 8, 0xFFFFFF); });
-    if (ev.guarded) soon(hit, () => { d.guarding = false; d.blockT = performance.now(); burst(d, 12, SHIELD.color); });
-    else if (ev.damage) soon(hit, () => { play(d, ev.hpDef === 0 ? 'ko' : 'hit', ev.hpDef === 0 ? ANIM_MS * 2 : ANIM_MS, sty); fx(sty, a, d, ev);
-      burst(d, ev.damage >= BIG_HIT ? 14 : 7, dust); if (ev.damage >= BIG_HIT) S.shake = SHAKE; });
+    if (PRE[sty]) soon(Math.max(0, hit - PRE_MS), () => PRE[sty](a, d, Math.min(hit, PRE_MS) / 1000));
+    if (sp) cam(dx(a) * .3, .88, hit);   // specjalny: kamera najeżdża na atakującego w czasie zamachu
+    if (ev.dodge) soon(hit / 2, () => { play(d, 'dodge', ANIM_MS * 1.4); burst(d, 8, C.white); FXP.whoosh(d, d); });
+    if (ev.guarded) soon(hit, () => { d.guarding = false; d.blockT = S.now; burst(d, 12, SHIELD.color); });
+    else if (ev.damage) soon(hit, () => {
+      play(d, ko ? 'ko' : 'hit', ko ? ANIM_MS * 2 : ANIM_MS, sty, KB.base + ev.damage * KB.k);
+      (FX[sty] || 'stars').split(' ').forEach(k => FXP[k](a, d, big)); burst(d, big ? 14 : 7);
+      if (big) { S.shake = Math.max(S.shake, SHAKE); S.stop = performance.now() + HITSTOP_MS; S.cam.k -= PUNCH; cam(dx(d) * .4, .85, 500); }   // stop-klatka i skok kamery
+      if (ko) { S.slow = performance.now() + SLOW.ms; cam(dx(d) * .5, .72, 2500); dizzy(d, KO_DIZZY_MS); }   // nokaut: zwolnienie, najazd, gwiazdki
+    });
   }
-  /* efekty ciosu wg stylu (cząstki, ślady, chmury jadu) — FX[styl](atakujący, trafiony, zdarzenie); brak wpisu = sam kurz z burst() */
-  const FX = {};
-  const fx = (sty, a, d, ev) => FX[sty]?.(a, d, ev);
-  function win(id) {
+  /* efekty trafienia wg stylu: lista klocków z FXP (nieznany styl → gwiazdki); kurz z burst() zawsze */
+  const FX = { bite: 'chomp stars', crush: 'chomp squeeze', shake: 'chomp dizzy', venom: 'fang poison', spit: 'splat poison', fire: 'smoke stars',
+    claw: 'scratch', slash: 'slash stars', kick: 'stars', pounce: 'scratch stars', grab: 'squeeze', thumb: 'mark stars',
+    tail: 'whoosh stars', club: 'whoosh stars dizzy', spin: 'whoosh stars dizzy', neck: 'whoosh stars', stomp: 'quake', rear: 'quake stars', trample: 'quake rush',
+    headbutt: 'rush stars dizzy', gore: 'rush stars dizzy', charge: 'rush stars dizzy', ram: 'rush stars dizzy', roll: 'rush dizzy', tusk: 'rush stars',
+    coil: 'coil', shell: 'stars pop', roar: 'cower', flipper: 'swirl', tentacle: 'swirl squeeze', trunk: 'splash whoosh',
+    peck: 'feathers stars', wing: 'feathers whoosh', dive: 'feathers stars', sting: 'stars poison', pincer: 'snip stars' };
+  function win(id) {   // zwycięzca: konfetti i wahadło kamery; przegrany pada
     if (!S) return;
-    for (const [k, f] of Object.entries(S.byId)) k === String(id) ? f.won = true : f.ko || play(f, 'ko', ANIM_MS * 2);   // klucze obiektu to napisy, id Pokémona to liczba
+    for (const [k, f] of Object.entries(S.byId)) if (k !== String(id)) f.ko || play(f, 'ko', ANIM_MS * 2);   // klucze obiektu to napisy, id Pokémona to liczba
+      else { Object.assign(f, { won: true, wonAt: performance.now() }); S.won = f; for (let i = 0; i < 3; i++) soon(i * 600, () => confetti(at(f, 1.2))); }
   }
   return { ok, start, stop, event, win, get S() { return S; } };   // S: stan sceny dla testów (tmp/steps_ko.js)
 })();
