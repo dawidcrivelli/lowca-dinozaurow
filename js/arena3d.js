@@ -18,7 +18,7 @@ window.Arena3D = (() => {
   const CV_W = 400, CV_H = 280;  // płótno rysunku (proporcje SVG 200×140)
   const SLAB = { depth: .035, cell: 4, inset: 3, shade: .62 };  // wytłoczony rysunek: grubość × wysokość, komórka konturu [px], próbka koloru w głąb [komórki], jasność boków
   const GROUND_EPS = .03;  // leżący nad gruntem, nie w nim (inaczej migocze)
-  const ANIM_MS = 440, HIT_DELAY = 170, BIG_HIT = 24, SHAKE = 0.22, LUNGE = 0.9;
+  const ANIM_MS = 440, HIT_FRAC = .39, BIG_HIT = 24, SHAKE = 0.22, LUNGE = 0.9;
   const ORBIT = 0.32, ORBIT_MS = 9000, CAM_Y = 2.7, CAM_D = 7.8, LOOK_Y = 1.3;
   const PIXEL_RATIO_MAX = 2, SHADOW_MAP = 1024;
   /* Każdy teren z battle.js ma kilka wyglądów (biomów), losowanych na walkę.
@@ -72,6 +72,28 @@ window.Arena3D = (() => {
     mammal: { b: [.8, .42, .36], leg: [.75, .12], neck: [.45, .35], head: [.55, .32], tail: .7 },
     sloth: { b: [.8, .62, .5], leg: [.7, .2], neck: [.35, .45], head: [.45, .3], tail: .4 },
   };
+  /* styl ataku wg presetu (art.js); zwykły cios losuje z listy, specjalny = ostatni (popisowy).
+     Rigi (js/puppet2d.js, js/rig3d.js) dostają styl w update() i root() — patrz RIG niżej */
+  const STYLES = {
+    thero: ['bite', 'bite', 'claw', 'tail', 'shake'], raptor: ['claw', 'bite', 'kick', 'pounce'], ornimim: ['kick', 'peck', 'claw'],
+    tbird: ['peck', 'kick', 'peck'], dragon: ['bite', 'claw', 'tail', 'fire'], prosauro: ['claw', 'tail', 'stomp'],
+    hadro: ['headbutt', 'tail', 'stomp'], orni: ['tail', 'thumb', 'stomp'], dome: ['headbutt', 'headbutt', 'charge'],
+    sauro: ['stomp', 'tail', 'neck', 'rear'], cerat: ['gore', 'headbutt', 'charge'], armor: ['club', 'club', 'roll'],
+    stego: ['tail', 'tail', 'spin'], ptero: ['peck', 'wing', 'dive'], bird: ['peck', 'wing', 'dive'],
+    plesio: ['bite', 'flipper', 'neck'], mosa: ['bite', 'tail', 'ram'], ichthyo: ['bite', 'ram', 'tail'], fish: ['bite', 'ram', 'tail'],
+    shark: ['bite', 'ram', 'shake'], whale: ['bite', 'tail', 'ram'], croc: ['bite', 'tail', 'roll'], lizard: ['bite', 'tail', 'claw'],
+    snake: ['bite', 'bite', 'coil'], turtle: ['bite', 'flipper', 'shell'], sail: ['bite', 'claw', 'charge'], synap: ['bite', 'claw', 'charge'],
+    amphib: ['bite', 'tail', 'pounce'], bug: ['ram', 'roll'], ammo: ['tentacle', 'ram'], scorp: ['claw', 'tail', 'sting'],
+    anomalo: ['claw', 'ram', 'claw'], mammal: ['bite', 'claw', 'pounce'], cat: ['claw', 'bite', 'pounce'], ele: ['tusk', 'stomp', 'trunk', 'charge'],
+    sloth: ['claw', 'claw', 'rear'],
+  };
+  const style = (f, move) => { const l = STYLES[f.key] || STYLES[f.base] || ['bite']; return move === 'special' ? l[l.length - 1] : l[Math.floor(Math.random() * (l.length - 1 || 1))]; };
+  /* RIG — figura z ruchomymi częściami, budowana przez Puppet2D (wycinanka, tryb 'bill') albo Rig3D (bryła, tryb 'model'):
+       build(ctx) → rig | null (null = stary kształt).  ctx = { THREE, body, sp, key, base, o, P, M, H, h: { V, mesh, ell, limb, flat, phong } }
+         body: grupa do wypełnienia, patrzy w +x, stopy na y=0, docelowa wysokość H (fighter() NIE przeskalowuje bryły z rigiem)
+       rig.update(st) co klatkę, st = { k: 'lunge'|'hit'|'dodge'|'guard'|'ko'|null, style, t: 0‥1, tm: s, dt, ko, won, guarding }
+       rig.root?(k, style, t) → { fwd, up, pitch, yaw, roll } nadpisuje ruch całej figury (fwd w kierunku przeciwnika, pitch + = nos w górę)
+       rig.ms?(style) → czas animacji ataku [ms]; rig.hitAt?(style) → ułamek t, w którym cios trafia (przeciwnik reaguje) */
   let loading = null, S = null;
   const load = () => loading = loading || new Promise((res, rej) => window.THREE ? res()
     : document.head.append(Object.assign(document.createElement('script'), { src: THREE_SRC, onload: res, onerror: rej })));
@@ -222,10 +244,12 @@ window.Arena3D = (() => {
     const M = { skin: phong(P[0]), belly: phong(P[1]), dark: phong(P[2]), ivory: phong(0xF4ECD8) };
     const root = new THREE.Group(), inner = new THREE.Group(), body = new THREE.Group(), carn = sp.diet === 'M' || sp.diet === 'Ry';
     root.add(inner); inner.add(body);
-    const kind = figures === 'bill' ? 'slab' : BIPED.includes(base) ? 'biped' : QUAD.includes(base) ? 'quad' : 'slab';
+    const builder = figures === 'bill' ? window.Puppet2D : window.Rig3D;
+    const rig = builder?.build({ THREE, body, sp, key, base, o, P, M, H, h: { V, mesh, ell, limb, flat, phong } }) || null;
+    const kind = rig ? 'rig' : figures === 'bill' ? 'slab' : BIPED.includes(base) ? 'biped' : QUAD.includes(base) ? 'quad' : 'slab';
     const water = sp.cat === 'marine' || sp.loco === 'swim', fly = sp.loco === 'fly';
-    const parts = kind === 'biped' ? biped(body, M, o, carn) : kind === 'quad' ? quad(body, M, base, o, carn) : billboard(body, sp, H, H * SLAB.depth);
-    if (kind !== 'slab') {   // wyśrodkuj i przeskaluj bryłę do docelowej wysokości
+    const parts = rig ? {} : kind === 'biped' ? biped(body, M, o, carn) : kind === 'quad' ? quad(body, M, base, o, carn) : billboard(body, sp, H, H * SLAB.depth);
+    if (kind === 'biped' || kind === 'quad') {   // wyśrodkuj i przeskaluj bryłę do docelowej wysokości
       const box = new THREE.Box3().setFromObject(body), sz = box.getSize(V(0, 0)), s = H / Math.max(sz.y, sz.x * LEN_K);
       body.position.set(-(box.min.x + box.max.x) / 2 * s, -box.min.y * s, 0); body.scale.setScalar(s);
     }
@@ -239,7 +263,7 @@ window.Arena3D = (() => {
     const bb = new THREE.Box3().setFromObject(inner), bz = bb.getSize(V(0, 0)), w = Math.max(bz.x, bz.z) * SHIELD.pad;
     const shield = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 12), new THREE.MeshBasicMaterial({ color: SHIELD.color, transparent: true, opacity: 0, depthWrite: false }));
     shield.position.copy(root.worldToLocal(bb.getCenter(V(0, 0)))); shield.scale.set(w, bz.y * SHIELD.pad, w); root.add(shield);
-    return { root, inner, shadow, shield, kind, dir, lift, ...parts, mats, x0: -dir * GAP, anim: null, ko: false, won: false, phase: Math.random() * 6, swim: water || fly };
+    return { root, inner, shadow, shield, kind, dir, lift, ...parts, rig, key, base, mats, x0: -dir * GAP, anim: null, ko: false, won: false, phase: Math.random() * 6, swim: water || fly };
   }
 
   /* ---------- teren ---------- */
@@ -409,7 +433,7 @@ window.Arena3D = (() => {
   }
 
   /* ---------- animacje ---------- */
-  const play = (f, k, ms = ANIM_MS) => { if (!f.ko) f.anim = { k, t0: performance.now(), ms }; };
+  const play = (f, k, ms = ANIM_MS, sty) => { if (!f.ko) f.anim = { k, t0: performance.now(), ms, style: sty }; };
   const soon = (ms, fn) => S.todo.push([performance.now() + ms, fn]);
   function burst(f, n, color) {
     const m = new THREE.MeshBasicMaterial({ color }), geo = new THREE.IcosahedronGeometry(.09, 0), p = f.root.position;
@@ -422,7 +446,9 @@ window.Arena3D = (() => {
     const a = f.anim, t = a ? Math.min(1, (now - a.t0) / a.ms) : 1, s = Math.sin(Math.PI * t);
     let dx = 0, dy = 0, dz = 0, rz = 0, ry = 0, sy = 1, flash = 0, glow = 0;
     if (a) ({
-      lunge: () => { dx = f.dir * LUNGE * s; rz = -.18 * s; if (f.jaw) f.jaw.rotation.z = -.5 * s; },
+      lunge: () => { const m = f.rig?.root?.('lunge', a.style, t);
+        if (m) { dx = f.dir * (m.fwd || 0); dy = m.up || 0; rz = m.pitch || 0; ry = m.yaw || 0; }
+        else { dx = f.dir * LUNGE * s; rz = -.18 * s; if (f.jaw) f.jaw.rotation.z = -.5 * s; } },
       hit: () => { dx = -f.dir * .35 * s; flash = 1 - t; },
       dodge: () => { dx = -f.dir * DODGE.back * s; dy = DODGE.up * s; ry = 2 * Math.PI * t; },
       guard: () => { sy = 1 - .16 * s; glow = s; },
@@ -436,6 +462,7 @@ window.Arena3D = (() => {
     if (f.swim && !f.ko) dy += .12 * Math.sin(tm * 2);
     if (f.won) dy += Math.abs(Math.sin(tm * 5)) * .25;
     if (f.tail) f.tail.rotation.x = .08 * Math.sin(tm * 2);
+    f.rig?.update({ k: a?.k || null, style: a?.style, t, tm, dt, ko: f.ko, won: f.won, guarding: f.guarding });
     f.root.position.set(f.x0 + dx, f.lift + dy, dz); f.shadow.position.set(f.x0 + dx, .02, dz);
     [f.inner.rotation.x, f.inner.rotation.z] = a?.k === 'ko' || f.ko ? [rz, 0] : [0, rz];
     f.inner.scale.y = sy; f.inner.rotation.y = ry;
@@ -472,10 +499,11 @@ window.Arena3D = (() => {
     if (!a || !d) return;
     const dust = S.theme.water || S.theme.under ? 0xE8F6FF : S.theme.ground;
     if (ev.move === 'guard') { a.guarding = true; return play(a, 'guard', ANIM_MS * 1.5); }
-    play(a, 'lunge');
-    if (ev.dodge) soon(HIT_DELAY / 2, () => { play(d, 'dodge', ANIM_MS * 1.4); burst(d, 8, 0xFFFFFF); });
-    if (ev.guarded) soon(HIT_DELAY, () => { d.guarding = false; d.blockT = performance.now(); burst(d, 12, SHIELD.color); });
-    else if (ev.damage) soon(HIT_DELAY, () => { play(d, ev.hpDef === 0 ? 'ko' : 'hit', ev.hpDef === 0 ? ANIM_MS * 2 : ANIM_MS);
+    const sty = style(a, ev.move), ms = a.rig?.ms?.(sty) || ANIM_MS, hit = ms * (a.rig?.hitAt?.(sty) ?? HIT_FRAC);
+    play(a, 'lunge', ms, sty);
+    if (ev.dodge) soon(hit / 2, () => { play(d, 'dodge', ANIM_MS * 1.4); burst(d, 8, 0xFFFFFF); });
+    if (ev.guarded) soon(hit, () => { d.guarding = false; d.blockT = performance.now(); burst(d, 12, SHIELD.color); });
+    else if (ev.damage) soon(hit, () => { play(d, ev.hpDef === 0 ? 'ko' : 'hit', ev.hpDef === 0 ? ANIM_MS * 2 : ANIM_MS);
       burst(d, ev.damage >= BIG_HIT ? 14 : 7, dust); if (ev.damage >= BIG_HIT) S.shake = SHAKE; });
   }
   function win(id) {

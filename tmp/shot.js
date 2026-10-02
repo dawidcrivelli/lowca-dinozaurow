@@ -7,7 +7,7 @@ const WS = require('./ws.js');
 const [stepsFile, url, width = '430'] = process.argv.slice(2);
 const PORT = 9500 + Math.floor(Math.random() * 300);
 const prof = path.join(__dirname, 'prof_' + PORT);
-const chrome = spawn('google-chrome', ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--no-first-run', '--enable-unsafe-swiftshader', '--use-angle=swiftshader',
+const chrome = spawn(process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--no-first-run', '--enable-unsafe-swiftshader', '--use-angle=swiftshader',
   `--remote-debugging-port=${PORT}`, `--user-data-dir=${prof}`, `--window-size=${width},1000`, 'about:blank'], { stdio: 'ignore' });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const get = p => new Promise((res, rej) => http.get({ host: '127.0.0.1', port: PORT, path: p }, r => {

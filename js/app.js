@@ -400,9 +400,10 @@ function playerMove(move) {
   showEvents(playRound(A.B, move), () => A.B.winner ? finish() : askMove());
 }
 /* odtwarza zdarzenia rundy z animacją: wypad atakującego, wstrząs trafionego, pasek życia, liczba obrażeń */
+const EVENT_MS = 720;   // odstęp zdarzeń rundy: dłuższe ataki rigów (gryzienie, ogon) muszą się zmieścić
 function showEvents(evs, done) {
   const B = A.B, side = id => id === B.a.id ? 'a' : 'b';
-  evs.forEach((ev, i) => later(i * 560, () => {
+  evs.forEach((ev, i) => later(i * EVENT_MS, () => {
     window.Arena3D?.event(ev);
     if (ev.att) {
       const as = side(ev.att), ds = as === 'a' ? 'b' : 'a', f = $(`#f-${as}`), g = $(`#f-${ds}`), who = id => (id === B.a.id ? B.a : B.b).s;
@@ -425,7 +426,7 @@ function showEvents(evs, done) {
     log.insertAdjacentHTML('beforeend', `<div><strong>Runda ${ev.round}.</strong> ${esc(ev.text)}</div>`);
     log.scrollTop = log.scrollHeight;
   }));
-  later(evs.length * 560 + 150, done);
+  later(evs.length * EVENT_MS + 150, done);
 }
 function finish() {
   const { winner: w, a, b } = A.B, l = w === a ? b : a;
