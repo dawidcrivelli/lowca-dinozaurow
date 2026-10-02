@@ -390,8 +390,8 @@ function startFight() {
   </div>`, 'wide');
   const ready = window.Arena3D?.ok && Arena3D.start($('.fight-grid'), B, view3d() === 'mix' ? 'bill' : 'model');   // bez WebGL zostaje widok 2D
   thud();
-  const t = A.token;   // walka rusza dopiero po wejściu zawodników (scena wczytana, ryki)
-  Promise.resolve(ready).then(() => t === A.token && later(START_MS, play ? askMove : autoStep));
+  const t = A.token, t0 = performance.now();   // pierwszy cios START_MS od otwarcia areny, ale nie przed wczytaniem sceny
+  Promise.resolve(ready).then(() => t === A.token && later(Math.max(0, START_MS - (performance.now() - t0)), play ? askMove : autoStep));
 }
 function autoStep() { showEvents(playRound(A.B), () => A.B.winner ? finish() : autoStep()); }
 function askMove() { $('#moves').hidden = false; }
@@ -400,34 +400,36 @@ function playerMove(move) {
   $('#moves').hidden = true;
   showEvents(playRound(A.B, move), () => A.B.winner ? finish() : askMove());
 }
-/* odtwarza zdarzenia rundy z animacją: wypad atakującego, wstrząs trafionego, pasek życia, liczba obrażeń */
-const EVENT_MS = 720, START_MS = 400;   // odstęp zdarzeń bez sceny 3D; pauza przed pierwszym ciosem
-/* zdarzenia po kolei: następne dopiero, gdy scena skończy poprzednią wymianę (Arena3D.event → obietnica), bez sceny co EVENT_MS */
+/* odtwarza zdarzenia rundy po kolei: wypad atakującego od razu, dźwięk trafienia / obrażenia / pasek życia w chwili uderzenia
+   (Arena3D woła onHit, gdy cios dochodzi), następne zdarzenie po końcu wymiany; bez sceny 3D stałe odstępy */
+const EVENT_MS = 600, HIT_MS = 150, START_MS = 1000;   // odstęp zdarzeń i chwila trafienia bez sceny; od otwarcia areny do pierwszego ciosu
 async function showEvents(evs, done) {
-  const B = A.B, side = id => id === B.a.id ? 'a' : 'b', t = A.token;
+  const B = A.B, side = id => id === B.a.id ? 'a' : 'b', t = A.token, who = id => (id === B.a.id ? B.a : B.b).s;
+  const wet = B.arena === ARENAS.deep;   // pod wodą: plusk i bąble zamiast uderzeń i świstu
   for (const ev of evs) {
     if (t !== A.token) return;
-    const settled = window.Arena3D?.event(ev);
-    if (ev.att) {
-      const as = side(ev.att), ds = as === 'a' ? 'b' : 'a', f = $(`#f-${as}`), g = $(`#f-${ds}`), who = id => (id === B.a.id ? B.a : B.b).s;
-      const wet = B.arena === ARENAS.deep;   // pod wodą: plusk i bąble zamiast uderzeń i świstu
-      if (ev.move !== 'guard') cry(who(ev.att), 'attack');
-      if (ev.hpDef === 0) later(250, () => cry(who(ev.def), 'ko'));
-      f.classList.remove('attacking'); void f.offsetWidth; f.classList.add('attacking');
-      if (ev.damage) { g.classList.remove('hit'); void g.offsetWidth; g.classList.add('hit'); later(150, () => fx(wet ? 'splash' : 'hit')); navigator.vibrate?.(18); }
-      else if (ev.heal) blip(880, .08); else fx(wet ? 'bubble' : 'whoosh');
-      const dmg = $(`#dmg-${ev.heal ? as : ds}`);
-      dmg.textContent = ev.damage ? `−${ev.damage}` : ev.heal ? `+${ev.heal}` : ev.dodge ? 'unik!' : 'pudło';
-      dmg.className = 'dmg show ' + (ev.heal ? 'heal' : ''); void dmg.offsetWidth;
-      for (const p of [B.a, B.b]) {
-        const s = side(p.id), pct = 100 * p.hp / p.hp0;
-        Object.assign($(`#hp-${s}`).style, { width: pct + '%', backgroundPosition: `${pct}% 0` });
-        $(`#hpn-${s}`).textContent = `${p.hp}/${p.hp0}`;
+    const as = ev.att && side(ev.att), ds = as === 'a' ? 'b' : 'a';
+    const impact = () => { if (t !== A.token) return;
+      if (ev.att) {
+        if (ev.damage) { const g = $(`#f-${ds}`); g.classList.remove('hit'); void g.offsetWidth; g.classList.add('hit'); fx(wet ? 'splash' : 'hit'); navigator.vibrate?.(18); }
+        else if (ev.heal) blip(880, .08); else fx(wet ? 'bubble' : 'whoosh');
+        if (ev.hpDef === 0) cry(who(ev.def), 'ko');
+        const dmg = $(`#dmg-${ev.heal ? as : ds}`);
+        dmg.textContent = ev.damage ? `−${ev.damage}` : ev.heal ? `+${ev.heal}` : ev.dodge ? 'unik!' : 'pudło';
+        dmg.className = 'dmg show ' + (ev.heal ? 'heal' : ''); void dmg.offsetWidth;
+        for (const p of [B.a, B.b]) {
+          const s = side(p.id), pct = 100 * p.hp / p.hp0;
+          Object.assign($(`#hp-${s}`).style, { width: pct + '%', backgroundPosition: `${pct}% 0` });
+          $(`#hpn-${s}`).textContent = `${p.hp}/${p.hp0}`;
+        }
       }
-    }
-    const log = $('#log');
-    log.insertAdjacentHTML('beforeend', `<div><strong>Runda ${ev.round}.</strong> ${esc(ev.text)}</div>`);
-    log.scrollTop = log.scrollHeight;
+      const log = $('#log');
+      log.insertAdjacentHTML('beforeend', `<div><strong>Runda ${ev.round}.</strong> ${esc(ev.text)}</div>`);
+      log.scrollTop = log.scrollHeight;
+    };
+    if (ev.att) { const f = $(`#f-${as}`); if (ev.move !== 'guard') cry(who(ev.att), 'attack'); f.classList.remove('attacking'); void f.offsetWidth; f.classList.add('attacking'); }
+    const settled = window.Arena3D?.event(ev, impact);
+    if (!settled) later(ev.move === 'guard' ? 0 : HIT_MS, impact);
     await (settled || new Promise(r => later(EVENT_MS, r)));
   }
   if (t === A.token) done();
