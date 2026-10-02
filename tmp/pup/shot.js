@@ -29,7 +29,7 @@ const CLOCK = `(() => { if (window.__clk) return; const now0 = performance.now.b
   await ws.send('Page.navigate', { url }); await sleep(2000);
   const ev = async e => { const r = await ws.send('Runtime.evaluate', { expression: e, awaitPromise: true }); if (r.exceptionDetails) console.log('JS ERR', e.slice(0, 60), r.exceptionDetails.exception?.description); return r.result?.value; };
   for (const s of JSON.parse(fs.readFileSync(stepsFile, 'utf8'))) {
-    if (s.js) await ev(s.js);
+    if (s.js) { const v = await ev(s.js); if (s.log) console.log(s.log, v); }
     if (s.clock) await ev(CLOCK);
     if (s.wait) await sleep(s.wait);
     if (s.run != null) await ev(`__clk.run(${s.run})`);

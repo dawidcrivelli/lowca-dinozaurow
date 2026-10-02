@@ -499,30 +499,31 @@ function A_whale(c,o){
 /* ---------- krokodylomorfy i jaszczury: up wyprostowane nogi, liz jaszczurka, nkl długa szyja ---------- */
 function A_croc(c,o){
   const mid=mix(c[0],c[2],.4),up=o.up,liz=o.liz,p=[],nkl=o.nkl||0;
-  p.push(...TAP(up?[[64,98],[66,113],[64,124]]:[[62,100],[54,112],[46,120]],[16,13],mid));
-  p.push(...TAP(up?[[120,98],[122,113],[120,124]]:[[118,100],[126,112],[134,120]],[16,13],mid));
+  p.push(...RG(TAP(up?[[64,98],[66,113],[64,124]]:[[62,100],[54,112],[46,120]],[16,13],mid),'hl2'));
+  p.push(...RG(TAP(up?[[120,98],[122,113],[120,124]]:[[118,100],[126,112],[134,120]],[16,13],mid),'fl2'));
   p.push(...TUBE(CURVE([[44,94],[30,96],[18,100],[4,104]],4),20,liz?5:9,c[0]));
-  if(!liz)for(let i=0;i<4;i++)p.push(TRI([12+i*9,96-i],[16+i*9,86-i],[22+i*9,96-i],c[1]));
+  if(!liz)for(let i=0;i<4;i++)p.push(TRI([12+i*9,96-i],[16+i*9,86-i],[22+i*9,96-i],c[1]));RG(p,'tail');
   p.push(F(up?'M40,88 C42,68 70,60 102,62 C132,64 150,74 152,90 C154,104 118,108 88,106 C58,104 38,102 40,88 Z'
     :'M36,94 C38,78 70,70 104,72 C134,74 152,80 156,90 C158,102 118,106 90,104 C56,102 34,104 36,94 Z',c[0]));
   if(!liz)for(let i=0;i<6;i++)p.push(SHADE(`M${48+i*17},${up?64:74} L${54+i*17},${up?55:65} L${60+i*17},${up?65:75} Z`,mix(c[1],c[2],.15),.8));
   else for(let i=0;i<7;i++)p.push(SHADE(EP(52+i*14,up?74:82,4,3),mix(c[1],c[2],.1),.8));
+  RG(p,'body');
   let sx=up?150:154,sy=up?80:84;const SL=o.sn||(up?32:42),HD=o.hh||1;
   if(nkl||liz){const N=[[146,84],[146+nkl*.4,80-nkl*.3],[146+nkl*.8,78-nkl*.35],[150+nkl,78-nkl*.3]];
-    p.push(...TUBE(CURVE(N,6),16,11,c[0]));sx=N[3][0]+4;sy=N[3][1];}
+    p.push(...RG(TUBE(CURVE(N,6),16,11,c[0]),'neck'));sx=N[3][0]+4;sy=N[3][1];}
   p.push(F(`M${sx-8},${sy-11*HD} C${sx+SL*.4},${sy-17*HD} ${sx+SL},${sy-11} ${sx+SL+3},${sy-2} C${sx+SL},${sy+9} ${sx+SL*.4},${sy+11*HD} ${sx-8},${sy+9*HD} Z`,c[0]));
   if(o.bulla) p.push(BL(sx+SL-2,sy-6,8,6,c[0]));
   p.push(LINE(`M${sx-2},${sy+1} C${sx+SL*.5},${sy+7} ${sx+SL*.8},${sy+6} ${sx+SL+2},${sy-1}`,2.4));
   if(liz) p.push(STRIPE(`M${sx+SL+2},${sy-1} L${sx+SL+12},${sy+1} M${sx+SL+10},${sy+1} L${sx+SL+15},${sy-2} M${sx+SL+10},${sy+1} L${sx+SL+15},${sy+4}`,TONGUE,2.2,1));
-  else p.push(...TEETH(sx+4,sy+4,sx+SL-2,sy+2,Math.max(3,Math.round(SL/8)),o.bt?7:5.4));
+  else p.push(...RG(TEETH(sx+4,sy+4,sx+SL-2,sy+2,Math.max(3,Math.round(SL/8)),o.bt?7:5.4),'teeth'));
   if(o.tsk) p.push(HORN(sx+SL*.55,sy-4,13,-80,5,3,IVORY),HORN(sx+SL*.6,sy+6,14,85,5,-3,IVORY),HORN(sx+SL*.25,sy+6,10,95,4,-2,IVORY));
   if(o.brow) p.push(BL(sx-2,sy-12*HD,6,4,c[1],1));
-  p.push(...EYE(sx,sy-7*HD,4.2,c[2]));
-  if(up){p.push(...TAP([[74,98],[76,113],[74,124]],[18,15],c[0]),...TAP([[128,98],[130,113],[128,124]],[18,15],c[0]));
-    p.push(F('M66,124 L88,124 L88,130 L66,130 Z',c[0]),F('M120,124 L142,124 L142,130 L120,130 Z',c[0]));}
-  else{p.push(...TAP([[72,100],[64,112],[56,120]],[18,14],c[0]),...TAP([[126,100],[134,112],[142,120]],[18,14],c[0]));
-    p.push(FOOT(48,126,3,c[0]),FOOT(134,126,3,c[0]));}
-  return {p,sc:o.sc||1};
+  p.push(...EYE(sx,sy-7*HD,4.2,c[2]));RG(p,'head');
+  if(up){p.push(...RG(TAP([[74,98],[76,113],[74,124]],[18,15],c[0]),'hl'),...RG(TAP([[128,98],[130,113],[128,124]],[18,15],c[0]),'fl'));
+    p.push(RG(F('M66,124 L88,124 L88,130 L66,130 Z',c[0]),'hl'),RG(F('M120,124 L142,124 L142,130 L120,130 Z',c[0]),'fl'));}
+  else{p.push(...RG(TAP([[72,100],[64,112],[56,120]],[18,14],c[0]),'hl'),...RG(TAP([[126,100],[134,112],[142,120]],[18,14],c[0]),'fl'));
+    p.push(RG(FOOT(48,126,3,c[0]),'hl'),RG(FOOT(134,126,3,c[0]),'fl'));}
+  return {p,sc:o.sc||1,j:{body:[96,up?84:88],hl2:[62,98],fl2:[118,98],hl:[72,98],fl:[128,98],tail:[44,94,4,104],neck:[146,84,sx-4,sy],head:[sx-6,sy],jaw:[sx-2,sy+1,sx+SL+2,sy-1]}};
 }
 
 /* ---------- wąż (Tytanoboa) ---------- */
@@ -530,44 +531,43 @@ function A_snake(c,o){
   const p=[],Q1=[[6,108],[30,136],[62,86],[96,110]],Q2=[[96,110],[128,134],[150,118],[158,78]],pts=[...CURVE(Q1,10),...CURVE(Q2,10).slice(1)];
   p.push(...TUBE(pts,t=>3+Math.sin(Math.min(1,t*1.6)*PI*.5)*20-(t>.8?(t-.8)*20:0),0,c[0]));
   for(let i=3;i<pts.length-2;i+=2){const [x,y]=pts[i];p.push(SHADE(EP(x,y-2,5,3.5),mix(c[1],c[2],.15),.8));}
-  p.push(F('M148,70 C152,58 170,56 184,62 C194,66 196,74 188,78 C176,84 156,84 150,78 Z',c[0]));
+  RG(p,'body');p.push(F('M148,70 C152,58 170,56 184,62 C194,66 196,74 188,78 C176,84 156,84 150,78 Z',c[0]));
   p.push(LINE('M160,77 C170,78 180,77 190,74',2),STRIPE('M190,74 L200,76 M198,76 L203,72 M198,76 L203,80',TONGUE,2.2,1),...EYE(170,66,3.8,c[2]));
-  return {p,sc:o.sc||1};
+  return {p,sc:o.sc||1,j:{body:[110,124,6,108],head:[154,76],jaw:[160,77,190,74]}};
 }
 
 /* ---------- żaglowiec (dimetrodon, edafozaur) ---------- */
 function A_sail(c,o){
   const mid=mix(c[0],c[2],.4),top=o.short?32:14,p=[];
-  p.push(...TAP([[66,100],[58,112],[50,120]],[15,12],mid),...TAP([[120,100],[128,112],[136,120]],[15,12],mid));
-  p.push(...TUBE(CURVE([[48,96],[34,98],[22,100],[8,104]],3),19,8,c[0]));
+  p.push(...RG(TAP([[66,100],[58,112],[50,120]],[15,12],mid),'hl2'),...RG(TAP([[120,100],[128,112],[136,120]],[15,12],mid),'fl2'));
+  p.push(...RG(TUBE(CURVE([[48,96],[34,98],[22,100],[8,104]],3),19,8,c[0]),'tail'));
   const TOP=[[56,86],[64,top],[130,top],[140,86]],BOT=[[140,86],[116,70],[80,70],[56,86]];
   p.push(F(`M56,86 C64,${top} 130,${top} 140,86 C116,70 80,70 56,86 Z`,c[1],1));
   for(let i=1;i<9;i++){const t=i/9,a=CB(TOP,t),b=CB(BOT,1-t);p.push(LINE(PL([[b[0],b[1]-2],[a[0],a[1]+9]]),2.6));
     if(o.short)for(const u of [.42,.78])p.push(SHADE(EP(b[0]+(a[0]-b[0])*u,b[1]-2+(a[1]+11-b[1])*u,3.8,3.4),mix(c[1],c[2],.6),1));}
-  p.push(F('M44,96 C46,80 74,72 102,74 C128,76 144,82 148,92 C150,102 118,106 92,104 C62,102 42,104 44,96 Z',c[0]));
-  p.push(F(o.short?'M144,84 C156,80 172,84 176,92 C178,99 170,102 160,100 C150,98 145,92 144,88 Z'
+  RG(p,'sail');p.push(F('M44,96 C46,80 74,72 102,74 C128,76 144,82 148,92 C150,102 118,106 92,104 C62,102 42,104 44,96 Z',c[0]));
+  RG(p,'body');p.push(F(o.short?'M144,84 C156,80 172,84 176,92 C178,99 170,102 160,100 C150,98 145,92 144,88 Z'
     :'M144,82 C162,76 180,82 188,92 C190,99 180,104 168,102 C154,100 145,92 144,88 Z',c[0]));
   if(o.short) p.push(LINE('M150,92 C158,96 168,96 176,92',2.2),...EYE(156,86,4,c[2]));
-  else p.push(LINE('M148,90 C162,97 180,97 188,92',2.4),{d:'M160,92 L163,105 L168,92 Z',f:'#fff',m:2,sw:1.5},...TEETH(146,92,176,92,4),...EYE(154,84,4.2,c[2]));
-  p.push(...TAP([[76,98],[68,112],[60,120]],[18,15],c[0]),...TAP([[130,98],[138,112],[146,120]],[18,15],c[0]));
-  p.push(FOOT(52,126,3,c[0]),FOOT(138,126,3,c[0]));
-  return {p,sc:o.sc||1};
+  else p.push(LINE('M148,90 C162,97 180,97 188,92',2.4),{d:'M160,92 L163,105 L168,92 Z',f:'#fff',m:2,sw:1.5},...RG(TEETH(146,92,176,92,4),'teeth'),...EYE(154,84,4.2,c[2]));RG(p,'head');
+  p.push(...RG(TAP([[76,98],[68,112],[60,120]],[18,15],c[0]),'hl'),...RG(TAP([[130,98],[138,112],[146,120]],[18,15],c[0]),'fl'),RG(FOOT(52,126,3,c[0]),'hl'),RG(FOOT(138,126,3,c[0]),'fl'));
+  return {p,sc:o.sc||1,j:{body:[96,90],hl2:[66,98],fl2:[120,98],hl:[76,96],fl:[130,96],tail:[48,96,8,104],sail:[98,80],head:[144,88],jaw:o.short?[150,92,176,92]:[148,91,188,92]}};
 }
 
 /* ---------- synapsydy czworonożne: dicy (dziób+kły), thick (moschops), gorgon (szablozęby gad) ---------- */
 function A_synap(c,o){
   const mid=mix(c[0],c[2],.4),p=[],hk=o.hd||'dicy',sl=o.sl||0,gor=hk==='gorgon',up=o.up||gor;
   const leg=(x,y,w,f)=>up?LEG4(x,y,w,f,'paw'):[...TAP([[x,y],[x+(x<96?-8:8),y+14],[x+(x<96?-14:14),124]],[w,w*.8],f),FOOT(x+(x<96?-20:10),128,3,f)];
-  p.push(...leg(70,98,16,mid),...leg(114,96-sl*.4,16,mid));
-  p.push(...TUBE(CURVE(gor?[[56,88],[36,90],[20,98],[6,106]]:[[56,90],[46,92],[40,96],[34,98]],4),gor?16:18,gor?4:10,c[0]));
+  p.push(...RG(leg(70,98,16,mid),'hl2'),...RG(leg(114,96-sl*.4,16,mid),'fl2'));
+  p.push(...RG(TUBE(CURVE(gor?[[56,88],[36,90],[20,98],[6,106]]:[[56,90],[46,92],[40,96],[34,98]],4),gor?16:18,gor?4:10,c[0]),'tail'));
   p.push(BL(90,88,o.bw||42,25,c[0],0,-sl));
   if(hk==='thick') p.push(BL(112,74,26,20,c[0],0,-20));
-  p.push(SHADE('M60,96 C82,110 114,110 128,96 C120,112 72,114 60,96 Z',c[1],.45));
+  p.push(SHADE('M60,96 C82,110 114,110 128,96 C120,112 72,114 60,96 Z',c[1],.45));RG(p,'body');
   const hy=(hk==='thick'?64:76)-sl*.3;
   p.push(K(PL([[124,hy+8],[138,hy+4]]),hk==='thick'?30:26,c[0]));
   if(hk==='gorgon'){
     p.push(F(`M130,${hy-4} C146,${hy-12} 174,${hy-6} 188,${hy+6} C192,${hy+12} 186,${hy+16} 176,${hy+16} C158,${hy+18} 138,${hy+16} 128,${hy+8} Z`,c[0]));
-    p.push(LINE(`M140,${hy+10} C156,${hy+14} 174,${hy+14} 188,${hy+10}`,2.2),HORN(170,hy+12,20,96,6,-3,IVORY),...TEETH(144,hy+12,164,hy+13,3),...EYE(150,hy+2,4,c[2]));
+    p.push(LINE(`M140,${hy+10} C156,${hy+14} 174,${hy+14} 188,${hy+10}`,2.2),HORN(170,hy+12,20,96,6,-3,IVORY),...RG(TEETH(144,hy+12,164,hy+13,3),'teeth'),...EYE(150,hy+2,4,c[2]));
   } else if(hk==='thick'){
     p.push(F(`M128,${hy-8} C142,${hy-18} 164,${hy-12} 170,${hy+4} C174,${hy+16} 166,${hy+24} 152,${hy+24} C138,${hy+24} 126,${hy+12} 126,${hy} Z`,c[0]));
     p.push(SHADE(EP(146,hy-8,14,6,-10),c[1],.7),LINE(`M150,${hy+18} C158,${hy+20} 164,${hy+18} 168,${hy+14}`,2.2),...EYE(148,hy+2,4,c[2]));
@@ -576,8 +576,9 @@ function A_synap(c,o){
     p.push(F(`M162,${hy+8} C176,${hy+6} 180,${hy+16} 170,${hy+22} C164,${hy+22} 160,${hy+16} 162,${hy+10} Z`,mix(c[1],c[2],.35),2));
     p.push(HORN(156,hy+16,o.tl||14,98,6,-2,IVORY),...EYE(144,hy+4,4.2,c[2]));
   }
-  p.push(...leg(82,96,19,c[0]),...leg(124,94-sl*.4,19,c[0]));
-  return {p,sc:o.sc||1};
+  RG(p,'head');p.push(...RG(leg(82,96,19,c[0]),'hl'),...RG(leg(124,94-sl*.4,19,c[0]),'fl'));
+  return {p,sc:o.sc||1,j:{body:[90,88],hl2:[70,98],fl2:[114,96-sl*.4],hl:[82,96],fl:[124,94-sl*.4],tail:gor?[56,88,6,106]:[56,90,34,98],head:[126,hy+8],
+    jaw:gor?[140,hy+10,188,hy+10]:hk==='thick'?[150,hy+18,168,hy+14]:[148,hy+14,176,hy+14]}};
 }
 
 /* ---------- płazy: bok (eryops, metopo) albo widok z góry z głową-bumerangiem (boom) ---------- */
@@ -593,17 +594,17 @@ function A_amphib(c,o){
     p.push(...EYE(162,64,3.8,c[2]),...EYE(162,77,3.8,c[2]));
     return {p,sc:o.sc||1};}
   const fl=o.flat?4:0;
-  p.push(K(PL([[70,110],[58,120],[46,126]]),13,mid),K(PL([[124,110],[136,120],[148,126]]),13,mid));
-  p.push(...TUBE(CURVE([[52,100],[36,102],[22,106],[8,110]],3),20,6,c[0]));
+  p.push(RG(K(PL([[70,110],[58,120],[46,126]]),13,mid),'hl2'),RG(K(PL([[124,110],[136,120],[148,126]]),13,mid),'fl2'));
+  p.push(...RG(TUBE(CURVE([[52,100],[36,102],[22,106],[8,110]],3),20,6,c[0]),'tail'));
   p.push(BL(94,100+fl/2,48,22-fl,c[0]));
-  p.push(SHADE('M56,108 C84,118 116,118 136,106 C124,120 68,122 56,108 Z',c[1],.45));
+  p.push(SHADE('M56,108 C84,118 116,118 136,106 C124,120 68,122 56,108 Z',c[1],.45));RG(p,'body');
   p.push(K(PL([[136,96+fl],[146,96+fl]]),26-fl,c[0]));
   p.push(F(o.flat?'M136,94 C158,88 188,94 196,104 C190,112 158,114 134,110 Z':'M138,88 C158,82 184,90 192,102 C188,112 156,114 136,108 Z',c[0]));
-  p.push(LINE(o.flat?'M142,106 C164,110 184,110 196,104':'M144,104 C162,110 182,110 192,102',2.4),...TEETH(150,106,186,106,5,4));
+  p.push(LINE(o.flat?'M142,106 C164,110 184,110 196,104':'M144,104 C162,110 182,110 192,102',2.4),...RG(TEETH(150,106,186,106,5,4),'teeth'));
   p.push(...EYE(o.flat?168:156,o.flat?96:94,4.4,c[2]));
   if(!o.flat) p.push(...EYE(176,96,3.8,c[2]));
-  p.push(K(PL([[68,104],[56,96],[44,92]]),12,c[0]),K(PL([[122,104],[134,96],[146,92]]),12,c[0]));
-  return {p,sc:o.sc||1};
+  RG(p,'head');p.push(RG(K(PL([[68,104],[56,96],[44,92]]),12,c[0]),'hl'),RG(K(PL([[122,104],[134,96],[146,92]]),12,c[0]),'fl'));
+  return {p,sc:o.sc||1,j:{body:[94,100],hl2:[70,108],fl2:[124,108],hl:[68,104],fl:[122,104],tail:[52,100,8,110],head:[138,98],jaw:o.flat?[142,106,196,104]:[144,104,192,102]}};
 }
 
 /* ---------- stawonogi i mięczaki (widok z góry / z boku) ---------- */
@@ -674,24 +675,26 @@ function A_mammal(c,o){
   const mid=mix(c[0],c[2],.4),p=[],hd=o.hd||'cat',lh=o.lh||30,rx=o.bw||40,ry=o.bh||22,G=130,
     bx=96,by=G-lh-ry*.55,lw=o.lw||14,ft=o.ft||'paw',hock=o.hock,
     S=[bx+rx*.7,by-ry*.3],nk=o.nk||[22,-10],H=[S[0]+nk[0],S[1]+nk[1]],[x,y]=H,iv=IVORY;
-  const legs=(f,d,w)=>[...LEG4(bx-rx*.62+d,by+ry*.2,w,f,ft,hock),...LEG4(bx+rx*.55+d,by+ry*.2,w,f,ft)];
-  p.push(...legs(mid,-6,lw*.95));
+  const legs=(f,d,w,n='')=>[...RG(LEG4(bx-rx*.62+d,by+ry*.2,w,f,ft,hock),'hl'+n),...RG(LEG4(bx+rx*.55+d,by+ry*.2,w,f,ft),'fl'+n)];
+  p.push(...legs(mid,-6,lw*.95,2));
   const TQ=[[bx-rx*.9,by-ry*.3],[bx-rx-14,by-ry*.4],[bx-rx-24,by+4],[bx-rx-26,by+22]];
   if(o.tail==='tuft') p.push(...TUBE(CURVE(TQ,5),6,4,c[0]),BL(TQ[3][0],TQ[3][1]+3,5,7,mix(c[0],c[2],.5)));
   else if(o.tail==='bush') p.push(VANE(TQ,0,9,c[0],0),SHADE(EP(TQ[3][0]+1,TQ[3][1]-3,3,5),c[1],.8));
   else if(o.tail==='long') p.push(...TUBE(CURVE([[bx-rx*.9,by-ry*.2],[bx-rx-16,by-ry*.3],[bx-rx-30,by+2],[bx-rx-40,by+18]],5),9,4,c[0]));
   else if(o.tail!=='none') p.push(...TUBE(CURVE([[bx-rx*.9,by-ry*.2],[bx-rx-6,by-ry*.1],[bx-rx-10,by+2],[bx-rx-12,by+10]],3),7,4,c[0]));
+  RG(p,'tail');
   /* rogi/poroże dalsze (za głową) */
-  if(hd==='deer') p.push(K(`M${P(x-2,y-8)} C${P(x+10,y-30)} ${P(x+30,y-44)} ${P(x+50,y-44)}`,5,mid),VANE([[x-2,y-10],[x+10,y-30],[x+30,y-44],[x+50,y-44]],.35,9,mid,0),
-    ...SPINES([[x-2,y-10],[x+10,y-30],[x+30,y-44],[x+50,y-44]],4,9,5,mid,{t0:.3,t1:1}));
+  if(hd==='deer') p.push(...RG([K(`M${P(x-2,y-8)} C${P(x+10,y-30)} ${P(x+30,y-44)} ${P(x+50,y-44)}`,5,mid),VANE([[x-2,y-10],[x+10,y-30],[x+30,y-44],[x+50,y-44]],.35,9,mid,0),
+    ...SPINES([[x-2,y-10],[x+10,y-30],[x+30,y-44],[x+50,y-44]],4,9,5,mid,{t0:.3,t1:1})],'head'));
   p.push(BL(bx,by,rx,ry,c[0],0,o.rot||0));
   if(o.hump) p.push(BL(bx+rx*.4,by-ry*.4,rx*.52,ry*.8,c[0],0,-12));
   if(o.fur) p.push(...SPINES([[bx+rx*.8,by+ry*.6],[bx+rx*.3,by+ry*1.25],[bx-rx*.4,by+ry*1.25],[bx-rx*.9,by+ry*.5]],9,9,9,c[0],{side:-1,t0:.05,t1:.95,tilt:-2}),
     ...[0,1,2,3,4,5,6].map(i=>LINE(PL([[bx-rx*.7+i*rx*.23,by+ry*.2+(i%2)*4],[bx-rx*.74+i*rx*.23,by+ry*.2+(i%2)*4+10]]),2)));
   if(o.stripe) for(let i=0;i<5;i++)p.push(STRIPE(`M${P(bx-rx*.5+i*rx*.24,by-ry*.9)} L${P(bx-rx*.55+i*rx*.24,by-ry*.2)}`,c[2],4,.35));
-  p.push(SHADE(`M${P(bx-rx*.75,by+ry*.4)} C${P(bx-rx*.3,by+ry*1.2)} ${P(bx+rx*.4,by+ry*1.2)} ${P(bx+rx*.85,by+ry*.3)} C${P(bx+rx*.4,by+ry*.9)} ${P(bx-rx*.3,by+ry*.9)} ${P(bx-rx*.75,by+ry*.4)} Z`,c[1],.45));
+  p.push(SHADE(`M${P(bx-rx*.75,by+ry*.4)} C${P(bx-rx*.3,by+ry*1.2)} ${P(bx+rx*.4,by+ry*1.2)} ${P(bx+rx*.85,by+ry*.3)} C${P(bx+rx*.4,by+ry*.9)} ${P(bx-rx*.3,by+ry*.9)} ${P(bx-rx*.75,by+ry*.4)} Z`,c[1],.45));RG(p,'body');
   p.push(...TUBE(CURVE([S,[S[0]+nk[0]*.3,S[1]+nk[1]*.6],[S[0]+nk[0]*.7,S[1]+nk[1]],H],4),o.nw||ry*1.15,(o.nw||ry*1.15)*.8,c[0]));
   if(o.fur) p.push(...SPINES([S,[S[0]+nk[0]*.3,S[1]+nk[1]*.6+14],[x,y+18],[x+4,y+14]],4,8,8,c[0],{side:-1,t0:.2,t1:.9}));
+  RG(p,'neck');
   const ear=(ex,ey,r,pt)=>pt?TRI([ex-5,ey+4],[ex-2,ey-r*1.8],[ex+5,ey+3],c[0]):BL(ex,ey,r,r,c[0]);
   if(hd==='cat'||hd==='bear'||hd==='dog'){const big=hd==='bear'?1.12:1;
     p.push(ear(x-5,y-11*big,hd==='dog'?6:4.5,hd==='dog'),ear(x+3,y-12*big,hd==='dog'?6:4.5,hd==='dog'));
@@ -701,7 +704,7 @@ function A_mammal(c,o){
     const nx=hd==='dog'?x+30:x+20*big,ny=hd==='dog'?y+2:y+1*big;
     p.push(F(`M${P(nx-4,ny-2)} L${P(nx+1,ny-2)} L${P(nx-1,ny+2)} Z`,c[2],2),SHADE(EP(x+10,y+6,7,4.5),c[1],.6));
     p.push(LINE(`M${P(nx-2,ny+6)} C${P(nx-6,ny+9)} ${P(nx-10,ny+9)} ${P(nx-14,ny+6)}`,2),...EYE(x+5,y-3,3.8,c[2]));
-    if(o.sab) p.push(HORN(x+11,y+8,22,95,6,-4,iv),HORN(x+17,y+8,20,92,5,-4,iv));
+    if(o.sab) p.push(...RG([HORN(x+11,y+8,22,95,6,-4,iv),HORN(x+17,y+8,20,92,5,-4,iv)],'teeth'));
   }
   if(hd==='rhino'||hd==='indri'||hd==='deer'){const L=hd==='deer'?24:hd==='indri'?32:38;
     if(hd==='deer') p.push(K(`M${P(x-4,y-8)} C${P(x-14,y-30)} ${P(x-34,y-42)} ${P(x-54,y-40)}`,5,c[1],1),VANE([[x-4,y-10],[x-14,y-30],[x-34,y-42],[x-54,y-40]],.35,10,c[1]),...SPINES([[x-4,y-10],[x-14,y-30],[x-34,y-42],[x-54,y-40]],4,10,5,c[1],{side:-1,t0:.3,t1:1,m:1}));
@@ -713,64 +716,66 @@ function A_mammal(c,o){
     p.push(BL(x-12,y+4,dn?14:9,dn?19:12,mix(c[0],c[2],.15),1));
     p.push(BL(x,y,18,20,c[0]));
     if(!dn) p.push(BL(x-4,y-16,13,9,c[0]));
-    p.push(...TUBE(CURVE([[x+10,y+6],[x+22,y+22],[x+20,y+48],[x+10,y+60]],7),13,7,c[0]));
-    p.push(...(dn?TUBE(CURVE([[x+8,y+18],[x+12,y+30],[x+6,y+40],[x-6,y+44]],5),8,4,iv):TUBE(CURVE([[x+12,y+16],[x+20,y+44],[x+46,y+46],[x+48,y+20]],8),9,4,iv)));
+    p.push(...RG(TUBE(CURVE([[x+10,y+6],[x+22,y+22],[x+20,y+48],[x+10,y+60]],7),13,7,c[0]),'trunk'));
+    p.push(...RG(dn?TUBE(CURVE([[x+8,y+18],[x+12,y+30],[x+6,y+40],[x-6,y+44]],5),8,4,iv):TUBE(CURVE([[x+12,y+16],[x+20,y+44],[x+46,y+46],[x+48,y+20]],8),9,4,iv),'teeth'));
     p.push(...EYE(x+6,y-2,3.6,c[2]));
   }
   if(hd==='andrew'){const sk=SKULL(x-10,y-12,46,24,.62,2);
     p.push(ear(x-6,y-12,5,1),F(sk.d,c[0]),LINE(`M${P(x-4,y+4)} C${P(x+14,y+10)} ${P(x+28,y+8)} ${P(x+37,y+4)}`,2.4),
-      ...TEETH(x+2,y+6,x+32,y+5,5,5),F(`M${P(x+34,y-4)} L${P(x+37,y-4)} L${P(x+36,y-1)} Z`,c[2],2),...EYE(x+2,y-4,3.8,c[2]));}
+      ...RG(TEETH(x+2,y+6,x+32,y+5,5,5),'teeth'),F(`M${P(x+34,y-4)} L${P(x+37,y-4)} L${P(x+36,y-1)} Z`,c[2],2),...EYE(x+2,y-4,3.8,c[2]));}
   if(hd==='diproto') p.push(ear(x-6,y-14,5),ear(x+2,y-15,5),BL(x+2,y,18,16,c[0]),BL(x+18,y+5,11,11,c[0]),
     F(`M${P(x+22,y-2)} C${P(x+30,y-2)} ${P(x+30,y+6)} ${P(x+24,y+6)} Z`,mix(c[1],c[2],.4),2),LINE(`M${P(x+12,y+13)} L${P(x+24,y+12)}`,2),...EYE(x+6,y-4,3.8,c[2]));
-  p.push(...legs(c[0],4,lw));
-  return {p,sc:o.sc||1};
+  RG(p,'head');p.push(...legs(c[0],4,lw));
+  const hx=bx-rx*.62,fx=bx+rx*.55,ly=by+ry*.2,L=hd==='deer'?24:hd==='indri'?32:38,big=hd==='bear'?1.12:1;
+  return {p,sc:o.sc||1,j:{body:[bx,by],hl:[hx+4,ly],hl2:[hx-6,ly],fl:[fx+4,ly],fl2:[fx-6,ly],tail:[bx-rx*.9,by-ry*.3,bx-rx-24,by+14],neck:[...S,x-6,y+4],head:[x-6,y+4],trunk:[x+10,y+6,x+10,y+60],
+    jaw:{cat:[x+2,y+8,x+22*big,y+8],bear:[x+2,y+8,x+22*big,y+8],dog:[x+4,y+8,x+32,y+7],rhino:[x+L*.35,y+15,x+L+2,y+15],indri:[x+L*.35,y+15,x+L+2,y+15],deer:[x+L*.35,y+15,x+L+2,y+15],andrew:[x-4,y+4,x+37,y+4],diproto:[x+10,y+12,x+26,y+12]}[hd]}};
 }
 
 /* ---------- Megaterium: leniwiec naziemny na tylnych łapach ---------- */
 function A_sloth(c,o){
   const mid=mix(c[0],c[2],.4),p=[];
-  p.push(...TUBE(CURVE([[80,108],[64,116],[46,124],[30,128]],4),26,8,c[0]));
-  p.push(...LEG4(80,104,20,mid,'paw'),K('M104,62 C114,48 124,40 134,30',12,mid));
-  for(let i=0;i<3;i++)p.push(HORN(132+i*3,30,12,-20+i*25,4,4,c[1]));
+  p.push(...RG(TUBE(CURVE([[80,108],[64,116],[46,124],[30,128]],4),26,8,c[0]),'tail'));
+  p.push(...RG(LEG4(80,104,20,mid,'paw'),'hl2'),RG(K('M104,62 C114,48 124,40 134,30',12,mid),'arm2'));
+  for(let i=0;i<3;i++)p.push(RG(HORN(132+i*3,30,12,-20+i*25,4,4,c[1]),'arm2'));
   p.push(BL(92,82,28,38,c[0],0,18));
   p.push(...SPINES([[70,100],[76,112],[96,118],[114,106]],6,8,9,c[0],{side:-1}));
-  p.push(SHADE(EP(98,90,14,24,18),c[1],.45));
+  p.push(SHADE(EP(98,90,14,24,18),c[1],.45));RG(p,'body');
   p.push(K(PL([[108,40],[112,30]]),20,c[0]),BL(118,26,14,12,c[0]),BL(130,30,8,7,c[0]));
-  p.push(F('M134,28 L138,28 L136,32 Z',c[2],2),...EYE(120,22,3.6,c[2]));
+  p.push(F('M134,28 L138,28 L136,32 Z',c[2],2),...EYE(120,22,3.6,c[2]));RG(p,'head');
   p.push(K('M104,66 C118,58 130,52 144,44',13,c[0]));
   for(let i=0;i<3;i++)p.push(HORN(142+i*3,44,14,20+i*22,4.5,5,c[1]));
-  p.push(...LEG4(96,104,24,c[0],'paw'));
-  return {p,sc:o.sc||1};
+  RG(p,'arm');p.push(...RG(LEG4(96,104,24,c[0],'paw'),'hl'));
+  return {p,sc:o.sc||1,j:{body:[92,100],tail:[80,108,30,128],hl2:[80,104],hl:[96,104],arm2:[104,62],arm:[104,66],head:[110,36],jaw:[128,32,138,30]}};
 }
 
 /* ---------- żółw ---------- */
 function A_turtle(c,o){
   const p=[],ink=c[2],mid=mix(c[0],c[2],.4);
-  p.push(F('M110,94 C124,104 134,118 132,128 C118,122 106,110 102,100 Z',mid),F('M72,94 C58,104 48,118 50,128 C64,122 76,110 80,100 Z',mid));
-  p.push(F('M118,90 C138,98 154,114 154,128 C136,120 120,106 112,96 Z',c[1]),F('M64,90 C44,98 30,114 30,128 C48,120 62,106 70,96 Z',c[1]));
+  p.push(RG(F('M110,94 C124,104 134,118 132,128 C118,122 106,110 102,100 Z',mid),'fl2'),RG(F('M72,94 C58,104 48,118 50,128 C64,122 76,110 80,100 Z',mid),'hl2'));
+  p.push(RG(F('M118,90 C138,98 154,114 154,128 C136,120 120,106 112,96 Z',c[1]),'fl'),RG(F('M64,90 C44,98 30,114 30,128 C48,120 62,106 70,96 Z',c[1]),'hl'));
   p.push(F('M30,76 C38,48 152,48 160,78 C162,96 130,102 96,102 C60,102 28,96 30,76 Z',c[0]));
   p.push(F('M30,76 C38,58 88,52 96,52 C104,52 152,58 160,78 C142,66 118,62 96,62 C72,62 44,66 30,76 Z',mix(c[1],c[2],.1),1));
   for(let i=0;i<5;i++)p.push(LINE(`M${48+i*24},${60+Math.abs(i-2)*3} C${44+i*24},78 ${46+i*24},90 ${52+i*24},${98-Math.abs(i-2)*3}`,2.4));
-  p.push(K(PL([[150,80],[160,82]]),24,c[0]),F('M150,72 C170,66 188,76 189,90 C190,102 170,106 158,98 C150,94 146,80 150,76 Z',c[0]));
+  RG(p,'body');p.push(K(PL([[150,80],[160,82]]),24,c[0]),F('M150,72 C170,66 188,76 189,90 C190,102 170,106 158,98 C150,94 146,80 150,76 Z',c[0]));
   p.push(F('M176,86 C189,86 191,96 180,101 C174,101 170,92 174,88 Z',mix(c[1],c[2],.35),2),...EYE(164,82,4.2,ink));
-  return {p,sc:o.sc||1,water:1};
+  return {p,sc:o.sc||1,water:1,j:{body:[96,80],fl2:[106,96],hl2:[76,96],fl:[114,92],hl:[68,92],head:[150,82],jaw:[160,96,186,100]}};
 }
 
 /* ---------- ptak/pierzasty lotnik (archeopteryks, mikroraptor four=4 skrzydła) ---------- */
 function A_bird(c,o){
   const p=[],ink=c[2],mid=mix(c[0],c[2],.4),TQ=[[86,90],[66,98],[44,106],[20,114]];
-  p.push(VANE(TQ,.05,12,c[1]),K(PL([[86,90],[66,98],[44,106],[20,114]]),5,c[0]));
-  p.push(WINGF([96,76],[20,28],[82,98],5,mid));
-  if(o.four) p.push(WINGF([96,98],[40,130],[80,104],4,mid));
-  p.push(BL(102,84,25,16,c[0]));
+  p.push(...RG([VANE(TQ,.05,12,c[1]),K(PL([[86,90],[66,98],[44,106],[20,114]]),5,c[0])],'tail'));
+  p.push(RG(WINGF([96,76],[20,28],[82,98],5,mid),'wing2'));
+  if(o.four) p.push(RG(WINGF([96,98],[40,130],[80,104],4,mid),'hl2'));
+  p.push(RG(BL(102,84,25,16,c[0]),'body'));
   p.push(WINGF([100,72],[40,4],[76,96],5,c[1]));
   for(let i=0;i<3;i++)p.push(HORN(52+i*5,16+i*4,6,-10,3,2,c[1],2));
-  p.push(...TUBE(CURVE([[116,76],[126,66],[134,58],[142,54]],3),16,13,c[0]));
+  RG(p,'wing');p.push(...RG(TUBE(CURVE([[116,76],[126,66],[134,58],[142,54]],3),16,13,c[0]),'neck'));
   p.push(F('M140,44 C154,38 170,46 174,58 C176,65 168,69 160,66 C150,63 142,56 140,50 Z',c[0]));
-  p.push(...EYE(150,52,4.2,ink),LINE('M154,62 L172,60',2),...TEETH(154,62,170,61,4,3.8));
-  p.push(K(PL([[96,96],[98,108],[90,118]]),6,c[0]),K(PL([[108,96],[110,108],[104,120]]),6,c[0]));
-  if(o.four) p.push(WINGF([110,98],[76,134],[104,108],4,c[1]));
-  return {p,sc:o.sc||1,fly:1};
+  p.push(...EYE(150,52,4.2,ink),LINE('M154,62 L172,60',2),...RG(TEETH(154,62,170,61,4,3.8),'teeth'));RG(p,'head');
+  p.push(...RG([K(PL([[96,96],[98,108],[90,118]]),6,c[0]),K(PL([[108,96],[110,108],[104,120]]),6,c[0])],'hl'));
+  if(o.four) p.push(RG(WINGF([110,98],[76,134],[104,108],4,c[1]),'hl'));
+  return {p,sc:o.sc||1,fly:1,j:{body:[102,84],tail:[86,90,20,114],wing2:[96,76],wing:[100,72],hl:[102,94],hl2:[98,98],neck:[116,76,142,54],head:[142,54],jaw:[152,62,172,60]}};
 }
 
 const ARCH={thero:A_thero,sauro:A_sauro,cerat:A_cerat,armor:A_armor,stego:A_stego,ptero:A_ptero,plesio:A_plesio,
@@ -855,7 +860,7 @@ function drawCustom(arch,opts,mode,pal){
 function drawParts(arch,opts,pal){
   const {out,pal:pl,s,dx,dy,z,y1}=layout(arch,opts,pal),T=v=>v.map((c,i)=>i%2?dy+s*c:dx+s*c),by={};
   out.p.forEach((q,i)=>{if(!q)return;const r=by[q.g||'body']=by[q.g||'body']||{g:q.g||'body',p:[]};r.p.push(q);r.i=i;});
-  const j=Object.fromEntries(Object.entries(out.j||{}).map(([k,v])=>[k,T(v)]));
+  const j=Object.fromEntries(Object.entries(out.j||{}).filter(e=>e[1]).map(([k,v])=>[k,T(v)]));
   return {j,ground:dy+s*y1,fly:out.fly,water:out.water,pieces:Object.values(by).sort((a,b)=>a.i-b.i).map(({g,p})=>
     ({g,box:T(bbox(p,3.5*z+1)),svg:`<g transform="translate(${R(dx)},${R(dy)}) scale(${Math.round(s*1000)/1000})">${paint(p,pl[2],false,z)}</g>`}))};
 }
