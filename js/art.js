@@ -66,6 +66,9 @@ const TRI=(a,b,c,f,m=0)=>PG([a,b,c],f,m);
 const LINE=(d,sw=2.4)=>({d,f:'none',m:2,sw});
 const SHADE=(d,f,op=.5)=>({d,f,m:3,op});
 const STRIPE=(d,f,sw=3,op=.55)=>({d,f,m:4,sw,op});
+/* region lalki (js/puppet2d.js): oznacza jeszcze nieoznaczone części (pojedynczą albo listę); na miniatury nie wpływa.
+   p.push(...RG(LEG2(..),'hl')) albo RG(p,'tail') = wszystko dotąd narysowane bez regionu → ogon */
+const RG=(a,g)=>{for(const q of [].concat(a))if(q&&!q.g)q.g=g;return a;};
 const TAP=(pts,ws,f,m=0)=>pts.slice(1).map((q,i)=>K(PL([pts[i],q]),ws[i],f,m));
 /* rura o zmiennej grubości wzdłuż łamanej (szyje, ogony, trąby, węże) */
 const TUBE=(pts,w0,w1,f,m=0)=>pts.slice(1).map((q,i)=>K(PL([pts[i],q]),typeof w0==='function'?w0(i/(pts.length-2||1)):w0+(w1-w0)*i/(pts.length-2||1),f,m));
@@ -133,25 +136,26 @@ function A_thero(c,o){
     A=[bx+rx*.76,by+2],aL=o.arm||10,nw=o.nw||ry*1.2,sk=SKULL(hx,hy,sn,D,tp,hk),
     ex=hx+Math.min(sn*.3,13)*(o.eyx||1),ey=hy+D*.32,er=Math.max(3.2,Math.min(5,D*.2))*(o.ey||1);
   /* w tle: dalsza noga, dalsza przednia noga, skrzydło smoka, żagiel, pióra */
-  p.push(...LEG2(bx-12,by+4,lw*.9,mid,L));
-  if(o.q) p.push(...LEG4(A[0]-6,A[1],11,mid,'hoof',0,128));
-  if(o.bat) p.push(...MEMB([bx+6,by-ry*.6],[bx-14,by-ry-46],[bx-78,by-ry-34],[bx-rx*.6,by-4],c[1],c[0]),
-    LINE(PL([[bx-14,by-ry-46],[bx-66,by-ry-6]]),2),LINE(PL([[bx-14,by-ry-46],[bx-42,by+2]]),2));
+  p.push(...RG(LEG2(bx-12,by+4,lw*.9,mid,L),'hl2'));
+  if(o.q) p.push(...RG(LEG4(A[0]-6,A[1],11,mid,'hoof',0,128),'fl2'));
+  if(o.bat) p.push(...RG([...MEMB([bx+6,by-ry*.6],[bx-14,by-ry-46],[bx-78,by-ry-34],[bx-rx*.6,by-4],c[1],c[0]),
+    LINE(PL([[bx-14,by-ry-46],[bx-66,by-ry-6]]),2),LINE(PL([[bx-14,by-ry-46],[bx-42,by+2]]),2)],'wing2'));
   if(o.sail){const SQ=[[bx-rx*.95,by-ry*.2],[bx-rx*.7,by-ry-64],[bx+rx*.7,by-ry-68],[bx+rx*1.05,by-ry*.4]];
     p.push(F(`M${P(...SQ[0])} C${SQ.slice(1).map(q=>P(...q)).join(' ')} Z`,c[1],1),
-    ...[.15,.3,.45,.6,.75,.88].map(t=>LINE(PL([CB(SQ,t),[SQ[0][0]+(SQ[3][0]-SQ[0][0])*t,by-ry*.3]]),2.2)));}
+    ...[.15,.3,.45,.6,.75,.88].map(t=>LINE(PL([CB(SQ,t),[SQ[0][0]+(SQ[3][0]-SQ[0][0])*t,by-ry*.3]]),2.2)));RG(p,'sail');}
   if(o.hump) p.push(F(`M${P(bx-rx*.9,by-4)} C${P(bx-rx*.7,by-ry-40)} ${P(bx+rx*.5,by-ry-40)} ${P(bx+rx*.7,by-6)} Z`,c[0]),
     ...[.25,.45,.65].map(t=>LINE(PL([CB([[bx-rx*.9,by-4],[bx-rx*.7,by-ry-40],[bx+rx*.5,by-ry-40],[bx+rx*.7,by-6]],t),[bx-rx*.6+rx*1.3*t,by-ry*.6]]),2)));
-  if(o.fz) p.push(...SPINES(TQ,9,7,10,c[0],{side:-1,tilt:3,t0:.05,t1:.92,r:1}),...SPINES(BQ,5,6,12,c[0],{side:-1,tilt:3,r:1}),
-    ...SPINES(NQ,4,6,10,c[0],{side:1,tilt:-3,t0:.15,t1:.8,r:1}));
+  if(o.fz) p.push(...RG(SPINES(TQ,9,7,10,c[0],{side:-1,tilt:3,t0:.05,t1:.92,r:1}),'tail'),...RG(SPINES(BQ,5,6,12,c[0],{side:-1,tilt:3,r:1}),'body'),
+    ...RG(SPINES(NQ,4,6,10,c[0],{side:1,tilt:-3,t0:.15,t1:.8,r:1}),'neck'));
   /* fz:2 (raptory) – pióra widoczne też w sylwetce: frędzle ogona rosnące ku końcowi, postrzępiona grzywa */
   if(o.fz>1){const tw=o.tw||ry*1.2,hw=t=>(tw+(3.5-tw)*t)/2;
-    p.push(...[-1,1].flatMap(s=>SPINES(TQ,FZ.tailN,t=>hw(t)+4+FZ.tailGrow*t,8,c[1],{side:s,tilt:FZ.sweep,t0:.35,t1:1,r:1})),
-      ...SPINES(BQ,6,FZ.ruff,7,c[0],{side:-1,tilt:4}),...SPINES(NQ,5,FZ.ruff,7,c[0],{side:1,tilt:-4,t0:.1,t1:.85}));}
-  if(o.spk) p.push(...SPINES(TQ,6,9,9,c[1],{side:-1,tilt:3,t0:.08,t1:.8,m:1}),...SPINES(BQ,4,11,10,c[1],{side:-1,tilt:3,m:1}),
-    ...SPINES(NQ,3,9,9,c[1],{side:1,tilt:-3,t0:.2,t1:.8,m:1}));
-  if(o.brist) p.push(...SPINES(TQ,6,14,3,c[1],{side:-1,t0:.05,t1:.5,tilt:4,m:1}));
-  if(o.osteo) p.push(...SPINES(BQ,6,6,8,c[1],{side:-1,t0:0,t1:1,m:1}),...SPINES(TQ,4,5,7,c[1],{side:-1,t0:.05,t1:.5,m:1}));
+    p.push(...RG([-1,1].flatMap(s=>SPINES(TQ,FZ.tailN,t=>hw(t)+4+FZ.tailGrow*t,8,c[1],{side:s,tilt:FZ.sweep,t0:.35,t1:1,r:1})),'tail'),
+      ...RG(SPINES(BQ,6,FZ.ruff,7,c[0],{side:-1,tilt:4}),'body'),...RG(SPINES(NQ,5,FZ.ruff,7,c[0],{side:1,tilt:-4,t0:.1,t1:.85}),'neck'));}
+  if(o.spk) p.push(...RG(SPINES(TQ,6,9,9,c[1],{side:-1,tilt:3,t0:.08,t1:.8,m:1}),'tail'),...RG(SPINES(BQ,4,11,10,c[1],{side:-1,tilt:3,m:1}),'body'),
+    ...RG(SPINES(NQ,3,9,9,c[1],{side:1,tilt:-3,t0:.2,t1:.8,m:1}),'neck'));
+  if(o.brist) p.push(...RG(SPINES(TQ,6,14,3,c[1],{side:-1,t0:.05,t1:.5,tilt:4,m:1}),'tail'));
+  if(o.osteo) p.push(...RG(SPINES(BQ,6,6,8,c[1],{side:-1,t0:0,t1:1,m:1}),'body'),...RG(SPINES(TQ,4,5,7,c[1],{side:-1,t0:.05,t1:.5,m:1}),'tail'));
+  RG(p,'body');
   /* ogon */
   if(o.tail==='fan') p.push(WINGF([bx-rx*.5,by-ry*.5],[bx-rx-30,by-ry*.2-10],[bx-rx*.6,by+ry*.4],4,c[1]));
   else { if(o.vane) p.push(VANE(TQ,o.vane[0],o.vane[1],c[1]));
@@ -159,6 +163,7 @@ function A_thero(c,o){
     if(o.spade){const [x,y]=TQ[3];p.push(TRI([x+4,y-6],[x-14,y+2],[x+4,y+8],c[1],1));}
     if(o.tstr) p.push(...[.4,.52,.64,.76,.88].map(t=>{const [x,y,,,nx,ny]=TN(TQ,t),w=(o.tw||ry*1.2)*(1-t)*.5+2;
       return STRIPE(PL([[x+nx*w,y+ny*w],[x-nx*w,y-ny*w]]),c[2],4,.45);})); }
+  RG(p,'tail');
   /* tułów */
   p.push(BL(bx,by,rx,ry,c[0],0,o.rot??(o.q?12:0)));
   if(o.rdg) p.push(F(`M${P(bx-rx-26,by-2)} C${P(bx-rx*.8,by-ry-20)} ${P(bx+rx*.4,by-ry-22)} ${P(bx+rx*.8,by-ry*.6)} Z`,c[0]),
@@ -167,7 +172,7 @@ function A_thero(c,o){
   p.push(SHADE(`M${P(bx-rx*.7,by+ry*.5)} C${P(bx-rx*.2,by+ry*1.25)} ${P(bx+rx*.5,by+ry*1.2)} ${P(bx+rx*.9,by+ry*.3)} `
     +`C${P(bx+rx*.5,by+ry*.95)} ${P(bx-rx*.2,by+ry*.95)} ${P(bx-rx*.7,by+ry*.5)} Z`,c[1],.5));
   /* szyja, grzebienie za głową, głowa */
-  p.push(...TUBE(CURVE(NQ,5),nw,nw*.8,c[0]));
+  RG(p,'body');p.push(...RG(TUBE(CURVE(NQ,5),nw,nw*.8,c[0]),'neck'));
   if(o.cr==='tube') p.push(K(`M${P(hx+sn*.35,hy+3)} C${P(hx+4,hy-8)} ${P(hx-20,hy-14)} ${P(hx-38,hy-14)}`,10,c[1]));
   if(o.cr==='helm') p.push(F(`M${P(hx+sn*.62,hy+6)} C${P(hx+sn*.6,hy-24)} ${P(hx-8,hy-30)} ${P(hx-10,hy+4)} Z`,c[1],1),
     LINE(`M${P(hx+sn*.35,hy+2)} C${P(hx+sn*.3,hy-14)} ${P(hx+2,hy-16)} ${P(hx-2,hy+2)}`,2));
@@ -190,8 +195,8 @@ function A_thero(c,o){
     +`C${P(x0+sn*o.bk*.4,sk.B+3)} ${P(x0,sk.B+3)} ${P(x0,sk.B+1)} Z`,f:mix(c[1],c[2],.15),m:2,sw:2.2});}
   const my=(sk.T+sk.B)/2+1.5;
   p.push(LINE(`M${P(hx+2,hy+D*.62)} C${P(hx+sn*.4,hy+D*.8)} ${P(sk.X-sn*.2,my+2)} ${P(sk.X+1,my)}`,2.4));
-  if(!herb) p.push(...TEETH(hx+10,hy+D*.72,sk.X-5,my+1,o.bt?4:Math.max(3,Math.round(sn/8)),o.bt?8:5.4));
-  if(o.tusk) p.push(HORN(hx+sn*.55,my,8,95,4,-1,IVORY));
+  if(!herb) p.push(...RG(TEETH(hx+10,hy+D*.72,sk.X-5,my+1,o.bt?4:Math.max(3,Math.round(sn/8)),o.bt?8:5.4),'teeth'));
+  if(o.tusk) p.push(RG(HORN(hx+sn*.55,my,8,95,4,-1,IVORY),'teeth'));
   p.push(...EYE(ex,ey,er,c[2]));
   if(o.hrn) p.push(TRI([ex-3,hy+1],[ex+1,hy-10],[ex+8,hy+2],c[1],1));
   if(o.brow) p.push(BL(ex+1,hy+1,6,4,c[1],1));
@@ -200,11 +205,11 @@ function A_thero(c,o){
   if(o.boss) p.push(HORN(ex+2,hy+2,7,-95,9,0,c[1]));
   if(o.cheek) p.push(HORN(hx+sn*.2,hy+D*.8,10,125,7,0,c[1]));
   if(o.cr==='bump') p.push(BL(hx+sn*.5,hy+1,8,5,c[1],1));
-  if(o.fire) p.push(F(`M${P(sk.X+2,my)} C${P(sk.X+14,my-10)} ${P(sk.X+26,my-4)} ${P(sk.X+34,my-12)} C${P(sk.X+32,my+2)} ${P(sk.X+40,my+6)} ${P(sk.X+30,my+12)} C${P(sk.X+20,my+10)} ${P(sk.X+12,my+8)} ${P(sk.X+2,my+2)} Z`,FIRE[0],2),
-    F(`M${P(sk.X+6,my+1)} C${P(sk.X+14,my-4)} ${P(sk.X+22,my)} ${P(sk.X+28,my-4)} C${P(sk.X+28,my+4)} ${P(sk.X+20,my+6)} ${P(sk.X+6,my+2)} Z`,FIRE[1],3));
+  if(o.fire) p.push(...RG([F(`M${P(sk.X+2,my)} C${P(sk.X+14,my-10)} ${P(sk.X+26,my-4)} ${P(sk.X+34,my-12)} C${P(sk.X+32,my+2)} ${P(sk.X+40,my+6)} ${P(sk.X+30,my+12)} C${P(sk.X+20,my+10)} ${P(sk.X+12,my+8)} ${P(sk.X+2,my+2)} Z`,FIRE[0],2),
+    F(`M${P(sk.X+6,my+1)} C${P(sk.X+14,my-4)} ${P(sk.X+22,my)} ${P(sk.X+28,my-4)} C${P(sk.X+28,my+4)} ${P(sk.X+20,my+6)} ${P(sk.X+6,my+2)} Z`,FIRE[1],3)],'fire'));
   /* ramię / przednia noga; wf = lotki raptora, rysowane przed nogą (bliższe skrzydło) */
-  const wf=[];
-  if(o.q) p.push(...LEG4(A[0]+6,A[1],13,c[0],'hoof',0,128));
+  const wf=[];RG(p,'head');
+  if(o.q) p.push(...RG(LEG4(A[0]+6,A[1],13,c[0],'hoof',0,128),'fl'));
   else if(aL){const fwd=o.ak==='fwd',H=fwd?[A[0]+aL,A[1]+aL*.3]:[A[0]+aL,A[1]+aL*.7+4],
       E=fwd?[A[0]+aL*.5,A[1]+aL*.35]:[A[0]+aL*.6,A[1]+aL*.35+4];
     if(o.wg) p.push(WINGF(A,H,[A[0]-10,A[1]+ry*.7],4,c[1]));
@@ -214,10 +219,11 @@ function A_thero(c,o){
       wf.push(WINGF(A,T,Bk,n,c[1]),...Array.from({length:n-1},(_,i)=>LINE(PL([LERP(A,T,.35+.5*i/n),LERP(T,Bk,(i+1)/n)]),1.6)));}
     for(let i=0;i<(o.clw||0);i++) p.push(HORN(H[0]-2+i*(fwd?4:3),H[1],o.cl||6,fwd?70-i*18:70-i*14,o.cl>12?8:3.5,fwd?(o.cl||6)*.45:-1.5,c[1]));
     if(o.thumb) p.push(HORN(H[0]-2,H[1]-2,o.thumb>1?13:8,-50,o.thumb>1?7:5,0,c[1]));}
-  p.push(...LEG2(bx+6,by+4,lw,c[0],L));
+  RG(p,'arm');p.push(...LEG2(bx+6,by+4,lw,c[0],L));
   if(o.sick){const x=bx+6+L*.05,y=by+4+L;p.push(K(`M${P(x+4,y+4)} C${P(x+12,y+2)} ${P(x+16,y-4)} ${P(x+16,y-12)}`,5,c[1]));}
-  p.push(...wf);
-  return {p,sc:o.sc||1};
+  RG(p,'hl');p.push(...RG(wf,'arm'));
+  return {p,sc:o.sc||1,j:{body:[bx,by],hl:[bx+6,by+4],hl2:[bx-12,by+4],fl:[A[0]+6,A[1]],fl2:[A[0]-6,A[1]],arm:A,wing2:[bx+6,by-ry*.6],
+    sail:[bx,by-ry*.8],tail:[...T0,...TQ[3]],neck:[...S,...Hb],head:Hb,jaw:[hx+2,hy+D*.62,sk.X+1,my],fire:[sk.X+2,my]}};
 }
 
 /* ---------- zauropod: fl/hl przednie/tylne nogi, szyja kąt na / długość nl ---------- */
@@ -817,19 +823,36 @@ function pathPts(d){const t=d.match(/[MLCQZ]|-?\d*\.?\d+(?:e[-+]?\d+)?/g)||[],o=
   return o;}
 
 /* rysuje archetyp/preset z opcjami; skaluje do kadru (margines na kontur), ląd stoi na cieniu */
-function drawCustom(arch,opts,mode,pal){
+/* obrys części [x0,y0,x1,y1] z połową grubości kresek (+ pad) */
+function bbox(parts,pad=0){let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(const q of parts){if(!q||q.m===3)continue;const h=(q.m>=2?(q.sw||2.4)/2:(q.k||0)/2)+pad;
+    for(const [x,y] of pathPts(q.d)){x0=Math.min(x0,x-h);y0=Math.min(y0,y-h);x1=Math.max(x1,x+h);y1=Math.max(y1,y+h);}}
+  return [x0,y0,x1,y1];}
+/* archetyp → części + dopasowanie do kadru: translate(dx,dy) scale(s), z = grubość konturu */
+function layout(arch,opts,pal){
   const [base,def]=PRESET[arch]||(ARCH[arch]?[arch,{}]:PRESET.thero),o={...def,...(opts||{})};
   pal=pal||PAL[o.p??hash(String(arch))%PAL.length]||PAL[0];
-  const out=ARCH[base](pal,o),ghost=mode==='ghost';
-  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
-  for(const q of out.p){if(!q||q.m===3)continue;const h=q.m>=2?(q.sw||2.4)/2:(q.k||0)/2;
-    for(const [x,y] of pathPts(q.d)){x0=Math.min(x0,x-h);y0=Math.min(y0,y-h);x1=Math.max(x1,x+h);y1=Math.max(y1,y+h);}}
+  const out=ARCH[base](pal,o),[x0,y0,x1,y1]=bbox(out.p);
   const land=!out.fly&&!out.water,s=Math.min(out.sc||1,186/(x1-x0),(land?124:126)/(y1-y0)),
     dx=100-s*(x0+x1)/2,dy=land?131-s*y1:70-s*(y0+y1)/2,z=Math.min(1/s,1.6);
+  return {out,pal,land,s,dx,dy,z,x0,y0,x1,y1};
+}
+function drawCustom(arch,opts,mode,pal){
+  const {out,pal:pl,land,s,dx,dy,z,x0,x1}=layout(arch,opts,pal),ghost=mode==='ghost';pal=pl;
   const shadow=ghost?'':!land?(out.water?'<g fill="none" stroke="#8FC3D6" stroke-width="3" stroke-linecap="round" opacity=".5"><path d="M14,124 C36,118 56,128 78,122"/><path d="M104,134 C126,128 146,138 168,132"/></g>':'')
     :`<ellipse cx="100" cy="133" rx="${R(Math.min(70,s*(x1-x0)*.36))}" ry="5" fill="rgba(60,40,20,.15)"/>`;
   return `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg" class="dsvg">${shadow}`
     +`<g transform="translate(${R(dx)},${R(dy)}) scale(${Math.round(s*1000)/1000})">${paint(out.p,ghost?'#BCAF93':pal[2],ghost,z)}</g></svg>`;
+}
+/* lalka (js/puppet2d.js): części pogrupowane wg regionu (RG; bez regionu → body), każdy region z własnym konturem.
+   → {pieces:[{g, box:[x0,y0,x1,y1], svg}], j:{region:[x,y,(xk,yk)]} przeguby, ground: y stóp} — wszystko w układzie viewBox 200×140;
+   kolejność warstw = ostatnie wystąpienie regionu w rysunku (bliższa noga po tułowiu itd.) */
+function drawParts(arch,opts,pal){
+  const {out,pal:pl,s,dx,dy,z,y1}=layout(arch,opts,pal),T=v=>v.map((c,i)=>i%2?dy+s*c:dx+s*c),by={};
+  out.p.forEach((q,i)=>{if(!q)return;const r=by[q.g||'body']=by[q.g||'body']||{g:q.g||'body',p:[]};r.p.push(q);r.i=i;});
+  const j=Object.fromEntries(Object.entries(out.j||{}).map(([k,v])=>[k,T(v)]));
+  return {j,ground:dy+s*y1,fly:out.fly,water:out.water,pieces:Object.values(by).sort((a,b)=>a.i-b.i).map(({g,p})=>
+    ({g,box:T(bbox(p,3.5*z+1)),svg:`<g transform="translate(${R(dx)},${R(dy)}) scale(${Math.round(s*1000)/1000})">${paint(p,pl[2],false,z)}</g>`}))};
 }
 /* gatunek po id (ART z artspec.js); obiekt {a,o} = własne zwierzę; nieznane id → teropod w kolorze z hasha */
 function drawSpecies(id,mode,palOverride){
