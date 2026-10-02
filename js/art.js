@@ -86,7 +86,7 @@ function VANE(Q,t0,w,f,m=1,t1=1){const a=[],b=[];for(let i=0;i<=10;i++){const t=
 function HORN(x,y,L,a,w,bend,f,m=1){const [dx,dy]=DIR(a),nx=-dy,ny=dx,t=[x+dx*L+nx*bend,y+dy*L+ny*bend],
   c=[x+dx*L*.55+nx*bend*.2,y+dy*L*.55+ny*bend*.2];
   return F(`M${P(x-nx*w/2,y-ny*w/2)} Q${P(c[0]-nx*w*.3,c[1]-ny*w*.3)} ${P(...t)} Q${P(c[0]+nx*w*.3,c[1]+ny*w*.3)} ${P(x+nx*w/2,y+ny*w/2)} Z`,f,m);}
-function EYE(x,y,r,ink){return [F(EP(x,y,r,r),'#fff',2),{d:EP(x+r*.18,y,r*.44,r*.48),f:ink,m:3,op:1},
+function EYE(x,y,r,ink){return [{...F(EP(x,y,r,r),'#fff',2),e:[x,y,r]},{d:EP(x+r*.18,y,r*.44,r*.48),f:ink,m:3,op:1},
   {d:EP(x-r*.32,y-r*.34,r*.22,r*.22),f:'#fff',m:3,op:.95}];}
 function TEETH(x1,y1,x2,y2,n,s=5.4){const o=[],h=Math.abs(s)*.43;for(let i=0;i<n;i++){const [x,y]=LERP([x1,y1],[x2,y2],(i+.5)/n);
   o.push({d:`M${P(x-h,y)} L${P(x,y+s)} L${P(x+h,y)} Z`,f:'#fff',m:2,sw:1.5});}return o;}
@@ -585,14 +585,14 @@ function A_synap(c,o){
 function A_amphib(c,o){
   const mid=mix(c[0],c[2],.4),p=[];
   if(o.boom){
-    p.push(...[[70,58,-1],[70,82,1],[112,58,-1],[112,82,1]].map(([x,y,s])=>K(PL([[x,y],[x+(x<90?-10:6),y+s*16],[x+(x<90?-18:12),y+s*20]]),8,x<90?mid:c[0])).flat());
-    p.push(...TUBE(CURVE([[60,70],[40,70],[24,72],[6,70]],4),16,3,c[0]),F('M52,70 C40,62 24,64 8,70 C24,76 40,78 52,70 Z',c[1],1));
+    p.push(...[[70,58,-1,'hl2'],[70,82,1,'hl'],[112,58,-1,'fl2'],[112,82,1,'fl']].map(([x,y,s,g])=>RG(K(PL([[x,y],[x+(x<90?-10:6),y+s*16],[x+(x<90?-18:12),y+s*20]]),8,x<90?mid:c[0]),g)).flat());
+    p.push(...RG([...TUBE(CURVE([[60,70],[40,70],[24,72],[6,70]],4),16,3,c[0]),F('M52,70 C40,62 24,64 8,70 C24,76 40,78 52,70 Z',c[1],1)],'tail'));
     p.push(BL(94,70,40,15,c[0]));
-    p.push(SHADE(EP(96,70,30,5),c[1],.5));
+    p.push(SHADE(EP(96,70,30,5),c[1],.5));RG(p,'body');
     p.push(F('M180,70 C180,52 152,34 116,20 C134,40 140,54 136,62 L136,78 C140,86 134,100 116,120 C152,106 180,88 180,70 Z',c[0]));
     p.push(SHADE('M170,70 C168,56 148,42 128,32 C142,46 146,58 144,66 Z',c[1],.55));
     p.push(...EYE(162,64,3.8,c[2]),...EYE(162,77,3.8,c[2]));
-    return {p,sc:o.sc||1};}
+    return {p:RG(p,'head'),sc:o.sc||1,j:{body:[94,70],tail:[60,70,6,70],head:[136,70],hl:[70,82],hl2:[70,58],fl:[112,82],fl2:[112,58]}};}
   const fl=o.flat?4:0;
   p.push(RG(K(PL([[70,110],[58,120],[46,126]]),13,mid),'hl2'),RG(K(PL([[124,110],[136,120],[148,126]]),13,mid),'fl2'));
   p.push(...RG(TUBE(CURVE([[52,100],[36,102],[22,106],[8,110]],3),20,6,c[0]),'tail'));
@@ -611,63 +611,63 @@ function A_amphib(c,o){
 function A_bug(c,o){
   const p=[],ink=c[2],k=o.k;
   if(k==='dragon'){
-    p.push(F('M96,66 C72,46 40,34 10,38 C34,54 62,70 92,78 Z',c[1],1),F('M104,68 C128,48 162,38 192,44 C168,60 134,74 106,80 Z',c[1],1));
-    p.push(F('M94,80 C70,76 42,80 20,92 C46,94 72,92 94,88 Z',mix(c[1],'#ffffff',.28),1),F('M104,82 C128,78 158,82 182,94 C156,96 126,94 104,90 Z',mix(c[1],'#ffffff',.28),1));
+    p.push(...RG([F('M96,66 C72,46 40,34 10,38 C34,54 62,70 92,78 Z',c[1],1),F('M104,68 C128,48 162,38 192,44 C168,60 134,74 106,80 Z',c[1],1)],'wing2'));
+    p.push(...RG([F('M94,80 C70,76 42,80 20,92 C46,94 72,92 94,88 Z',mix(c[1],'#ffffff',.28),1),F('M104,82 C128,78 158,82 182,94 C156,96 126,94 104,90 Z',mix(c[1],'#ffffff',.28),1)],'wing'));
     p.push(F('M92,68 C97,58 105,58 110,68 C114,88 111,114 102,130 C95,112 88,86 92,68 Z',c[0]));
     for(let i=0;i<4;i++)p.push(LINE(`M95,${88+i*10} L108,${88+i*10}`,2));
     p.push(BL(93,60,8,8,c[0]),BL(109,60,8,8,c[0]),SHADE(EP(92,58,3.2,3.2),'#fff',.9),SHADE(EP(110,58,3.2,3.2),'#fff',.9));
-    return {p,sc:o.sc||1,fly:1};}
+    return {p,sc:o.sc||1,fly:1,j:{body:[100,90],wing2:[100,72],wing:[100,85]}};}
   if(k==='milli'){
     for(let i=0;i<11;i++){const x=24+i*15,y=88+Math.sin(i*.55)*11;p.push(K(PL([[x,y+12],[x-4,y+26]]),6,mix(c[0],c[2],.3)));}
     for(let i=0;i<11;i++){const x=24+i*15,y=88+Math.sin(i*.55)*11;
       p.push(F(`M${x-7},${y-15} C${x+7},${y-17} ${x+9},${y+13} ${x-7},${y+15} Z`,i%2?c[0]:mix(c[0],c[1],.35),1));}
-    p.push(BL(184,88+Math.sin(11*.55)*11,15,16,c[1]),...EYE(188,84,3.8,ink),K(PL([[192,78],[199,68]]),3,ink),K(PL([[191,94],[199,88]]),3,ink));
-    return {p,sc:o.sc||1};}
+    RG(p,'body');p.push(BL(184,88+Math.sin(11*.55)*11,15,16,c[1]),...EYE(188,84,3.8,ink),K(PL([[192,78],[199,68]]),3,ink),K(PL([[191,94],[199,88]]),3,ink));
+    return {p:RG(p,'head'),sc:o.sc||1,j:{body:[110,96,20,96],head:[174,90]}};}
   /* trylobit z góry, głowa w prawo */
-  p.push(TRI([150,34],[92,26],[140,46],c[1],1),TRI([150,106],[92,114],[140,94],c[1],1));
+  p.push(RG(TRI([150,34],[92,26],[140,46],c[1],1),'fl2'),RG(TRI([150,106],[92,114],[140,94],c[1],1),'fl'));
   p.push(F('M48,70 C48,46 60,40 76,40 L146,40 L146,100 L76,100 C60,100 48,94 48,70 Z',c[0]));
   for(let i=0;i<8;i++)p.push(LINE(`M${66+i*10},42 C${64+i*10},56 ${64+i*10},84 ${66+i*10},98`,2.2));
   p.push(F('M60,70 C60,60 70,58 80,58 L148,58 L148,82 L80,82 C70,82 60,80 60,70 Z',c[1],1));
-  p.push(F('M144,30 C184,30 196,56 196,70 C196,84 184,110 144,110 C138,96 138,44 144,30 Z',c[0]));
+  RG(p,'body');p.push(F('M144,30 C184,30 196,56 196,70 C196,84 184,110 144,110 C138,96 138,44 144,30 Z',c[0]));
   p.push(F('M150,58 C164,56 180,62 184,70 C180,78 164,84 150,82 Z',c[1],1));
   p.push(F('M160,42 C168,40 174,44 172,50 C166,50 162,48 160,42 Z',ink,2),F('M160,98 C168,100 174,96 172,90 C166,90 162,92 160,98 Z',ink,2));
-  return {p,sc:o.sc||1};
+  return {p:RG(p,'head'),sc:o.sc||1,j:{body:[100,70],head:[146,70],fl:[140,94],fl2:[140,46]}};
 }
 function A_ammo(c,o){
   const p=[],cx=84,cy=64,R0=50,rr=t=>R0*.94*Math.exp(-.2*t);
-  for(let i=0;i<6;i++)p.push(K(`M128,${92+i*3} C${146+i*3},${88+i*6} ${160+i*4},${96+i*7} ${172+i*3-(i%2)*8},${108+i*5}`,5,mix(c[0],c[1],.4)));
-  p.push(F('M116,78 C134,72 152,80 150,98 C148,112 124,116 112,106 Z',c[1]),...EYE(134,90,4.4,c[2]));
+  for(let i=0;i<6;i++)p.push(RG(K(`M128,${92+i*3} C${146+i*3},${88+i*6} ${160+i*4},${96+i*7} ${172+i*3-(i%2)*8},${108+i*5}`,5,mix(c[0],c[1],.4)),'trunk'));
+  p.push(...RG([F('M116,78 C134,72 152,80 150,98 C148,112 124,116 112,106 Z',c[1]),...EYE(134,90,4.4,c[2])],'head'));
   p.push(BL(cx,cy,R0,R0,c[0]));
   let d='';for(let i=0;i<=90;i++){const t=i/90*12.5,r=rr(t);d+=(i?' L':'M')+P(cx+Math.cos(t)*r,cy+Math.sin(t)*r);}
   for(let i=0;i<30;i++){const t=i*.3,r1=rr(t),r2=rr(t+2*PI);if(r2<5)break;p.push(STRIPE(PL([[cx+Math.cos(t)*r1*.97,cy+Math.sin(t)*r1*.97],[cx+Math.cos(t)*r2*1.03,cy+Math.sin(t)*r2*1.03]]),c[1],3,.8));}
   p.push(LINE(d,2.6));
-  return {p,sc:o.sc||1,water:1};
+  return {p,sc:o.sc||1,water:1,j:{body:[84,64],head:[118,90],trunk:[132,96,174,116]}};
 }
 /* skorpion morski (eurypteryd) z góry */
 function A_scorp(c,o){
   const p=[],mid=mix(c[0],c[2],.35),Y=70;
-  for(const s of [-1,1]){p.push(...TAP([[150,Y+s*14],[172,Y+s*26],[186,Y+s*34]],[8,6],mid),F(`M178,${Y+s*30} L200,${Y+s*38} L186,${Y+s*42} Z`,c[1],1),F(`M180,${Y+s*36} L198,${Y+s*50} L184,${Y+s*48} Z`,c[1],1));
-    p.push(...TAP([[136,Y+s*16],[118,Y+s*36],[104,Y+s*52]],[7,6],mid),BL(100,Y+s*56,12,7,c[1],1,s*30));
+  for(const s of [-1,1]){p.push(...RG([...TAP([[150,Y+s*14],[172,Y+s*26],[186,Y+s*34]],[8,6],mid),F(`M178,${Y+s*30} L200,${Y+s*38} L186,${Y+s*42} Z`,c[1],1),F(`M180,${Y+s*36} L198,${Y+s*50} L184,${Y+s*48} Z`,c[1],1)],s<0?'arm2':'arm'));
+    p.push(...RG([...TAP([[136,Y+s*16],[118,Y+s*36],[104,Y+s*52]],[7,6],mid),BL(100,Y+s*56,12,7,c[1],1,s*30)],s<0?'fl2':'fl'));
     for(let i=0;i<3;i++)p.push(K(PL([[140+i*6,Y+s*16],[146+i*8,Y+s*28]]),3,mid));}
-  p.push(TRI([30,Y-5],[2,Y],[30,Y+5],c[1],1));
-  for(let i=11;i>=0;i--){const x=40+i*8.4,w=8+i*1.6;p.push(BL(x,Y,6,w,i%2?c[0]:mix(c[0],c[1],.3),1));}
+  p.push(RG(TRI([30,Y-5],[2,Y],[30,Y+5],c[1],1),'tail'));
+  for(let i=11;i>=0;i--){const x=40+i*8.4,w=8+i*1.6;p.push(RG(BL(x,Y,6,w,i%2?c[0]:mix(c[0],c[1],.3),1),i<6?'tail':'body'));}
   p.push(F(`M136,${Y-24} C160,${Y-28} 176,${Y-18} 178,${Y} C176,${Y+18} 160,${Y+28} 136,${Y+24} Z`,c[0]));
   p.push(F(`M160,${Y-16} C168,${Y-18} 172,${Y-12} 168,${Y-8} C164,${Y-8} 160,${Y-10} 160,${Y-16} Z`,c[2],2),F(`M160,${Y+16} C168,${Y+18} 172,${Y+12} 168,${Y+8} C164,${Y+8} 160,${Y+10} 160,${Y+16} Z`,c[2],2));
-  return {p,sc:o.sc||1,water:1};
+  return {p,sc:o.sc||1,water:1,j:{body:[110,Y],tail:[90,Y,2,Y],arm:[150,Y+14],arm2:[150,Y-14],fl:[136,Y+16],fl2:[136,Y-16]}};
 }
 /* anomalokaris z góry */
 function A_anomalo(c,o){
   const p=[],Y=70,mid=mix(c[0],c[2],.3);
   for(const s of [-1,1]) for(let i=0;i<3;i++) p.push(BL(34-i*4,Y+s*(6+i*7),16,5,c[1],1,s*(20+i*18)));
-  for(let i=10;i>=0;i--){const x=48+i*10,w=10+Math.sin((i+2)/13*PI)*14;
+  RG(p,'tail');for(let i=10;i>=0;i--){const x=48+i*10,w=10+Math.sin((i+2)/13*PI)*14;
     for(const s of [-1,1])p.push(BL(x-2,Y+s*w,10,8,i%2?c[1]:mix(c[1],c[0],.3),1,s*-25));}
   p.push(BL(100,Y,58,13,c[0]));
   for(let i=0;i<9;i++)p.push(LINE(`M${56+i*10},${Y-10} L${56+i*10},${Y+10}`,1.6));
-  for(const s of [-1,1]){p.push(...TUBE(CURVE([[170,Y+s*6],[194,Y+s*4],[202,Y+s*26],[184,Y+s*28]],7),8,5,mid),
-    ...SPINES([[170,Y+s*6],[194,Y+s*4],[202,Y+s*26],[184,Y+s*28]],6,6,3,c[1],{side:-s,t0:.2,t1:.95,m:1}));
+  RG(p,'body');for(const s of [-1,1]){p.push(...RG([...TUBE(CURVE([[170,Y+s*6],[194,Y+s*4],[202,Y+s*26],[184,Y+s*28]],7),8,5,mid),
+    ...SPINES([[170,Y+s*6],[194,Y+s*4],[202,Y+s*26],[184,Y+s*28]],6,6,3,c[1],{side:-s,t0:.2,t1:.95,m:1})],s<0?'arm2':'arm'));
     p.push(K(PL([[160,Y+s*8],[164,Y+s*22]]),5,c[0]),BL(164,Y+s*26,7,6,c[2],2));}
   p.push(BL(162,Y,16,13,c[0]));
-  return {p,sc:o.sc||1,water:1};
+  return {p,sc:o.sc||1,water:1,j:{body:[100,Y],tail:[46,Y],arm:[170,Y+6,198,Y+20],arm2:[170,Y-6,198,Y-20]}};
 }
 
 /* ---------- ssaki czworonożne: hd = cat|dog|bear|rhino|deer|ele|indri|andrew|diproto ---------- */
@@ -861,7 +861,8 @@ function drawParts(arch,opts,pal){
   const {out,pal:pl,s,dx,dy,z,y1}=layout(arch,opts,pal),T=v=>v.map((c,i)=>i%2?dy+s*c:dx+s*c),by={};
   out.p.forEach((q,i)=>{if(!q)return;const r=by[q.g||'body']=by[q.g||'body']||{g:q.g||'body',p:[]};r.p.push(q);r.i=i;});
   const j=Object.fromEntries(Object.entries(out.j||{}).filter(e=>e[1]).map(([k,v])=>[k,T(v)]));
-  return {j,ground:dy+s*y1,fly:out.fly,water:out.water,pieces:Object.values(by).sort((a,b)=>a.i-b.i).map(({g,p})=>
+  const eyes=out.p.filter(q=>q&&q.e).map(q=>({g:q.g||'body',x:dx+s*q.e[0],y:dy+s*q.e[1],r:s*q.e[2]}));   // oczy: powieki i źrenice lalki
+  return {j,eyes,skin:pl[0],ink:pl[2],ground:dy+s*y1,fly:out.fly,water:out.water,pieces:Object.values(by).sort((a,b)=>a.i-b.i).map(({g,p})=>
     ({g,box:T(bbox(p,3.5*z+1)),svg:`<g transform="translate(${R(dx)},${R(dy)}) scale(${Math.round(s*1000)/1000})">${paint(p,pl[2],false,z)}</g>`}))};
 }
 /* gatunek po id (ART z artspec.js); obiekt {a,o} = własne zwierzę; nieznane id → teropod w kolorze z hasha */
