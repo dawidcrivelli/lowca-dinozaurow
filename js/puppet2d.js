@@ -92,7 +92,7 @@ window.Puppet2D = (() => {
     flat: 'stomp trample rear pounce dive shell roll', fling: 'headbutt ram charge gore neck kick tusk', spin: 'tail club spin flipper wing trunk',
     squeeze: 'coil grab tentacle', cower: 'roar', hot: 'fire' }).flatMap(([r, l]) => l.split(' ').map(s => [s, r])));
   const DIZZY = { woozy: 2, spin: 1 }, FLAT = .42;   // ile s trwa oszołomienie; wysokość naleśnika
-  const GAP0 = 4.4, WIN_CYCLE = 2.6, WIN_ROAR = 1.5, WIN_HOP = .25;   // odstęp na start (2×GAP); zwycięstwo: cykl [s], od kiedy ryk, podskok z arena3d.js
+  const BLINK = 3.3, GAP0 = 4.4, WIN_CYCLE = 2.6, WIN_ROAR = 1.5, WIN_HOP = .25;   // co ile s mrugnięcie; odstęp na start (2×GAP); zwycięstwo: cykl [s], od kiedy ryk, podskok z arena3d.js
   const RX = {
     jerk: (T, t, s) => { const k = Math.sin(t * 45) * s;   // ugryziony: szarpie się i wyrywa
       add(T.a, 'head', .6 * k); add(T.a, 'neck', .4 * k); add(T.a, 'jaw', -.6 * s); add(T.a, 'arm', 1.4 * k); legs(T, t * 45, .5 * s); add(T.b, 'tail', 1.2 * k); T.sq -= .15 * s; T.pitch += .12 * k; },
@@ -170,6 +170,11 @@ window.Puppet2D = (() => {
     const anchor = (p, [x, y]) => { const o = new THREE.Object3D(); o.position.set(x - p.piv[0], y - p.piv[1], 0); p.grp.add(o); return o; };
     const hp = get('head') || get('body') || pcs[0], hb = hp.box, hc = V((hb[0] + hb[2]) / 2, (hb[1] + hb[3]) / 2);
     const anchors = { head: anchor(hp, hc), mouth: D.j.jaw ? anchor(jaw ? jaw.parent : hp, V(D.j.jaw[2], D.j.jaw[3])) : anchor(hp, V(hb[2], (hb[1] + hb[3]) / 2)) };
+    // oczy: biała tarcza zakrywa narysowaną źrenicę, własna źrenica patrzy na przeciwnika, powieka w kolorze skóry mruga (kolory w wierzchołkach jak pysk)
+    const disc = (c, r, z) => { const g = new THREE.CircleGeometry(r, 14), k = new THREE.Color(c), o = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors: true }));
+      g.setAttribute('color', new THREE.Float32BufferAttribute(Array(g.attributes.position.count).fill([k.r, k.g, k.b]).flat(), 3)); o.position.z = z; return o; };
+    const eyes = (D.eyes || []).map(e => { const p = get(e.g) || hp, [x, y] = V(e.x, e.y), r = e.r * K, g = new THREE.Group(), pu = disc(D.ink, r * .45, d * .1), lid = disc(D.skin, r * 1.02, d * .2);
+      g.position.set(x - p.piv[0], y - p.piv[1], d * 1.3); g.add(disc('#fff', r * .86, 0), pu, lid); p.grp.add(g); return { pu, lid, r }; });
     const S = { q: { x: 1, v: 0 }, w: { x: 1, v: 0 }, pitch: { x: 0, v: 0 } }, feet = ['hl', 'hl2', 'fl', 'fl2'].map(J).filter(Boolean).map(v => v[0]);
     const back = feet.length ? Math.min(...feet) : P0[0], front = feet.length ? Math.max(...feet) : P0[0], mid = (bodyBox[1] + bodyBox[3]) / 2;
     const cy = (D.ground - mid) * K, top = Math.max(...pcs.map(p => (D.ground - p.box[1]) * K)), swim = D.water || ctx.sp.loco === 'swim', fly = D.fly;
@@ -241,9 +246,13 @@ window.Puppet2D = (() => {
         p.grp.rotation.z = r;
         if (p.tip) { p.w = T.w[p.g] || 0; p.wp = tm * 5; bend(p); }
       }
-      const sy = Math.max(FLAT * .8, Math.min(1.6, S.q.x)), pr = S.pitch.x, px = pr >= 0 ? back : front, c = Math.cos(pr), s = Math.sin(pr);
+      // oczy: mrugnięcie co BLINK s, przymknięte po nokaucie; oszołomiony/nokaut — źrenice krążą; trafiony — zwężone i drżą
+      const lid = st.ko ? .6 : tm % BLINK < .12 ? 1 : 0, dz = tm < dizzy || st.ko || k === 'ko', hit = k === 'hit';
+      for (const e of eyes) { e.lid.scale.y = Math.max(.01, lid); e.lid.visible = lid > 0; e.pu.scale.setScalar(hit ? .6 : 1);
+        e.pu.position.x = e.r * (dz ? .3 * Math.cos(tm * 9) : hit ? .2 * Math.sin(tm * 70) : .3); e.pu.position.y = e.r * (dz ? .3 * Math.sin(tm * 9) : st.won ? .2 : 0); }
+      const sy = Math.max(FLAT * .9, Math.min(1.6, S.q.x)), pr = S.pitch.x, px = pr >= 0 ? back : front, c = Math.cos(pr), s = Math.sin(pr);
       const flip = body.matrixWorld.elements[10] < 0 ? -1 : 1;   // strona B patrzy tyłem do kamery → odwróć kolejność warstw
-      pose.scale.set(Math.max(.4, Math.min(2, S.w.x)), sy, flip);
+      pose.scale.set(Math.max(.4, Math.min(1.5, S.w.x)), sy, flip);
       pose.rotation.z = pr; pose.position.set(px - px * c + T.jit * H * Math.sin(tm * 97), -px * s + T.lift * H, 0);
       /* nokaut: arena3d.js kładzie figurę obrotem wokół x — cofamy go i przewracamy wycinankę do góry nogami w jej płaszczyźnie (z odbiciem) */
       const ko = st.ko ? 1 : k === 'ko' ? t : 0, pcy = ko ? top / 2 : cy;

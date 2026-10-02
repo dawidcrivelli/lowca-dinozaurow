@@ -86,7 +86,7 @@ function VANE(Q,t0,w,f,m=1,t1=1){const a=[],b=[];for(let i=0;i<=10;i++){const t=
 function HORN(x,y,L,a,w,bend,f,m=1){const [dx,dy]=DIR(a),nx=-dy,ny=dx,t=[x+dx*L+nx*bend,y+dy*L+ny*bend],
   c=[x+dx*L*.55+nx*bend*.2,y+dy*L*.55+ny*bend*.2];
   return F(`M${P(x-nx*w/2,y-ny*w/2)} Q${P(c[0]-nx*w*.3,c[1]-ny*w*.3)} ${P(...t)} Q${P(c[0]+nx*w*.3,c[1]+ny*w*.3)} ${P(x+nx*w/2,y+ny*w/2)} Z`,f,m);}
-function EYE(x,y,r,ink){return [F(EP(x,y,r,r),'#fff',2),{d:EP(x+r*.18,y,r*.44,r*.48),f:ink,m:3,op:1},
+function EYE(x,y,r,ink){return [{...F(EP(x,y,r,r),'#fff',2),e:[x,y,r]},{d:EP(x+r*.18,y,r*.44,r*.48),f:ink,m:3,op:1},
   {d:EP(x-r*.32,y-r*.34,r*.22,r*.22),f:'#fff',m:3,op:.95}];}
 function TEETH(x1,y1,x2,y2,n,s=5.4){const o=[],h=Math.abs(s)*.43;for(let i=0;i<n;i++){const [x,y]=LERP([x1,y1],[x2,y2],(i+.5)/n);
   o.push({d:`M${P(x-h,y)} L${P(x,y+s)} L${P(x+h,y)} Z`,f:'#fff',m:2,sw:1.5});}return o;}
@@ -861,7 +861,8 @@ function drawParts(arch,opts,pal){
   const {out,pal:pl,s,dx,dy,z,y1}=layout(arch,opts,pal),T=v=>v.map((c,i)=>i%2?dy+s*c:dx+s*c),by={};
   out.p.forEach((q,i)=>{if(!q)return;const r=by[q.g||'body']=by[q.g||'body']||{g:q.g||'body',p:[]};r.p.push(q);r.i=i;});
   const j=Object.fromEntries(Object.entries(out.j||{}).filter(e=>e[1]).map(([k,v])=>[k,T(v)]));
-  return {j,ground:dy+s*y1,fly:out.fly,water:out.water,pieces:Object.values(by).sort((a,b)=>a.i-b.i).map(({g,p})=>
+  const eyes=out.p.filter(q=>q&&q.e).map(q=>({g:q.g||'body',x:dx+s*q.e[0],y:dy+s*q.e[1],r:s*q.e[2]}));   // oczy: powieki i źrenice lalki
+  return {j,eyes,skin:pl[0],ink:pl[2],ground:dy+s*y1,fly:out.fly,water:out.water,pieces:Object.values(by).sort((a,b)=>a.i-b.i).map(({g,p})=>
     ({g,box:T(bbox(p,3.5*z+1)),svg:`<g transform="translate(${R(dx)},${R(dy)}) scale(${Math.round(s*1000)/1000})">${paint(p,pl[2],false,z)}</g>`}))};
 }
 /* gatunek po id (ART z artspec.js); obiekt {a,o} = własne zwierzę; nieznane id → teropod w kolorze z hasha */
