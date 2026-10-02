@@ -24,7 +24,7 @@ ids.forEach((id, n) => {
   scene.add(new THREE.HemisphereLight(0xFFFFFF, 0xC9B56E, .75));
   const sun = new THREE.DirectionalLight(0xFFFFFF, .7); sun.position.set(4, 9, 6); sun.castShadow = true; scene.add(sun);
   Object.assign(sun.shadow.camera, { left: -7, right: 7, top: 7, bottom: -3 }); sun.shadow.mapSize.set(1024, 1024);
-  if (window.ARENA_LIGHTS) ARENA_LIGHTS(scene, sun);
+  Object.assign(sun.shadow, { bias: -5e-4, normalBias: .02 }); const rim = new THREE.DirectionalLight(0xFFF2D8, .35); rim.position.set(-3, 5, -7); scene.add(rim);   // jak start() w arena3d
   const gr = new THREE.Mesh(new THREE.CircleGeometry(30, 24), new THREE.MeshLambertMaterial({ color: 0xC9B56E })); gr.rotation.x = -Math.PI / 2; gr.receiveShadow = true; scene.add(gr);
   const root = new THREE.Group(), inner = new THREE.Group(), body = new THREE.Group(); root.add(inner); inner.add(body); scene.add(root);
   root.position.set(-GAP, 0, 0); root.rotation.y = -YAW;

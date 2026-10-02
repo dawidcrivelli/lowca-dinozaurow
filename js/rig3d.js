@@ -20,14 +20,15 @@ window.Rig3D = (() => {
   const MAT = { rough: .66, gloss: .22, bump: .045, ink: .55, outline: .013, sheet: .022 };   // szorstkość skóry / połysku, wypukłość, jasność konturu (× tusz), grubość konturu (× wysokość), grubość płachty
   const STEP = { len: .3, s: .16, h: .14 }; // krok: próg odjechania stopy, czas [s], uniesienie (× wysokość biodra)
   const BLINK = 3.3, LID = .5;               // średni odstęp mrugnięć [s]; uchylenie powieki (rad, 0 = pół-przymknięta)
-  const LEN_K = .65;                         // jak w arena3d: ile długości liczy się jak wysokość
+  const LEN_K = .65, GAP0 = 4.4;             // jak w arena3d: ile długości liczy się jak wysokość; początkowa odległość zawodników
   const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
   /* ---------- ruchy: [ms, ułamek trafienia, ...klucze [t, {kanał: wartość}]] — brak kanału w kluczu = 0, gładko między kluczami
      korzeń (arena): fwd, up [m], pit, yaw · miednica: by (przysiad × biodro), bp (dęba), sr (przechył) · kręgosłup: sb, sy
      szyja nk, ny · głowa hp, hy, hr · jw pysk · ogon tl (unieś), tw (zamach, z opóźnieniem w dół ogona)
-     ar ręce/łapy w przód · lf przednie nogi w powietrzu · kk kopnięcie · st tupnięcie · fold podkulenie · sh potrząsanie · bl powieki */
-  const CH = 'fwd up pit yaw by bp sr sb sy nk ny hp hy hr jw tl tw ar lf kk st fold sh bl wg fp tr'.split(' ');
+     ar ręce/łapy w przód · lf przednie nogi w powietrzu · kk kopnięcie · st tupnięcie · fold podkulenie · sh potrząsanie · bl powieki
+     wb chwianie (trucizna) · jk szarpanie (ofiara się wyrywa) · sq zgniecenie (− ściśnięcie) · cl zwinięcie ogona (wąż) · tn sięgnięcie macek/szczypiec */
+  const CH = 'fwd up pit yaw by bp sr sb sy nk ny hp hy hr jw tl tw ar lf kk st fold sh bl wg fp tr wb jk sq cl tn'.split(' ');
   const BI = {
     bite: [640, .48, [.3, { fwd: -.15, bp: .12, nk: .4, hp: .35, jw: 1, tl: .25, by: -.05 }], [.48, { fwd: 1, bp: -.15, nk: -.3, hp: -.25, jw: 0, tl: -.1, by: -.08 }],
       [.7, { fwd: .8, bp: -.08, nk: -.15, hp: -.1, jw: .15, sh: 1 }]],
@@ -80,9 +81,40 @@ window.Rig3D = (() => {
   const FLY = { peck: BI.peck,
     wing: [640, .5, [.3, { fwd: -.1, up: .3, wg: 1.3, nk: .2 }], [.5, { fwd: .9, wg: -1.1, jw: .6 }], [.7, { fwd: .6, wg: .4 }]],
     dive: [720, .58, [.35, { fwd: -.2, up: .7, pit: .4, wg: 1, nk: .2 }], [.58, { fwd: 1.1, up: -.5, pit: -.5, nk: -.3, hp: -.3, jw: 1, wg: -.6 }], [.78, { fwd: .7, up: -.2 }]] };
+  // wspólny słownik (gdy archetyp nie ma własnej wersji): paszcza, łapy, ciało, macki, szczypce, żądło
+  const GEN = {
+    crush: [700, .45, [.28, { fwd: -.15, nk: .4, hp: .4, jw: 1.1, by: -.05, bp: .1 }], [.45, { fwd: 1, nk: -.35, hp: -.3, jw: 0, by: -.1 }], [.65, { fwd: .9, nk: -.5, hp: -.45, by: -.16, sh: .5 }], [.85, { fwd: .6, jw: .25 }]],
+    venom: [640, .42, [.3, { fwd: -.25, nk: .55, hp: .6, jw: 1.2, by: -.08, sr: .1 }], [.42, { fwd: 1.05, nk: -.4, hp: -.35, jw: .1 }], [.65, { fwd: .95, hp: -.2, sh: .35 }], [.85, { fwd: .45, jw: .6 }]],
+    spit: [650, .5, [.3, { fwd: -.25, nk: .55, hp: .5, jw: .3, bp: .12 }], [.5, { fwd: .15, nk: -.3, hp: -.45, jw: 1.1, bp: -.05 }], [.72, { fwd: .1, jw: .7, hp: -.15 }]],
+    roar: [700, .5, [.25, { fwd: -.15, bp: .2, nk: .5, hp: .55, jw: .3, tl: .2 }], [.5, { fwd: .3, bp: .05, nk: -.05, hp: .15, jw: 1.2, sh: .5, tl: .5, ar: -.5 }], [.82, { fwd: .25, hp: .1, jw: 1, sh: .35, tl: .4 }]],
+    slash: [620, .5, [.3, { by: -.2, bp: .25, kk: -.4, ar: -.5, nk: .2 }], [.5, { fwd: 1, up: .45, bp: .55, kk: 1.2, ar: .9, jw: .8, tl: .5 }], [.68, { fwd: .7, up: .1, kk: .3 }]],
+    grab: [700, .45, [.28, { fwd: -.1, ar: -1.1, lf: .4, nk: .2, jw: .6, tn: -.6 }], [.45, { fwd: 1, ar: 1.2, lf: .3, nk: -.2, jw: .9, tn: 1 }], [.7, { fwd: .6, ar: .9, by: -.1, sh: .5, jw: .2, tn: .7 }], [.9, { fwd: .3, ar: .3, tn: .2 }]],
+    trample: [720, .6, [.25, { fwd: .15, bp: .35, lf: .8, st: .8, nk: .3, jw: .4 }], [.42, { fwd: .55, by: -.06 }], [.6, { fwd: .95, bp: .3, lf: .7, st: .9 }], [.8, { fwd: .8, by: -.1 }]],
+    coil: [720, .55, [.25, { fwd: -.2, nk: .5, hp: .4, cl: -.3, jw: .6 }], [.45, { fwd: 1.1, nk: -.3, hp: -.2, jw: 1, cl: .6 }], [.62, { fwd: 1, cl: 1.2, sh: .4, by: .05 }], [.88, { fwd: .6, cl: .8 }]],
+    shell: [720, .55, [.3, { fwd: -.15, nk: -1.2, hp: -.5, fp: -1, bl: 1, by: -.1 }], [.55, { fwd: 1.1, yaw: -2.6, nk: -1.2, fp: -1, bl: 1 }], [.85, { fwd: .4, yaw: -2 * Math.PI, nk: -.4 }], [1, { yaw: -2 * Math.PI }]],
+    tentacle: [700, .5, [.3, { fwd: -.15, tn: -1, nk: .2, sr: .1 }], [.5, { fwd: .9, tn: 1.4, nk: -.2, jw: .6 }], [.72, { fwd: .55, tn: .9, sh: .4, jw: .2 }]],
+    pincer: [640, .5, [.3, { fwd: -.1, ar: -.8, tn: -1, nk: .2 }], [.5, { fwd: .9, ar: .8, tn: 1.2, nk: -.15 }], [.7, { fwd: .6, ar: .4, tn: .6, sh: .4 }]],
+    sting: [700, .58, [.3, { fwd: -.15, tl: 2.6, by: -.06, ar: -.4 }], [.58, { fwd: .8, tl: 3.2, pit: -.08, nk: -.2, ar: .3 }], [.78, { fwd: .55, tl: 1.5 }]],
+  };
+  /* reakcje na trafienie wg stylu napastnika: ugryziony szarpie się, podrapany wzdryga, otruty chwieje i słabnie, zdeptany spłaszcza,
+     staranowany odlatuje z odrzuconą głową, smagnięty ogonem obraca się, oplątany jest ściskany, zastraszony kuli się */
+  const RX = {
+    grip: [0, 0, [.15, { nk: .5, hp: .4, jw: .8, by: -.1, sr: .15, bl: .8, jk: 1 }], [.6, { nk: .3, hp: .2, jw: .6, jk: .8, by: -.05 }]],
+    flinch: [0, 0, [.12, { hy: -.6, ny: -.5, hp: .3, bl: 1, by: -.06, sr: -.2, ar: -.6, jw: .4, tl: .4 }], [.35, { hy: -.3, ny: -.2, bl: .6 }]],
+    poison: [0, 0, [.2, { nk: .3, hp: .3, jw: .5, bl: .6 }], [.55, { nk: -.5, hp: -.4, by: -.12, wb: 1, bl: .7, jw: .4, tl: -.3 }], [.85, { nk: -.3, wb: .7, by: -.06, bl: .5 }]],
+    squash: [0, 0, [.15, { sq: 1, by: -.2, nk: -.5, hp: -.3, bl: 1, jw: .6, fold: .2 }], [.4, { sq: -.35, by: .03 }], [.6, { sq: .15 }]],
+    knock: [0, 0, [.12, { bp: .22, nk: .45, hp: .6, hr: .2, jw: .8, bl: 1, by: -.05, tl: .6, ar: -.7 }], [.4, { bp: .1, nk: .3, hp: .2 }]],
+    spun: [0, 0, [.15, { sy: 1.2, sr: .35, ny: 1, hy: .5, tw: 1, bl: 1, jw: .6 }], [.45, { sy: -.4, ny: -.3, sr: -.1 }]],
+    squeeze: [0, 0, [.2, { sq: -.6, jk: .7, bl: 1, jw: 1, nk: .4, hp: .5 }], [.65, { sq: -.45, jk: .5, jw: .8 }]],
+    scare: [0, 0, [.2, { by: -.18, nk: -.5, hp: -.4, bl: 1, tl: -.4, ar: .5, fold: .2, jk: .4 }], [.7, { by: -.12, nk: -.3, bl: .6, jk: .3 }]],
+  };
+  const GRP = Object.fromEntries(Object.entries({ grip: 'bite crush shake grab pincer tentacle', flinch: 'claw slash thumb peck wing kick', poison: 'venom sting spit',
+    squash: 'stomp trample rear', knock: 'headbutt gore ram charge dive tusk pounce', spun: 'tail club spin roll neck flipper trunk shell', squeeze: 'coil', scare: 'roar fire' })
+    .flatMap(([g, l]) => l.split(' ').map(s => [s, g])));
   const MOVES = { biped: BI, quad: QU, swim: SWM, fly: FLY }, REAC = {};
-  for (const tab of [...Object.values(MOVES), REACT]) for (const k in tab) tab[k] = comp(tab[k]);
+  for (const tab of [...Object.values(MOVES), REACT, GEN, RX]) for (const k in tab) tab[k] = comp(tab[k]);
   Object.assign(REAC, REACT);
+  const STAY = new Set(['roar', 'spit', 'fire']);   // ataki z miejsca: fwd nie skaluje się z odległością
   const curve = (A, c, t) => { const v = A.ch[c]; if (!v) return 0; const ts = A.ts; t = Math.min(1, Math.max(0, t));
     let i = 0; while (i < ts.length - 2 && t > ts[i + 1]) i++;
     return v[i] + (v[i + 1] - v[i]) * sm(ts[i], ts[i + 1], t); };
@@ -148,8 +180,9 @@ window.Rig3D = (() => {
       const N = (keys.length - 1) * SEG, base = pos.length / 3, R1 = RING + 1; let len = 0, last = cp.getPoint(0);
       for (let s = 0; s <= N; s++) {
         const u = s / N, i = Math.min(keys.length - 2, Math.floor(s / SEG)), f = s / SEG - i;
-        const c = cp.getPoint(u), t = cp.getTangent(u), up = Z.clone().cross(t).normalize(), side = t.clone().cross(up), r = cr.getPoint(u);
-        len += c.distanceTo(last); last = c;
+        const c = cp.getPoint(u), t = cp.getTangent(u), up = Z.clone().cross(t), side = t.clone().cross(up), r = cr.getPoint(u);
+        if (up.lengthSq() < .09) up.copy(Y).addScaledVector(t, -t.y); if (up.y < -.1) up.negate();   // rurka w głąb lub wstecz (zwój węża): grzbiet do góry
+        up.normalize(); side.crossVectors(t, up); len += c.distanceTo(last); last = c;
         for (let j = 0; j <= RING; j++) {
           const a = j / RING * 2 * Math.PI, h = Math.cos(a), p = c.clone().addScaledVector(up, h * (h > 0 ? r.x : r.z)).addScaledVector(side, Math.sin(a) * r.y);
           vert(p, paint(h, p, u), keys[i][5], keys[i + 1][5], 1 - sm(0, 1, f), [len / TEX.uvl, j / RING * TEX.white]);
@@ -347,8 +380,8 @@ window.Rig3D = (() => {
       const a = [sh, el, wr].reduce((l, p) => [...l, m.bone(l.at(-1) || ch, p)], []), ar = (o.aw || 9) / 2 * U * .9;
       m.tube([[sh.x, sh.y, sh.z, ar * 1.3, ar * 1.1, a[0]], [el.x, el.y, el.z, ar * .8, ar * .75, a[1]], [wr.x, wr.y, wr.z, ar * .6, ar * .5, a[2]], [wr.x + al * .12, wr.y - al * .04, wr.z, .01, .01, a[2]]]);
       for (let f = 0; f < (o.clw || 2); f++) { const q = wr.clone().add(V(al * .08, 0, (f - .5) * ar * .5)); m.spike(a[2], q, q.clone().add(V(al * .2, -al * .18, 0)), ar * .35, C.claw, C.ivory); }
-      if (o.fz) m.sheet([0, 1].map(r => [0, .25, .5, .75, 1].map(f => { const p = el.clone().lerp(wr, f), b = a[f < .5 ? 1 : 2], L = al * (.35 + f * .3) * (f * 4 % 2 ? .8 : 1);
-        return [p.x - r * L * .55, p.y - r * L, p.z + s * r * .02, b]; })), i => m.tmp.copy(m.SKIN).lerp(m.DARK, i * .55));   // lotki na przedramieniu
+      if (o.fz) m.sheet([0, 1].map(r => [0, .25, .5, .75, 1].map(f => { const p = el.clone().lerp(wr, f), b = a[f < .5 ? 1 : 2], L = al * (.35 + f * .3) * (f * 4 % 2 ? .8 : 1) * (o.wing || 1);
+        return o.wing ? [p.x - r * L * .7, p.y - r * L * .3, p.z + s * r * L * .6, b] : [p.x - r * L * .55, p.y - r * L, p.z + s * r * .02, b]; })), i => m.tmp.copy(m.SKIN).lerp(m.DARK, i * .55));   // lotki na przedramieniu
       if (o.thumb) m.spike(a[2], wr, wr.clone().add(V(.04, .12, 0)), .03, C.ivory);
       c.arms.push({ b: a, s });
     }
@@ -507,6 +540,7 @@ window.Rig3D = (() => {
   function swim(m, c, o, sp, key, base) {
     const { V, C } = m, plio = o.plio, nl = { long: 1.6, xlong: 2.3 }[o.nk] || 1.3, eel = o.k === 'eel';
     const S = {   // L, D, W, ogon [długość, grubość, zwężanie], szyja [x, y, kości, grubość], głowa [l, h, profil, zęby], płetwy [przód, tył], ogonowa, grzbietowa
+      turtle: [.75, .24, .42, [.18, .07, 1], [.2, .03, 2, .11], [.34, .28, 'beak', 0], [.85, .45], 0, 0],
       mosa: plio ? [1.1, .32, .4, [.6, .25, 1], [.2, 0, 2, .27], [.95, .6, 'thero', 1], [.7, .65], 0, 0] : [1.3, .26, .24, [2.1, .2, 1], [.25, 0, 2, .2], [.75, .48, 'thero', 1], [.45, .35], 'down', 0],
       plesio: [1, .3, .42, [.7, .2, 1.2], [nl * .9, nl * .35, 8, .17], [.32, .15, 'thero', .9], [.75, .7], 0, 0],
       ichthyo: [1, .34, .28, [1.1, .25, 1.4], [.15, 0, 1, .27], [.75, .55, 'beak', .5], [.4, .2], 'moon', .35],
@@ -527,8 +561,10 @@ window.Rig3D = (() => {
     c.undul = vert ? 0 : .09; c.vert = vert ? .07 : 0;
     if (dorsal) { const x = L * .45, y = hy + D * .9, h = dorsal * (base === 'fish' ? 1.4 : 1);
       m.sheet([[[x + .2, y - .05, 0, t.mid], [x - .2, y - .05, 0, t.mid]], [[x - .12, y + h * .7, 0, t.mid], [x - .26, y + h, 0, t.mid]]], (i) => m.tmp.copy(m.SKIN).lerp(m.DARK, .2 + i * .3)); }
+    if (base === 'turtle') m.with({ tx: 1 }, () => { m.ball(t.mid, V(L * .45, hy + D * .3), [L * .72, D * .95, W * 1.25], m.SKIN.clone().lerp(m.DARK, .15));   // pancerz z kilami
+      for (const z of [-.5, 0, .5]) m.ball(t.mid, V(L * .45, hy + D * (1.2 - Math.abs(z) * .5), z * W), [L * .6, D * .12, D * .12], m.DARK.clone().lerp(m.SKIN, .5)); });
     if (base === 'fish' && o.k !== 'shark') m.ball(c.head, t.P(hl * .3, hh * .1), [hl * .45, hh * .55, hh * .5], m.DARK.clone().lerp(m.SKIN, .4));   // pancerz głowy (dunkleosteus)
-    m.pat = { sc: base === 'fish' || base === 'whale' ? 0 : 1, sp: base === 'mosa' ? 30 : 0 };
+    m.pat = { sc: base === 'fish' || base === 'whale' ? 0 : 1, sp: base === 'mosa' ? 30 : 0, os: base === 'turtle' ? 30 : 0 };
     Object.assign(c, { kind: 'swim', hy, float: true, jawMax: teeth ? .8 : .4 });
   }
   /* ---------- pterozaur w locie: skrzydło = ramię → przedramię → nadgarstek → palec skrzydłowy, błona do miednicy ---------- */
@@ -552,14 +588,117 @@ window.Rig3D = (() => {
     }
     Object.assign(c, { kind: 'fly', hy, float: true, jawMax: .5 });
   }
+  /* ---------- wąż, stawonogi, głowonogi: części na łańcuchach kości falujących w spoczynku (c.wig) ---------- */
+  const near = (c, x) => [c.pelvis, ...c.spine, ...c.tail].reduce((a, b) => Math.abs(b.userData.w.x - x) < Math.abs(a.userData.w.x - x) ? b : a);
+  // rurka po łańcuchu kości (macka, czułek, odnóże, ramię chwytne), promień r0 → r1; wig: ruch kości { ax, a, f, ph, ch, k }
+  function limb(m, c, par, pts, r0, r1, paint, wig) {
+    const n = pts.length - 1, b = pts.slice(0, -1).reduce((l, p, i) => [...l, m.bone(l[i - 1] || par, p)], []), r = i => r0 + (r1 - r0) * i / n;
+    m.with({ ow: Math.min(1, r0 * 14) }, () => m.tube(pts.map((p, i) => [p.x, p.y, p.z, r(i), r(i), b[Math.min(i, n - 1)]]), paint, 8, 3));
+    if (wig) b.forEach((x, i) => c.wig.push({ ...wig, b: x, ph: (wig.ph || 0) + i * .7 }));
+    return b;
+  }
+  // wąż: tył zwinięty w spiralę na ziemi, przód uniesiony w esie; ogon (zwój) zaciska się przy oplataniu (cl)
+  function snake(m, c, o) {
+    const { V, C } = m, D = .12, hy = D * 1.05, N = 10, R0 = .42;
+    const pel = m.bone(null, V(0, hy)), mid = m.bone(pel, V(.22, hy + .04)), ch = m.bone(mid, V(.4, hy + .14));
+    c.pelvis = pel; c.spine = [mid, ch];
+    [V(.52, .36), V(.58, .56)].forEach((p, i) => c.neck.push(m.bone(c.neck[i - 1] || ch, p)));
+    for (let i = 0; i < N; i++) { const a = (i + 1) / N * Math.PI * 1.75, r = R0 * (1 - i / N * .45); c.tail.push(m.bone(c.tail[i - 1] || pel, V(-R0 + Math.cos(a) * r, hy * (1 - i / N * .3), Math.sin(a) * r))); }
+    const sk = head(m, c, V(.64, .6), { l: .4, h: .2, pr: -.12, prof: 'thero', teeth: .45, w: 1.15, eye: 1.15, ex: .3, brow: 1 });
+    const tip = c.tail.at(-1).userData.w, K = (b, r) => { const p = b.userData.w; return [p.x, p.y, p.z, r, r * 1.05, b, r * .8]; };
+    m.tube([[tip.x - .04, tip.y, tip.z - .03, .01, .01, c.tail.at(-1)], ...c.tail.map((b, i) => K(b, D * (1 - (i / N) ** 1.4 * .8) + .01)).reverse(), K(pel, D), K(mid, D), K(ch, D * .95),
+      ...c.neck.map((b, i) => K(b, D * (.85 - i * .08))), ...sk], (h, p) => c.mouth(h, p) ? C.mouth : m.skin(h, p));
+    for (const s of [-1, 1]) m.with({ gl: 1, ow: .3 }, () => m.horn(c.jaw, c.hp(c.hl * .9, -c.hh * .25), c.hp(c.hl * 1.25, -c.hh * .3, s * c.hh * .1), .012, C.mouth, C.mouth, .1));   // rozwidlony język
+    m.pat = { sc: 1, sp: 30 };
+    Object.assign(c, { kind: 'snake', hy, jawMax: .9, undul: .08 });
+  }
+  // stawonogi: trylobit (płaski, tarcza głowowa z kolcami), wij (długi, segmenty z płatami, mnóstwo nóg), ważka (lata: 4 skrzydła, odwłok)
+  function bug(m, c, o) {
+    const { V, C } = m, fly = o.k === 'dragon', mil = o.k === 'milli', dk = m.SKIN.clone().lerp(m.DARK, .45);
+    const S = fly ? { hy: .55, L: .22, D: .07, W: .07, tl: 1, tn: 6, tr: .05, tp: .25, hd: { l: .12, h: .12, prof: 'mammal', eye: 2.2, ex: .4 }, n: 3 }
+      : mil ? { hy: .17, L: .5, D: .12, W: .17, tl: 1.2, tn: 8, tr: .13, tp: .25, hd: { l: .16, h: .13, prof: 'duck', w: 1.2, eye: 1.1 }, n: 14 }
+      : { hy: .13, L: .45, D: .085, W: .34, tl: .32, tn: 4, tr: .24, tp: .9, hd: { l: .26, h: .13, prof: 'duck', w: 2, eye: 1.3, ex: .35 }, n: 6 };
+    const t = trunk(m, c, { ...S, sy: S.hy, Db: S.D * .6, td: fly ? 0 : -.02, n0: V(S.L, S.hy), nv: V(S.hd.l * .2, 0), nn: 1, nw0: S.D * 1.1, nw1: S.D * 1.1, head: { pr: 0, teeth: 0, ...S.hd } });
+    const P = t.P, { l, h } = t.hd, x0 = S.L * .95, x1 = -S.L * .25 - S.tl * (fly ? .1 : .8);
+    for (let i = 0; i < S.n; i++) for (const s of [-1, 1]) {   // odnóża: fala kroków wzdłuż ciała
+      const x = x0 + (x1 - x0) * i / Math.max(1, S.n - 1), y = fly ? S.hy - S.D * .5 : S.hy - S.D * .3, z = s * S.W * .6, e = fly ? V(x + .04, y - .2, s * .12) : V(x + .04, 0, s * (S.W + .12));
+      limb(m, c, near(c, x), [V(x, y, z), V(x + .02, (y + e.y) / 2 + (fly ? 0 : .05), (z + e.z) / 2 + s * .04), e], S.D * .22, S.D * .1, () => dk, { ax: 'z', a: fly ? .1 : .4, f: 9, ph: i * 1.1 + (s > 0 ? 3 : 0) });
+    }
+    for (const s of [-1, 1]) { const a = P(l * .85, h * .25, s * h * .35);   // czułki
+      limb(m, c, c.head, [a, a.clone().add(V(.08, .06, s * .05)), a.clone().add(V(.18, .08, s * .12)), a.clone().add(V(.26, .04, s * .18))], .012, .006, () => dk, { ax: 'y', a: .15, f: 2 }); }
+    if (!fly && !mil) { m.ball(c.head, P(l * .3, h * .15), [l * .75, h * .55, S.W * 1.3], m.SKIN.clone().lerp(m.BELLY, .25));   // tarcza głowowa z kolcami policzkowymi
+      for (const s of [-1, 1]) m.with({ gl: 1 }, () => m.horn(c.head, P(-l * .2, 0, s * S.W * 1.15), P(-l * 1.1, -.01, s * S.W * 1.3), .03, m.SKIN, dk, .05)); }
+    if (mil) [c.pelvis, ...c.spine, ...c.tail].forEach(b => { const p = b.userData.w; for (const s of [-1, 1]) m.with({ tx: 1 }, () => m.ball(b, V(p.x, p.y + S.D * .3, s * S.W * .95), [.05, .03, .06], dk)); });
+    if (fly) { c.wings = [];   // skrzydła: żyłkowane, jasne, na 4 kościach (machanie jak u pterozaura)
+      for (const s of [-1, 1]) for (const j of [0, 1]) { const x = S.L * (.8 - j * .5), y = S.hy + S.D * .7, pts = [.03, .3, .6, .9].map(f => V(x, y, s * f)), b = pts.reduce((L2, p, i) => [...L2, m.bone(L2[i - 1] || t.ch, p)], []);
+        m.sheet([pts.map((p, i) => [p.x + .02, p.y, p.z, b[i]]), pts.map((p, i) => [p.x - .16 * Math.sin(Math.PI * (i / 3 * .8 + .2)) - .02, p.y, p.z, b[i]])], (i2, j2) => m.tmp.copy(m.BELLY).lerp(C.eye, .5).lerp(m.DARK, (j2 * 9 % 1 < .15) * .3), .012);
+        c.wings.push({ b, s }); } }
+    m.pat = { sc: 0, st: fly ? 12 : 18 };
+    Object.assign(c, { kind: fly ? 'fly' : 'quad', hy: S.hy, float: fly, jawMax: .3 });
+  }
+  // amonit: miękkie ciało z wielkimi oczami w ujściu spiralnej, żebrowanej muszli; 8 macek
+  function ammo(m, c, o) {
+    const { V, C } = m, hy = .45;
+    const t = trunk(m, c, { hy, sy: hy, L: .1, D: .13, Db: .13, W: .13, n0: V(.12, hy), nv: V(.06, -.02), nn: 1, nw0: .12, nw1: .12, tl: .02, tn: 1, tr: .05, td: 0, head: { l: .2, h: .2, pr: -.15, prof: 'mammal', eye: 1.5, ex: .35, teeth: 0 } });
+    const ks = [], lt = m.BELLY.clone().lerp(m.SKIN, .4);
+    for (let i = 0; i <= 26; i++) { const a = i / 26 * Math.PI * 3.6, r = .3 * Math.exp(-a * .19), th = -.3 + a; ks.push([-.22 + Math.cos(th) * r, hy + .08 + Math.sin(th) * r, 0, r * .5, r * .42, t.pel]); }
+    m.tube(ks, (h, p, u) => (Math.sin(u * 140) > .55 ? m.tmp.copy(m.SKIN).lerp(m.DARK, .35) : m.tmp.copy(lt).lerp(m.SKIN, sm(-.5, 1, h) * .6)), RN, 2);   // muszla z żebrami
+    const P = t.P, { l, h } = t.hd;
+    for (let i = 0; i < 8; i++) { const z = (i / 7 - .5) * h * 1.3, a = P(l * .8, -h * (.15 + (i % 2) * .12), z);   // macki
+      limb(m, c, c.head, [0, 1, 2, 3, 4].map(j => a.clone().add(V(j * .08, -j * .05 - j * j * .012, z * j * .2))), .028, .008, () => m.SKIN.clone().lerp(m.BELLY, .4), { ax: 'z', a: .25, f: 2.5, ph: i, ch: 'tn', k: .35 }); }
+    m.pat = { sc: 0 };
+    Object.assign(c, { kind: 'swim', hy, float: true, jawMax: .3 });
+  }
+  // wielkoraki (jaekelopterus): płaski segmentowany tułów, ogon z kolcem (żądło), szczypce z przodu, odnóża krocze i wiosła
+  function scorp(m, c, o) {
+    const { V, C } = m, hy = .14, L = .5, D = .08, W = .2, dk = m.SKIN.clone().lerp(m.DARK, .4);
+    const t = trunk(m, c, { hy, sy: hy, L, D, Db: D * .6, W, n0: V(L, hy), nv: V(.04, 0), nn: 1, nw0: W * .75, nw1: W * .75, tl: .85, tn: 7, tr: W * .5, tp: .9, td: -.06,
+      head: { l: .2, h: .1, w: 1.8, pr: 0, prof: 'duck', eye: 1.3, ex: .55, teeth: 0 } });
+    const P = t.P, { l, h } = t.hd;
+    for (const s of [-1, 1]) {
+      const a = P(l * .8, -h * .1, s * h * .5), pts = [a, a.clone().add(V(.12, .03, s * .08)), a.clone().add(V(.26, .07, s * .1)), a.clone().add(V(.38, .06, s * .08))], b = limb(m, c, c.head, pts, .03, .022, () => dk);
+      for (const k of [-1, 1]) m.with({ gl: 1 }, () => m.horn(b[2], pts[3], pts[3].clone().add(V(.16, k * .03, 0)), .022, dk, C.claw, .3, V(0, -k, 0)));   // szczypce
+      c.arms.push({ b, s });
+      for (let i = 0; i < 3; i++) { const x = L * (.85 - i * .3), z = s * W * .6;   // odnóża krocze
+        limb(m, c, near(c, x), [V(x, hy - D * .3, z), V(x + .05, hy * .75, s * (W + .1)), V(x + .1, 0, s * (W + .2))], .02, .01, () => dk, { ax: 'z', a: .35, f: 8, ph: i * 1.3 + (s > 0 ? 3 : 0) }); }
+      const pb = m.bone(t.mid, V(L * .2, hy - D * .3, s * W * .6)); m.fin(pb, V(L * .2, hy - D * .3, s * W * .6), V(-L * .15, hy - D * .4, s * (W + .25)), .06, .015, dk);   // wiosło
+      c.wig.push({ b: pb, ax: 'y', a: .3 * s, f: 3, ph: 0 });
+    }
+    const tb = c.tail.at(-1), tp = tb.userData.w; m.with({ gl: 1 }, () => m.horn(tb, tp, tp.clone().add(V(-.28, .05)), .035, m.SKIN, C.claw, .1));   // telson
+    m.pat = { sc: 0, st: 16 };
+    Object.assign(c, { kind: 'scorp', hy, jawMax: .2 });
+  }
+  // anomalokaris: płaty boczne falują, wachlarz ogonowy, wielkie oczy na słupkach, dwa kolczaste ramiona chwytne
+  function anomalo(m, c, o) {
+    const { V, C } = m, hy = .35, L = .6, D = .085, W = .18, rim = m.DARK.clone().lerp(m.SKIN, .3);
+    const t = trunk(m, c, { hy, sy: hy, L, D, Db: D * .7, W, n0: V(L, hy), nv: V(.04, 0), nn: 1, nw0: W * .8, nw1: W * .8, tl: .25, tn: 3, tr: W * .45, tp: .6, td: 0,
+      head: { l: .24, h: .12, w: 1.4, pr: 0, prof: 'duck', eye: 1.2, ex: .3, ez: 1.3, teeth: 0 } });
+    const P = t.P, { l, h } = t.hd;
+    for (let i = 0; i < 9; i++) { const x = L - i * (L + .2) / 8, bn = near(c, x), w = .09 * (1 - i * .05), e = .17 * (1 - Math.abs(i - 3) * .07);
+      for (const s of [-1, 1]) { const b = m.bone(bn, V(x, hy, s * W * .8));
+        m.sheet([[[x + w, hy, s * W * .7, b], [x - w, hy, s * W * .7, b]], [[x + w * .7, hy - .01, s * (W + e), b], [x - w * 1.1, hy - .01, s * (W + e * .9), b]]], i2 => m.tmp.copy(m.BELLY).lerp(rim, i2 * .7), .02);
+        c.wig.push({ b, ax: 'x', a: .35 * s, f: 4, ph: i * .7 }); } }
+    const tb = c.tail.at(-1), tp = tb.userData.w;
+    for (const s of [-1, 1]) for (const k of [0, 1, 2]) m.sheet([[[tp.x, tp.y, s * .02, tb], [tp.x - .05, tp.y, s * .02, tb]], [[tp.x - .1 - k * .03, tp.y + .02 + k * .05, s * (.1 + k * .02), tb], [tp.x - .2 - k * .03, tp.y + .03 + k * .06, s * (.08 + k * .02), tb]]], i2 => m.tmp.copy(m.SKIN).lerp(rim, i2 * .6), .02);
+    for (const s of [-1, 1]) {
+      m.horn(c.head, P(l * .3, 0, s * h * .6), P(l * .3, h * .2, s * h * 1.5), .02, m.SKIN);   // słupki oczu
+      const a = P(l * .85, -h * .2, s * h * .3), pts = [a, a.clone().add(V(.1, .03, 0)), a.clone().add(V(.19, -.03, 0)), a.clone().add(V(.23, -.12, 0)), a.clone().add(V(.19, -.2, 0))];
+      const b = limb(m, c, c.head, pts, .035, .015, (hh, p, u) => Math.sin(u * 50) > 0 ? rim : m.SKIN);
+      pts.slice(1, 4).forEach((p, i) => m.with({ gl: 1 }, () => m.horn(b[i + 1] || b[i], p, p.clone().add(V(-.02, -.06, -s * .02)), .01, C.ivory, C.ivory, .1)));   // kolce
+      c.arms.push({ b, s });
+    }
+    m.pat = { sc: 0, st: 18 };
+    Object.assign(c, { kind: 'swim', hy, float: true, jawMax: .3 });
+  }
   /* ---------- budowa i animacja ---------- */
   const BUILD = { thero: biped, raptor: biped, ornimim: biped, tbird: biped, dragon: biped, prosauro: biped, hadro: biped, orni: biped, dome: biped,
     sauro: quad, cerat: quad, armor: quad, stego: quad, mammal: quad, cat: quad, ele: quad, croc: quad, lizard: quad, sail: quad, synap: quad, amphib: quad, sloth: quad,
-    mosa: swim, plesio: swim, ichthyo: swim, fish: swim, whale: swim, ptero };
+    mosa: swim, plesio: swim, ichthyo: swim, fish: swim, whale: swim, turtle: swim, ptero, snake, bug, ammo, scorp, anomalo,
+    bird: (m, c, o, sp) => biped(m, c, { hd: 'rap', fz: 2, sick: 1, arm: 22, aw: 8, bw: 24, bh: 16, lw: 14, nw: 12, td: -4, clw: 3, wing: 2.4, ...o }, sp) };
   function build(ctx) {
     const fn = BUILD[ctx.key] || BUILD[ctx.base]; if (!fn) return null;
     T = ctx.THREE;
-    const m = maker(ctx), c = { legs: [], arms: [], eyes: [], neck: [], tail: [], spine: [] };
+    const m = maker(ctx), c = { legs: [], arms: [], eyes: [], neck: [], tail: [], spine: [], wig: [] };
     fn(m, c, ctx.o, ctx.sp, ctx.key, ctx.base);
     const mesh = m.mesh(), out = mesh.userData.out, body = ctx.body, bb = mesh.geometry.boundingBox, sk = new T.Skeleton(m.bones);
     body.add(m.bones[0], mesh, out); body.updateMatrixWorld(true); mesh.bind(sk); out.bind(sk, mesh.bindMatrix);
@@ -568,13 +707,13 @@ window.Rig3D = (() => {
     body.scale.setScalar(s); body.position.set(-(bb.min.x + bb.max.x) / 2 * s, c.float ? -bb.min.y * s : 0, 0);
     // kotwice dla efektów (zęby, plucie, ryk): puste węzły na kościach — czubek pyska (żuchwa) i środek czaszki
     const anchor = (b, p) => { const a = new T.Object3D(); a.position.copy(p ?? b.userData.w).sub(b.userData.w); b.add(a); return a; }, H = c.head || m.bones.at(-1);
-    return Object.assign(rig(c, ctx, s), { anchors: { mouth: anchor(c.jaw || H, c.hp?.(c.hl * .95, -c.hh * .2)), head: anchor(H, c.hp?.(c.hl * .35, c.hh * .1)) } });
+    return Object.assign(rig(c, ctx, s, (bb.max.x - bb.min.x) / 2 * s), { anchors: { mouth: anchor(c.jaw || H, c.hp?.(c.hl * .95, -c.hh * .2)), head: anchor(H, c.hp?.(c.hl * .35, c.hh * .1)) } });
   }
 
-  function rig(c, ctx, scale) {
-    const ch = Object.fromEntries(CH.map(k => [k, 0])), R = { fwd: 0, up: 0, pitch: 0, yaw: 0 }, moves = MOVES[c.kind];
+  function rig(c, ctx, scale, half) {
+    const ch = Object.fromEntries(CH.map(k => [k, 0])), R = { fwd: 0, up: 0, pitch: 0, yaw: 0 }, moves = { ...GEN, ...QU, ...SWM, ...FLY, ...MOVES[c.kind] };
     const ph = Math.random() * 9, py0 = c.pelvis.position.y, hy = c.hy, spine2 = [{}, ...c.spine.map(() => ({}))];
-    let g = 0, look = null, kx = 1, offX = 0, lastBlink = 0;
+    let g = 0, look = null, kx = 1, offX = 0, lastBlink = 0, gap = GAP0;
     const move = s => moves[c.alias?.[s] || s] || moves.bite || Object.values(moves)[0];
     const add = (A, t, k = 1) => { for (const n in A.ch) ch[n] += curve(A, n, t) * k; };
     function opp() {   // kierunek do przeciwnika w układzie ciała (przeciwnik leży na osi x areny)
@@ -617,41 +756,47 @@ window.Rig3D = (() => {
         solve(L, P, fx, Math.max(fy, L.front ? -1 : fy), tilt, Math.sin(Math.PI * Math.min(1, L.st?.t || 0)) * -.6 + ch.fold * .6);
       }
     }
-    return {
-      ms: s => move(s).ms, hitAt: s => move(s).hit,
-      root(k, s, t) { const A = move(s); R.fwd = curve(A, 'fwd', t); R.up = curve(A, 'up', t); R.pitch = curve(A, 'pit', t); R.yaw = curve(A, 'yaw', t); return R; },
+    // zasięg: fwd = 1 w kluczu ciosu → dokładnie do styku z przeciwnikiem (połowy długości obu ciał), niezależnie od odległości
+    const reach = () => { const foe = Object.values(window.Arena3D?.S?.byId || {}).find(f => f.rig && f.rig !== self)?.rig;
+      return Math.min(3, Math.max(.25, gap - half * .8 - (foe?.half ?? half) * .7)); };
+    const self = {
+      half, ms: s => move(s).ms, hitAt: s => move(s).hit,
+      root(k, s, t) { const A = move(s); R.fwd = curve(A, 'fwd', t) * (STAY.has(s) ? 1 : reach()); R.up = curve(A, 'up', t); R.pitch = curve(A, 'pit', t); R.yaw = curve(A, 'yaw', t); return R; },
       update(st) {
         if (look === null) look = opp();
-        const { k, t, tm, dt } = st, A = k === 'lunge' ? move(st.style) : k && REAC[k];
+        const { k, t, tm, dt } = st, A = k === 'lunge' ? move(st.style) : k === 'hit' ? RX[GRP[st.style]] || REAC.hit : k && REAC[k];
+        if (k !== 'lunge' && st.gap) gap = st.gap;
         for (const n in ch) ch[n] = 0;
         if (A) add(A, t);
         if (st.ko && !A) add(REAC.ko, 1);
         g += ((st.guarding && !st.ko ? 1 : 0) - g) * Math.min(1, dt * 8);
         for (const n in GUARD) ch[n] += GUARD[n] * g;
-        if (st.won) { const r = Math.max(0, Math.sin(tm * 2.4)); ch.nk += .35; ch.hp += .35 + .2 * r; ch.jw += .2 + .8 * r; ch.tl += .3; ch.bp += .12; ch.ar -= .5; ch.sh += r * .3; }
+        if (st.won) { const r = Math.max(0, Math.sin(tm * 2.4)); ch.nk += .35; ch.hp += .35 + .2 * r; ch.jw += .2 + .8 * r; ch.tl += .3; ch.bp += .12; ch.ar -= .5; ch.sh += r * .3; ch.st += Math.max(0, Math.sin(tm * 4.8)) ** 4 * .8; }   // zwycięstwo: ryk, tupanie, smaganie ogonem
         offX = k === 'lunge' ? ch.fwd * kx : 0;
         // spoczynek: oddech, przenoszenie ciężaru, kołysanie ogona, rozglądanie się
         const br = Math.sin(tm * 2.2 + ph), sw = Math.sin(tm * .7 + ph), idle = st.ko ? 0 : 1, glance = Math.sin(tm * .43 + ph * 2) * Math.sin(tm * .17);
         const shake = ch.sh * Math.sin(tm * 38), n = c.neck.length, nt = c.tail.length;
-        c.pelvis.position.y = py0 + (ch.by + br * .008 * idle) * hy;
-        c.pelvis.rotation.set(ch.sr + sw * .025 * idle, ch.sy * .25, ch.bp + br * .012 * idle);
+        const jk = ch.jk * Math.sin(tm * 31), wb = ch.wb * Math.sin(tm * 6);   // szarpanie, chwianie
+        c.pelvis.position.y = py0 + (ch.by + br * .008 * idle) * hy; c.pelvis.scale.set(1 + ch.sq * .15, 1 - ch.sq * .35, 1 + ch.sq * .25);
+        c.pelvis.rotation.set(ch.sr + sw * .025 * idle + jk * .12 + wb * .18, ch.sy * .25, ch.bp + br * .012 * idle);
         c.spine.forEach(b => b.rotation.set(0, ch.sy * .3 / c.spine.length, ch.sb / c.spine.length + br * .01 * idle));
         const ly = (look * .55 + glance * .25) * idle * (1 - Math.abs(ch.yaw) / 2);
-        c.neck.forEach((b, i) => b.rotation.set(shake * .1, (ch.ny + ly) / n + shake * .12, (ch.nk + br * .03 * idle) / n));
+        c.neck.forEach((b, i) => b.rotation.set(shake * .1, (ch.ny + ly + jk * .3 + ch.wb * Math.sin(tm * 4.3) * .4) / n + shake * .12, (ch.nk + br * .03 * idle) / n));
         c.head.rotation.set(ch.hr + shake * .35, ch.hy + ly * .4 + shake * .25, ch.hp - br * .02 * idle);
         c.jaw.rotation.z = -c.jawMax * Math.min(1.2, ch.jw + (.04 + .03 * br) * idle);
         c.tail.forEach((b, i) => {
-          const f = i / nt, tw = A ? curve(A, 'tw', t - i * .035) : 0;
+          const f = i / nt, tw = (A ? curve(A, 'tw', t - i * .035) : 0) + (st.won ? Math.sin(tm * 6 - i * .6) * .9 : 0);
           const u = Math.sin(tm * 2.6 + ph - i * .7) * (.3 + f) * idle;   // falowanie pływaka: bok-bok (ryby, gady) albo góra-dół (wieloryb)
-          b.rotation.set(0, (tw * 1.4 + ch.sy * .5) / nt + Math.sin(tm * 1.3 + ph - i * .55) * .05 * (.4 + f) * idle + u * (c.undul || 0),
+          b.rotation.set(0, (tw * 1.4 + ch.sy * .5) / nt - ch.cl * .9 * f + Math.sin(tm * 1.3 + ph - i * .55) * .05 * (.4 + f) * idle + u * (c.undul || 0),
             -(ch.tl + .1 * Math.sin(tm * .9 + ph - i * .4) * idle) / nt - (i ? 0 : ch.bp * .75) + (ch.fold > .5 ? .05 : 0) + u * (c.vert || 0));
         });
         c.arms.forEach(a => { const r = ch.ar, j = Math.sin(tm * 1.6 + ph + a.s) * .05 * idle;
-          a.b[0].rotation.set(0, 0, r * .9 + j); a.b[1].rotation.set(0, 0, -.3 * Math.max(0, -r) + r * .4 - j); a.b[2].rotation.set(0, 0, -r * .3); });
+          a.b[0].rotation.set(-a.s * ch.wg * .8, 0, r * .9 + j); a.b[1].rotation.set(0, 0, -.3 * Math.max(0, -r) + r * .4 - j); a.b[2].rotation.set(0, 0, -r * .3); });
         c.fins?.forEach(F => F.b.rotation.set(-F.s * (Math.sin(tm * 2.6 + ph + F.ph) * .25 * idle + ch.fp * .8), F.s * ch.fp * .4, Math.sin(tm * 2.6 + ph + F.ph + 1) * .15 * idle));
         c.wings?.forEach(W => { const f = (Math.sin(tm * 5 + ph) * .55 + .1) * idle + ch.wg;   // machanie: ramię w górę/dół, dłoń i palec dociągają z opóźnieniem
           W.b[0].rotation.set(-W.s * f, 0, 0); W.b[1].rotation.set(-W.s * f * .3, 0, 0); W.b[2].rotation.set(-W.s * (Math.sin(tm * 5 + ph - .8) * .2 * idle + ch.wg * .2), 0, 0); W.b[3].rotation.set(-W.s * f * .2, 0, 0); });
         c.trunk?.forEach((b, i) => b.rotation.set(0, Math.sin(tm * 1.1 + ph - i * .5) * .06 * idle, ch.tr * (i + 1) * .12 + Math.sin(tm * .8 + ph - i * .6) * .08 * idle));
+        c.wig.forEach(w => w.b.rotation[w.ax || 'z'] = (w.r0 || 0) + Math.sin(tm * (w.f || 3) + ph + w.ph) * (w.a ?? .2) * idle + (ch[w.ch] || 0) * (w.k || 0));   // odnóża, macki, płaty
         // oczy: patrzą na przeciwnika; mruganie co kilka sekund
         const blink = Math.max(ch.bl, idle ? Math.max(0, 1 - Math.abs((tm + ph) % BLINK - .1) * 12) : 1);
         for (const e of c.eyes) { e.ball.rotation.set(0, (look - ly - ch.yaw * 0) * .6 - ch.hy * .5, -ch.hp * .3);
@@ -661,6 +806,7 @@ window.Rig3D = (() => {
         lastBlink = k === 'lunge' ? t : 0;
       },
     };
+    return self;
   }
   return { build };
 })();
