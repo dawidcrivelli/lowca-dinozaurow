@@ -34,7 +34,9 @@ const CLOCK = `(() => { if (window.__clk) return; const now0 = performance.now.b
     if (s.wait) await sleep(s.wait);
     if (s.run != null) await ev(`__clk.run(${s.run})`);
     if (s.shot) {
-      const b = JSON.parse(await ev("JSON.stringify(document.querySelector('.stage3d canvas').getBoundingClientRect())"));
+      let j; for (let i = 0; i < 20 && !j; i++) { j = await ev("JSON.stringify(document.querySelector('.stage3d canvas')?.getBoundingClientRect())"); if (!j) await sleep(300); }
+      if (!j) { console.log('NO CANVAS', s.shot); continue; }
+      const b = JSON.parse(j);
       const r = await ws.send('Page.captureScreenshot', { format: 'png', clip: { x: b.x, y: b.y, width: b.width, height: b.height, scale: 1 } });
       fs.writeFileSync(path.join(OUT, s.shot), Buffer.from(r.data, 'base64')); console.log('->', s.shot);
     }

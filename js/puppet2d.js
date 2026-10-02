@@ -79,7 +79,7 @@ window.Puppet2D = (() => {
     const D = drawParts(key, o, P), K = H / VB_H, d = DEPTH * H, V = (x, y) => [(x - 100) * K, (D.ground - y) * K];
     const by = Object.fromEntries(D.pieces.map((p, i) => [p.g, { ...p, z: i * LAYER * H }]));
     const J = g => D.j[g] && V(...D.j[g]);
-    if (D.j.jaw && (by.head || by.body)) {   // szczęka: ta sama głowa, przycięta poniżej linii pyska
+    if (D.j.jaw && !by.jaw && (by.head || by.body)) {   // szczęka: ta sama głowa, przycięta poniżej linii pyska (chyba że narysowana osobno — kaszalot)
       const src = by.head || by.body, [hx, hy, tx, ty] = D.j.jaw, L = Math.hypot(tx - hx, ty - hy), ux = (tx - hx) / L, uy = (ty - hy) / L;
       const [nx, ny] = ux > 0 ? [-uy, ux] : [uy, -ux], q = [[hx - ux * 2, hy - uy * 2], [tx + ux * 30, ty + uy * 30]];
       const poly = 'M' + [...q, ...q.slice().reverse().map(([x, y]) => [x + nx * 80, y + ny * 80])].map(v => v.join(',')).join(' L') + ' Z';
