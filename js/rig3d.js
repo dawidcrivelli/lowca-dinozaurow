@@ -20,7 +20,8 @@ window.Rig3D = (() => {
   const MAT = { rough: .66, gloss: .22, bump: .045, ink: .55, outline: .013, sheet: .022 };   // szorstkość skóry / połysku, wypukłość, jasność konturu (× tusz), grubość konturu (× wysokość), grubość płachty
   const STEP = { len: .3, s: .16, h: .14 }; // krok: próg odjechania stopy, czas [s], uniesienie (× wysokość biodra)
   const BLINK = 3.3, LID = .5;               // średni odstęp mrugnięć [s]; uchylenie powieki (rad, 0 = pół-przymknięta)
-  const LEN_K = .65, GAP0 = 4.4;             // jak w arena3d: ile długości liczy się jak wysokość; początkowa odległość zawodników
+  const ARM = { len: .5, rex: 1.25 };         // ręka teropoda: dodatek długości (× promień tułowia, by było widać), pogrubienie u T. rex
+  const LEN_K = .65, GAP0 = 4.4;            // jak w arena3d: ile długości liczy się jak wysokość; początkowa odległość zawodników
   const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
   /* ---------- ruchy: [ms, ułamek trafienia, ...klucze [t, {kanał: wartość}]] — brak kanału w kluczu = 0, gładko między kluczami
@@ -375,11 +376,14 @@ window.Rig3D = (() => {
     for (const s of [-1, 1]) {
       const z = s * W * .62, j = [V(0, hy - .05, z), V(.26 * lg, hy * .5, z * 1.1), V(-.08 * lg, hy * .2, z * 1.1), V(.08, .05, z * 1.1), V(.3 * lg, .02, z * 1.15)];
       leg(m, c, pel, j, [lw, lw * .62, lw * .42, lw * .36], FEET.bird(m, lw * .3, o.sick), false);
-    // ręce: ramię → przedramię → dłoń z pazurami (FK)
-      const al = (o.arm || 10) * U * 1.2, sh = V(L * .95, hy - D * .15, s * W * .8), el = sh.clone().add(V(al * .1, -al * .45, s * .03)), wr = el.clone().add(V(al * .45, -al * .1, 0));
-      const a = [sh, el, wr].reduce((l, p) => [...l, m.bone(l.at(-1) || ch, p)], []), ar = (o.aw || 9) / 2 * U * .9;
-      m.tube([[sh.x, sh.y, sh.z, ar * 1.3, ar * 1.1, a[0]], [el.x, el.y, el.z, ar * .8, ar * .75, a[1]], [wr.x, wr.y, wr.z, ar * .6, ar * .5, a[2]], [wr.x + al * .12, wr.y - al * .04, wr.z, .01, .01, a[2]]]);
-      for (let f = 0; f < (o.clw || 2); f++) { const q = wr.clone().add(V(al * .08, 0, (f - .5) * ar * .5)); m.spike(a[2], q, q.clone().add(V(al * .2, -al * .18, 0)), ar * .35, C.claw, C.ivory); }
+    // ręce: ramię → przedramię → dłoń, palce z zakrzywionymi pazurami (FK); łokieć odstaje w bok, dłoń wystaje przed pierś (widać z kamery 3/4)
+      const rex = o.hd === 'rex', al = (o.arm || 10) * U * 1.2 + D * ARM.len, ar = (o.aw || 9) / 2 * U * (rex ? ARM.rex : .9), nf = o.clw || 2;
+      const sh = V(L * 1.05, hy - D * .25, s * W * .66), el = sh.clone().add(V(-al * .05, -al * .42, s * al * .32)), wr = el.clone().add(V(al * .5, al * .18, s * al * .02));
+      const a = [sh, el, wr].reduce((l, p) => [...l, m.bone(l.at(-1) || ch, p)], []), dn = V(0, -1, 0), fc = m.SKIN.clone().lerp(m.DARK, .2);
+      m.tube([[sh.x, sh.y, sh.z, ar * 1.5, ar * 1.25, a[0]], [el.x, el.y, el.z, ar * .95, ar * .85, a[1]], [wr.x, wr.y, wr.z, ar * .75, ar * .65, a[2]], [wr.x + al * .08, wr.y - al * .03, wr.z, ar * .4, ar * .4, a[2]]], h => m.skin(h * .4 + .45).lerp(m.DARK, .2));
+      for (let f = 0; f < nf; f++) { const q = wr.clone().add(V(al * .06, 0, (f - (nf - 1) / 2) * ar * .9)), e = q.clone().add(V(al * .16, -al * .07, (f - (nf - 1) / 2) * ar * .8));
+        m.horn(a[2], q, e, ar * .38, fc, fc, .1, dn);
+        m.with({ gl: 1 }, () => m.horn(a[2], e, e.clone().add(V(al * .15, -al * .15, 0)), ar * .32, C.ivory, C.claw, .4, V(1, 0, 0))); }
       if (o.fz) m.sheet([0, 1].map(r => [0, .25, .5, .75, 1].map(f => { const p = el.clone().lerp(wr, f), b = a[f < .5 ? 1 : 2], L = al * (.35 + f * .3) * (f * 4 % 2 ? .8 : 1) * (o.wing || 1);
         return o.wing ? [p.x - r * L * .7, p.y - r * L * .3, p.z + s * r * L * .6, b] : [p.x - r * L * .55, p.y - r * L, p.z + s * r * .02, b]; })), i => m.tmp.copy(m.SKIN).lerp(m.DARK, i * .55));   // lotki na przedramieniu
       if (o.thumb) m.spike(a[2], wr, wr.clone().add(V(.04, .12, 0)), .03, C.ivory);
