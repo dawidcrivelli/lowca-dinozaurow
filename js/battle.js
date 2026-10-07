@@ -128,7 +128,10 @@ const SIG = {
   'inostrancevia-alexandri': ['bite', 'claw', 'roar', 'crush'], 'jaekelopterus-rhenaniae': ['pincer', 'tail', 'grab', 'sting'],
   'smilodon-fatalis': ['claw', 'bite', 'roar', 'grab', 'pounce'], 'mammuthus-primigenius': ['tusk', 'stomp', 'trunk', 'trample', 'charge'],
   'triceratops-horridus': ['gore', 'headbutt', 'stomp', 'charge'], 'velociraptor-mongoliensis': ['claw', 'bite', 'kick', 'pounce', 'slash'],
+  'tanystropheus-longobardicus': ['bite', 'neck', 'tail', 'shake', 'neck'],   // łowca z szyją-wędką: kłapie i smaga szyją, bez jadu jaszczurki
 };
+// pseudozuchy: lądowi drapieżcy na wyprostowanych nogach — szarżują i gryzą, bez krokodylego obrotu w wodzie
+for (const id of ['postosuchus-kirkpatricki', 'polonosuchus-silesiacus']) SIG[id] = ['bite', 'shake', 'charge', 'tail', 'crush'];
 // styl → [ikona, czasownik w dzienniku]
 const VERB = { bite: ['🦷', 'gryzie'], crush: ['🦷', 'miażdży szczękami'], shake: ['🦷', 'chwyta i szarpie'], venom: ['🧪', 'kąsa jadem'],
   spit: ['🧪', 'pluje jadem'], fire: ['🔥', 'zieje ogniem'], claw: ['🐾', 'drapie'], slash: ['🗡️', 'tnie pazurem'], kick: ['🦶', 'kopie'],
