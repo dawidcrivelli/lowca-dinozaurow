@@ -5796,6 +5796,58 @@
   }
  },
  {
+  "id": "poposaurus-gracilis",
+  "name_pl": "Popozaur",
+  "name_lat": "Poposaurus gracilis",
+  "group": "pseudozuch",
+  "group_pl": "Krewny krokodyli",
+  "is_dinosaur": false,
+  "period_pl": "Trias późny",
+  "ma": [
+   228,
+   208
+  ],
+  "diet": "M",
+  "diet_pl": "Mięsożerca",
+  "length_m": 3.5,
+  "height_m": 1,
+  "wingspan_m": null,
+  "mass_kg": 80,
+  "locomotion": "biped",
+  "speed_kmh_est": 30,
+  "weapons": {
+   "bite": 2
+  },
+  "weapons_pl": "szybkie nogi, ostre zęby",
+  "social": "solo",
+  "uncertainty": "L",
+  "note": "skull poorly known; mass rough estimate",
+  "legacy": {
+   "opus": null,
+   "gpt": null
+  },
+  "aliases": [
+   "popozaur",
+   "poposaurus",
+   "pseudozuch",
+   "pseudosuchus",
+   "pseudosuch"
+  ],
+  "category": "other",
+  "body": "theropod",
+  "stats": {
+   "hp": 104,
+   "attack": 63,
+   "defense": 36,
+   "speed": 48,
+   "evade": 0.027402433224770168,
+   "pack": 0,
+   "size": 2,
+   "armored": false,
+   "fortress": false
+  }
+ },
+ {
   "id": "kaprosuchus-saharicus",
   "name_pl": "Kaprozuch",
   "name_lat": "Kaprosuchus saharicus",
