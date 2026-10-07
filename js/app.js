@@ -152,7 +152,10 @@ el.grid.addEventListener('click', e => {
   if (del && editing) { e.stopPropagation(); return removeSpecies(del.dataset.del); }
   const sp = byId(e.target.closest('.tile')?.dataset.id); if (!sp) return;
   blip(isCaught(sp.id) ? 620 : 380, .07);
-  openCard(sp);
+  if (!editing) return openCard(sp);
+  // rodzic: klik łapie/oddaje — do testów walki, potem dzieci łapią same
+  if (isCaught(sp.id)) delete DB.caught[sp.id]; else DB.caught[sp.id] = { t: Date.now() };
+  save(); renderAll(isCaught(sp.id) ? sp.id : undefined);
 });
 el.chips.addEventListener('click', e => { const c = e.target.closest('[data-f]'); if (c) { filter = c.dataset.f; renderChips(); renderGrid(); } });
 el.onlyMissing.addEventListener('change', () => renderGrid());
@@ -503,7 +506,7 @@ function toggleEdit() {
   editBar.className = 'edit-bar';
   editBar.innerHTML = `
     <h3>⚙️ Tryb rodzica</h3>
-    <p>Dodaj brakującego ulubieńca albo usuń gatunek z listy (✕ na kafelku). Zapis z wersji ChatGPT wczytasz przyciskiem „Wczytaj z pliku”.</p>
+    <p>Kliknij kafelek, by złapać/oddać zwierzaka. Dodaj brakującego ulubieńca albo usuń gatunek z listy (✕ na kafelku). Zapis z wersji ChatGPT wczytasz przyciskiem „Wczytaj z pliku”.</p>
     <div class="eb-row">
       <input id="ebName" placeholder="Nazwa po polsku, np. Ultrazaur"><input id="ebLat" placeholder="Nazwa łacińska (opcjonalnie)">
     </div>
