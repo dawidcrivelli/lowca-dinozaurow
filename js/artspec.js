@@ -139,6 +139,7 @@ const ART = {
   /* krokodylomorfy i jaszczury */
   'postosuchus-kirkpatricki': ['croc', { p: 16, up: 1, sn: 30, hh: 1.3 }],
   'polonosuchus-silesiacus': ['croc', { p: 7, up: 1, sn: 32, hh: 1.25 }],
+  'poposaurus-gracilis': ['thero', { p: 5, hd: 'slim', nk: [22, -20], nw: 14, bw: 28, bh: 15, lw: 15, arm: 7, clw: 2, cl: 3, tl: 1.4, td: 10, sc: .7 }],   // dwunożny pseudozuch: krótkie ręce, długi ogon
   'kaprosuchus-saharicus': ['croc', { p: 2, up: 1, tsk: 1, brow: 1, sc: .85 }],
   'sarcosuchus-imperator': ['croc', { p: 12, sn: 52, bulla: 1 }],
   'deinosuchus-riograndensis': ['croc', { p: 6, sn: 40, hh: 1.2, bt: 1 }],

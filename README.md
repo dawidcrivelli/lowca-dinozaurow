@@ -6,7 +6,7 @@ Gra dla dzieci: wpisz nazwę prehistorycznego zwierzaka, rzuć w niego jajem, z�
 
 ## Co jest w środku
 
-- **154 gatunki** — dinozaury, pterozaury, gady morskie, ssaki epoki lodowcowej i inni, w tym znaleziska z Polski
+- **155 gatunków** — dinozaury, pterozaury, gady morskie, ssaki epoki lodowcowej i inni, w tym znaleziska z Polski
   (Smok wawelski, Silezaur, Polonozuch, Lisowicja). Zwierzęta, które nie są dinozaurami, mają to napisane na karcie.
 - **Prawdziwe rozmiary** — długość, wysokość, waga i epoka według aktualnych szacunków naukowych.
 - **Wyszukiwarka** odporna na literówki i brak polskich znaków; łapie dopiero po wpisaniu większości nazwy.
