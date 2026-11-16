@@ -881,13 +881,14 @@ const EGG_STYLE = [
 ];
 function drawEgg(r, seed) {
   const st = EGG_STYLE[Math.max(0, Math.min(3, (r || 1) - 1))];
+  // `>>` on hash ≥ 2^31 goes negative → negative radii; `>>>` keeps bits unsigned
   const h = hash(String(seed || 'egg'));
   let dots = '';
   for (let i = 0; i < 9; i++) {
-    const a = ((h >> (i * 3)) % 360) * Math.PI / 180;
-    const rad = 10 + ((h >> (i * 2)) % 16);
+    const a = ((h >>> (i * 3)) % 360) * Math.PI / 180;
+    const rad = 10 + ((h >>> (i * 2)) % 16);
     const x = 50 + Math.cos(a) * rad, y = 60 + Math.sin(a) * rad * 1.25;
-    const rr = 2.4 + ((h >> i) % 4);
+    const rr = 2.4 + ((h >>> i) % 4);
     dots += `<ellipse cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="${rr}" ry="${(rr * .85).toFixed(1)}" fill="${st.sp}" opacity=".75"/>`;
   }
   return `<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg" class="egg-svg">
